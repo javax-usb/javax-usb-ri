@@ -121,7 +121,10 @@ public class DefaultRequestFactory extends Object implements RequestFactory
         ClassRequest request = null;
 
 		if( isAvailableRequestInFreeMap( ClassRequest.CLASS_REQUEST_NAME ) )
+		{
 			request = (ClassRequest)getNextAvailableRequestInFreeMap( ClassRequest.CLASS_REQUEST_NAME );
+			request.setRequest( requestType );
+		}
 		else
             request = new ClassRequest( this, requestType );
         

@@ -68,6 +68,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSubmitInterrupt
 #endif /* SIGSUSPEND_WORKS */
 	urb->usercontext = linuxPipeRequest;
 	urb->endpoint = (unsigned char)epAddress;
+	urb->flags |= USBDEVFS_URB_QUEUE_BULK;
 	if (JNI_FALSE == acceptShortPacket)
 		urb->flags |= USBDEVFS_URB_DISABLE_SPD;
 

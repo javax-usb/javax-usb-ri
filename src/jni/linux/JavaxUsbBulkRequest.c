@@ -59,7 +59,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSubmitBulkReque
 
 	dbg( MSG_DEBUG2, "nativeSubmitBulkRequest : Submitting URB\n" );
 
-	urb->type = USBDEVFS_URB_TYPE_CONTROL;
+	urb->type = USBDEVFS_URB_TYPE_BULK;
 	urb->buffer = (*env)->GetByteArrayElements( env, data, NULL );
 	urb->buffer_length = (*env)->GetArrayLength( env, data );
 #ifdef SIGSUSPEND_WORKS
@@ -67,6 +67,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSubmitBulkReque
 #endif /* SIGSUSPEND_WORKS */
 	urb->usercontext = linuxPipeRequest;
 	urb->endpoint = (unsigned char)epAddress;
+	urb->flags |= USBDEVFS_URB_QUEUE_BULK;
 	if (JNI_FALSE == acceptShortPacket)
 		urb->flags |= USBDEVFS_URB_DISABLE_SPD;
 

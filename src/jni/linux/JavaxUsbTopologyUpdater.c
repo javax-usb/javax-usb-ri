@@ -33,6 +33,7 @@ JNIEXPORT jint JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeTopologyUpdater
 {
 	int busses, port, devices = 0;
 	struct dirent **buslist;
+	char *orig_dir = getcwd(NULL,0);
 
 	jclass LinuxTopologyUpdater = (*env)->GetObjectClass( env, linuxTopologyUpdater );
 	jmethodID updateTopology = (*env)->GetMethodID( env, LinuxTopologyUpdater, "updateTopology", "()V" );
@@ -83,6 +84,11 @@ JNIEXPORT jint JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeTopologyUpdater
 	(*env)->CallVoidMethod( env, linuxTopologyUpdater, updateTopology );
 
 	if (rootHub) (*env)->DeleteLocalRef( env, rootHub );
+
+	if (orig_dir) {
+		chdir(orig_dir);
+		free(orig_dir);
+	}
 
 	return devices;
 }

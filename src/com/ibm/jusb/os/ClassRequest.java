@@ -41,6 +41,17 @@ public class ClassRequest extends AbstractRequest
 	/** @return the Request code byte for this request */
 	public byte getRequest() { return request; }
 
+	/** 
+	 * The Request code byte for this request 
+	 * @param b the requestType byte
+	 * @throws javax.usb.RequestException if something goes wrong
+	 */
+	public void setRequest( byte b ) throws RequestException
+	{
+		if( b < 0 ) throw new RequestException( "The RequestType cannot be < 0" ); 
+		request = b; 
+	}
+
 	/**
 	 * Accepts a RequestVisitor object
 	 * @param visitor the RequestVisitor object

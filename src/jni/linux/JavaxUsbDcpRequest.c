@@ -63,7 +63,6 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSubmitDcpReques
 #endif /* SIGSUSPEND_WORKS */
 	urb->usercontext = linuxDcpRequest;
 	urb->endpoint = 0;
-	urb->flags |= USBDEVFS_URB_DISABLE_SPD;
 
 	debug_urb( "nativeSubmitDcpRequest", urb );
 
