@@ -25,6 +25,12 @@ import com.ibm.jusb.util.*;
  */
 public abstract class AbstractUsbServices implements UsbServices
 {
+	/** @return The UsbRootHub. */
+	public UsbRootHub getUsbRootHub() { return getUsbRootHubImp(); }
+
+	/** @return The UsbRootHubImp. */
+	public UsbRootHubImp getUsbRootHubImp() { return usbRootHubImp; }
+
     /**
      * Adds a new UsbServicesListener object to receive events when the USB host
      * has changes.  For instance a new device is plugged in or unplugged.
@@ -165,6 +171,7 @@ public abstract class AbstractUsbServices implements UsbServices
     //**************************************************************************
     // Instance variables
 
+	private UsbRootHubImp usbRootHubImp = new VirtualUsbRootHubImp();
 	private UsbServicesEventHelper usbServicesEventHelper = new UsbServicesEventHelper();
 	private RequestFactory requestFactory = new RequestImpFactory();
 	private UsbIrpFactory usbIrpFactory = new UsbIrpImpFactory();
