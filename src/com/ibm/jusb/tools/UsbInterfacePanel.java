@@ -79,6 +79,7 @@ public class UsbInterfacePanel extends UsbPanel
 			{
 				try { usbInterface.claim(); }
 				catch ( UsbException uE ) { JOptionPane.showMessageDialog(null, "Could not claim UsbInterface : " + uE.getMessage()); }
+				catch ( NotActiveException naE ) { JOptionPane.showMessageDialog(null, "Could not claim UsbInterface : " + naE.getMessage()); }
 				refresh();
 			}
 		};
