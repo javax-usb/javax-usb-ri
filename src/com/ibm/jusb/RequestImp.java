@@ -19,7 +19,7 @@ import javax.usb.*;
 public class RequestImp implements Request,UsbOperations.SubmitResult
 {
 	/** Constructor */
-	public RequestImp( RequestFactoryImp factory ) { requestFactoryImp = factory; }
+	public RequestImp( RequestImpFactory factory ) { requestImpFactory = factory; }
 
 	/** @return the bmRequestType bitmap byte for this Request */
 	public byte getRequestType() { return bmRequestType; }
@@ -103,7 +103,7 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	/** Recycle this object */
 	public void recycle()
 	{
-		requestFactoryImp.recycle(this);
+		requestImpFactory.recycle(this);
 	}
 
 	/** @return The number */
@@ -121,6 +121,12 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	/** @return If in UsbException */
 	public boolean isInUsbException() { return null != usbException; }
 
+	/** @return If completed */
+	public boolean isCompleted() { return completed; }
+
+	/** @param c If completed */
+	public void setCompleted(boolean c) { completed = c; }
+
 	//**************************************************************************
 	// Instance variables
 
@@ -131,10 +137,11 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	private byte[] data = new byte[ 0 ];
 	private int dataLength = 0;
 
-	private RequestFactoryImp requestFactoryImp = null;
+	private RequestImpFactory requestImpFactory = null;
 
 	private long number = 0;
 	private UsbException usbException = null;
+	private boolean completed = false;
 
 	//**************************************************************************
 	// Class constants
