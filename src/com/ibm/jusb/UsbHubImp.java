@@ -35,6 +35,94 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	 * This creates a hub with a initial number of ports set to 1.
 	 * The the number of ports is adjustable at runtime via the
 	 * {@link #resize(int) resize} method.
+	 */
+	public UsbHubImp()
+	{
+		this( 1 );
+		resizingAllowed = true;
+	}
+
+	/**
+	 * Constructor.
+	 * <p>
+	 * This creates a hub with the specified number of ports.
+	 * The number of ports is <i>not</i> adjustable at runtime via the
+	 * {@link #resize(int) resize} method; it will throw UnsupportedOperationException.
+	 * @param ports The initial number of ports.
+	 */
+	public UsbHubImp( int ports )
+	{
+		super();
+		resize( ports );
+		resizingAllowed = false;
+	}
+
+	/**
+	 * Constructor
+	 * <p>
+	 * This creates a hub with a initial number of ports set to 1.
+	 * The the number of ports is adjustable at runtime via the
+	 * {@link #resize(int) resize} method.
+	 * @param desc This device's descriptor.
+	 */
+	public UsbHubImp(UsbDeviceDescriptor desc)
+	{
+		this( 1, desc );
+		resizingAllowed = true;
+	}
+
+	/**
+	 * Constructor
+	 * <p>
+	 * This creates a hub with a initial number of ports set to 1.
+	 * The the number of ports is adjustable at runtime via the
+	 * {@link #resize(int) resize} method.
+	 * @param device The platform device implementaiton.
+	 */
+	public UsbHubImp(UsbDeviceOsImp device)
+	{
+		this( 1, device );
+		resizingAllowed = true;
+	}
+
+	/**
+	 * Constructor.
+	 * <p>
+	 * This creates a hub with the specified number of ports.
+	 * The number of ports is <i>not</i> adjustable at runtime via the
+	 * {@link #resize(int) resize} method; it will throw UnsupportedOperationException.
+	 * @param ports The initial number of ports.
+	 * @param desc This device's descriptor.
+	 */
+	public UsbHubImp( int ports, UsbDeviceDescriptor desc )
+	{
+		super(desc);
+		resize( ports );
+		resizingAllowed = false;
+	}
+
+	/**
+	 * Constructor.
+	 * <p>
+	 * This creates a hub with the specified number of ports.
+	 * The number of ports is <i>not</i> adjustable at runtime via the
+	 * {@link #resize(int) resize} method; it will throw UnsupportedOperationException.
+	 * @param ports The initial number of ports.
+	 * @param device The platform device implementation.
+	 */
+	public UsbHubImp( int ports, UsbDeviceOsImp device )
+	{
+		super(device);
+		resize( ports );
+		resizingAllowed = false;
+	}
+
+	/**
+	 * Constructor
+	 * <p>
+	 * This creates a hub with a initial number of ports set to 1.
+	 * The the number of ports is adjustable at runtime via the
+	 * {@link #resize(int) resize} method.
 	 * @param desc This device's descriptor.
 	 * @param device The platform device implementaiton.
 	 */

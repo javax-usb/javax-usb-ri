@@ -19,6 +19,21 @@ import com.ibm.jusb.os.*;
  */
 public class UsbControlPipeImp extends UsbPipeImp implements UsbPipe
 {
+	/** Constructor. */
+	public UsbControlPipeImp() { super(); }
+
+	/**
+	 * Constructor.
+	 * @param ep The UsbEndpointImp.
+	 */
+	public UsbControlPipeImp( UsbEndpointImp ep ) { super(ep); }
+
+	/**
+	 * Constructor.
+	 * @param pipe The platform-dependent pipe implementation.
+	 */
+	public UsbControlPipeImp( UsbControlPipeOsImp pipe ) { super(pipe); }
+
 	/**
 	 * Constructor.
 	 * @param ep The UsbEndpointImp.
