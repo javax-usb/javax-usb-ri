@@ -181,6 +181,8 @@ public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmiss
 			getRequest().setUsbException(getUsbException());
 			getRequest().setCompleted(true);
 		} catch ( NullPointerException npE ) { }
+
+		getUsbDeviceImp().requestImpCompleted(this);
 	}
 
 	public byte[] toBytes()
