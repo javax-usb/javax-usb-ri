@@ -46,6 +46,9 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 		throw new UsbException("Cannot connect Virtual Root UsbHub");
 	}
 
+	/** @return true if this is the virtual root hub */
+	public boolean isRootUsbHub() { return true; }
+
 	/** No disconnect */
 	public void disconnect() { }
 
