@@ -16,7 +16,8 @@ import com.ibm.jusb.*;
 /**
  * Default UsbInterfaceOsImp implementation.
  * <p>
- * This provides a simple in-Java claiming implementation.
+ * This provides a simple in-Java claiming implementation.  By default claiming is allowed.
+ * If the 1-parameter constructor is used, its value determines if claiming is allowed or denied.
  * @author Dan Streetman
  */
 public class DefaultUsbInterfaceOsImp implements UsbInterfaceOsImp
@@ -24,7 +25,13 @@ public class DefaultUsbInterfaceOsImp implements UsbInterfaceOsImp
 	/**
 	 * Constructor.
 	 */
-	public DefaultUsbInterfaceOsImp() { }
+	public DefaultUsbInterfaceOsImp() { this(true); }
+
+	/**
+	 * Constructor.
+	 * @param b If claiming should be allowed or not.
+	 */
+	public DefaultUsbInterfaceOsImp(boolean b) { allowClaim = b; }
 
 	/**
 	 * Claim this interface.
@@ -33,6 +40,9 @@ public class DefaultUsbInterfaceOsImp implements UsbInterfaceOsImp
 	 */
 	public void claim() throws UsbException
 	{
+		if (!allowClaim)
+			throw new UsbNativeClaimException("Claiming not allowed on this interface.");
+
 		isClaimed = true;
 	}
 
@@ -50,6 +60,9 @@ public class DefaultUsbInterfaceOsImp implements UsbInterfaceOsImp
 	 */
 	public void release() throws UsbException
 	{
+		if (!allowClaim)
+			throw new UsbNativeClaimException("Claiming/releasing not allowed on this interface.");
+
 		isClaimed = false;
 	}
 
@@ -62,4 +75,5 @@ public class DefaultUsbInterfaceOsImp implements UsbInterfaceOsImp
 	public boolean isClaimed() { return isClaimed; }
 
 	protected boolean isClaimed = false;
+	protected boolean allowClaim = true;
 }
