@@ -32,7 +32,15 @@ public class VirtualUsbDeviceOsImp implements UsbDeviceOsImp
 	 */
 	public void syncSubmit(RequestImp requestImp) throws UsbException
 	{
-		throw new UsbException("Not yet implemented");
+		byte[] data = requestImp.getData();
+		byte bmRequestType = data[0];
+		byte bRequest = data[1];
+		short wValue = (short)((data[3] << 8) | data[2]);
+		short wIndex = (short)((data[5] << 8) | data[4]);
+
+		/* handle requests */
+
+		throw new UsbException("Not implemented");
 	}
 
 	/**
@@ -42,7 +50,8 @@ public class VirtualUsbDeviceOsImp implements UsbDeviceOsImp
 	 */
 	public void syncSubmit(List list) throws UsbException
 	{
-		throw new UsbException("Not yet implemented");
+		for (int i=0; i<list.size(); i++)
+			syncSubmit( (RequestImp)list.get(i) );
 	}
 
 	/**
@@ -50,9 +59,24 @@ public class VirtualUsbDeviceOsImp implements UsbDeviceOsImp
 	 * @param requestImp The RequestImp.
 	 * @throws UsbException If the submission is unsuccessful.
 	 */
-	public void asyncSubmit(RequestImp requestImp) throws UsbException
+	public void asyncSubmit(final RequestImp requestImp) throws UsbException
 	{
-		throw new UsbException("Not yet implemented");
+		Runnable r = new Runnable() {
+				public void run()
+				{
+					try {
+						syncSubmit(requestImp);
+					} catch ( UsbException uE ) {
+						requestImp.setUsbException(uE);
+						requestImp.setCompleted(true);
+					}
+				}
+			};
+
+		Thread t = new Thread(r);
+
+		t.setDaemon(true);
+		t.start();
 	}
 
 }

@@ -20,10 +20,6 @@ import com.ibm.jusb.util.*;
 
 /**
  * UsbPipe platform-independent implementation.
- * <p>
- * This must be set up before use.
- * <ul>
- * <li>The 
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
@@ -34,20 +30,20 @@ public class UsbPipeImp extends Object implements UsbPipe
 	 * @param ep The UsbEndpointImp.
 	 * @param pipe The platform-dependent pipe implementation.
 	 */
-    public UsbPipeImp( UsbEndpointImp ep, UsbPipeOsImp pipe )
-    {
+	public UsbPipeImp( UsbEndpointImp ep, UsbPipeOsImp pipe )
+	{
 		setUsbEndpointImp(ep);
 		setUsbPipeOsImp(pipe);
-    }
+	}
 
 	//**************************************************************************
-    // Public methods
+	// Public methods
 
 	/** @param the UsbPipeOsImp to use */
 	public void setUsbPipeOsImp( UsbPipeOsImp pipe ) { usbPipeOsImp = pipe; }
 
-    /** @return the UsbPipeOsImp object */
-    public UsbPipeOsImp getUsbPipeOsImp() { return usbPipeOsImp; }
+	/** @return the UsbPipeOsImp object */
+	public UsbPipeOsImp getUsbPipeOsImp() { return usbPipeOsImp; }
 
 	/** @return if this UsbPipe is active */
 	public boolean isActive() { return getUsbEndpoint().getUsbInterface().isActive(); }
@@ -144,14 +140,19 @@ public class UsbPipeImp extends Object implements UsbPipe
 		checkOpen();
 
 		submissionCount++;
-		sequenceNumber++;
+		long sn = sequenceNumber++;
 
-//FIXME-try-catch always decrement
-		int result = getUsbPipeOsImp().syncSubmit(data);
+		try {
+			int result = getUsbPipeOsImp().syncSubmit(data);
 
-		submissionCount--;
+			fireDataEvent(sn,data,result);
 
-		return result;
+			return result;
+		} catch ( UsbException uE ) {
+			fireErrorEvent(sn,uE.getErrorCode(),uE);
+		} finally {
+			submissionCount--;
+		}
 	}
 
 	/**
@@ -166,65 +167,91 @@ public class UsbPipeImp extends Object implements UsbPipe
 		result.setData(data);
 
 		submissionCount++;
-		sequenceNumber++;
+		long sn = sequenceNumber++;
 
-		getUsbPipeOsImp().asyncSubmit( result );
-
-		return result;
+		try {
+			getUsbPipeOsImp().asyncSubmit( result );
+			return result;
+		} catch ( UsbException uE ) {
+			submissionCount--;
+			throw uE;
+		}
 	}
 
 	/**
 	 * Synchronous submission using a UsbIrp.
 	 */
-    public void syncSubmit( UsbIrp irp ) throws UsbException
+	public void syncSubmit( UsbIrp irp ) throws UsbException
 	{
 		checkOpen();
 
-/* transform UsbIrp -> UsbIrpImp */
+		UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp(irp);
 
 		submissionCount++;
-		sequenceNumber++;
+		long sn = sequenceNumber++;
 
-/* try-catch and finally decrement submissionCount */
-//		getUsbPipeOsImp().syncSubmit( irpImp );
-
-		submissionCount--;
+		try {
+			getUsbPipeOsImp().syncSubmit( usbIrpImp );
+			fireDataEvent(sn,usbIrpImp.getData(),usbIrpImp.getDataLength());
+		} catch ( UsbException uE ) {
+			fireErrorEvent(sn,uE.getErrorCode(),uE);
+		} finally {
+			submissionCount--;
+		}
 	}
 
 	/**
 	 * Asynchronous submission using a UsbIrp.
 	 */
-    public void asyncSubmit( UsbIrp irp ) throws UsbException
+	public void asyncSubmit( UsbIrp irp ) throws UsbException
 	{
 		checkOpen();
 
-/* transform */
+		UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp(irp);
 
-//		getUsbPipeOsImp().asyncSubmit( irpImp );
+		submissionCount++;
+		long sn = sequenceNumber++;
+
+		try {
+			getUsbPipeOsImp().asyncSubmit( usbIrpImp );
+		} catch ( UsbException uE ) {
+			fireErrorEvent(sn,uE.getErrorCode(),uE);
+			submissionCount--;
+		}
 	}
 
 	/**
 	 * Synchronous submission using a List of UsbIrps.
 	 */
-    public void syncSubmit( List list ) throws UsbException
+	public void syncSubmit( List list ) throws UsbException
 	{
 		checkOpen();
 
-/* transform */
+		List newList = convertList(list);
 
-//		getUsbPipeOsImp().syncSubmit( newList );
+		try {
+			getUsbPipeOsImp().syncSubmit( newList );
+		} catch ( UsbException uE ) {
+//finish
+		} finally {
+
+		}
 	}
 
 	/**
 	 * Asynchronous submission using a List of UsbIrps.
 	 */
-    public void asyncSubmit( List list ) throws UsbException
+	public void asyncSubmit( List list ) throws UsbException
 	{
 		checkOpen();
 
-/* transform */
+		List newList = convertList(list);
 
-//		getUsbPipeOsImp().asyncSubmit( newList );
+		try {
+			getUsbPipeOsImp().asyncSubmit( newList );
+		} catch ( UsbException uE ) {
+//finish
+		}
 	}
 
 	/**
@@ -245,7 +272,12 @@ public class UsbPipeImp extends Object implements UsbPipe
 	 */
 	public void UsbIrpImpCompleted( UsbIrpImp irp )
 	{
-		decrementSubmissionCount();
+		submissionCount--;
+
+		if (irp.isInUsbException())
+			fireErrorEvent(irp.getSequenceNumber(),irp.getUsbException().getErrorCode(),irp.getUsbException());
+		else
+			fireDataEvent(irp.getSequenceNumber(),irp.getData(),irp.getDataLength());
 	}
 
 	/**
@@ -270,6 +302,55 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 	//**************************************************************************
 	// Protected methods
+
+	/**
+	 * Fire a data event.
+	 * @param sn The serial number.
+	 * @param data The data.
+	 * @param length The length of valid data.
+	 */
+	public void fireDataEvent(long sn, byte[] data, int length)
+	{
+		UsbPipeDataEvent event = new UsbPipeDataEvent(this,sn,data,length);
+
+		getUsbPipeEventHelper().fireUsbPipeDataEvent(event);
+	}
+
+	/**
+	 * Fire a error event.
+	 * @param sn The serial number.
+	 * @param ec The error code.
+	 * @param uE The UsbException.
+	 */
+	protected void fireErrorEvent(long sn, int ec, UsbException uE)
+	{
+		UsbPipeErrorEvent event = new UsbPipeErrorEvent(this,sn,ec,uE);
+
+		getUsbPipeEventHelper().fireUsbPipeErrorEvent(event);
+	}
+
+	/**
+	 * Convert a UsbIrp to UsbIrpImp.
+	 * @param irp The UsbIrp to convert.
+	 */
+	protected UsbIrpImp usbIrpToUsbIrpImp(UsbIrp irp)
+	{
+		try {
+			return (UsbIrpImp)irp;
+		} catch ( ClassCastException ccE ) {
+			return new UsbIrpImp(irp);
+		}
+	}
+
+	protected List convertList(List list) throws UsbException
+	{
+		List newlist = new ArrayList();
+
+		for (int i=0; i<list.size(); i++)
+			newlist.add(usbIrpToUsbIrpImp((UsbIrp)list.get(i)));
+
+		return newlist;
+	}
 
 	/**
 	 * Check if this pipe is active.
@@ -303,18 +384,6 @@ public class UsbPipeImp extends Object implements UsbPipe
 		return irp;
 	}
 
-	/** Increment the number of submissions in progress */
-	protected void incrementSubmissionCount()
-	{
-		submissionCount++;
-	}
-
-	/** Decrement the number of submissions in progress */
-	protected void decrementSubmissionCount()
-	{
-		submissionCount--;
-	}		
-
 	//**************************************************************************
 	// Instance variables
 
@@ -322,7 +391,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	private boolean open = false;
 	private int errorCode = 0;
 
-    private UsbPipeOsImp usbPipeOsImp = null;
+	private UsbPipeOsImp usbPipeOsImp = null;
 
 	private UsbPipeEventHelper usbPipeEventHelper = new UsbPipeEventHelper( this, new FifoScheduler() );
 

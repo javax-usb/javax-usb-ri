@@ -19,12 +19,44 @@ import com.ibm.jusb.util.*;
 
 /**
  * UsbIrp implementation.
+ * <p>
+ * The user must provide some fields:
+ * <ul>
+ * <li>{@link #getData() data} via its {@link #setData(byte[]) setter}.</li>
+ * <li>{@link #getAcceptShortPacket() short packet policy} via its {@link #setAcceptShortPacket(boolean) setter}.</li>
+ * </ul>
+ * The implementation will set fields:
+ * <ul>
+ * <li>The {@link #getNumber() number} via its {@link #setNumber(long) setter}.</li>
+ * <li>The {@link #getSequenceNumber() sequence number} via its {@link #setSequenceNumber(long) setter}.</li>
+ * <li>{@link #getUsbPipe() UsbPipe} via its {@link #setUsbPipe(UsbPipe) setter}.</li>
+ * </ul>
+ * If processing is successful, the implementation will set the
+ * {@link #getDataLength() data length} via its {@link #setDataLength(int) setter};
+ * if unsuccessful, the implementation will set the
+ * {@link #getUsbException() UsbException} via its {@link #setUsbException(UsbException) setter}.
+ * In either case the implementation will then set this {@link #setCompleted(boolean) completed},
+ * which will wake up all {@link #waitUntilCompleted() waiting Threads}.
+ * <p>
+ * If the user provided their own UsbIrp implementation, then the UsbPipeImp will 'wrap' their
+ * implementation with this UsbIrpImp by {@link #setUsbIrp(UsbIrp) setting} the local
+ * {@link #getUsbIrp() UsbIrp}.  If this has a local UsbIrp when it is
+ * {@link #setCompleted(boolean) completed}, this will set the proper fields on the wrapped UsbIrp.
  * @author Dan Streetman
  */
 public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 {
+	/** Constructor. */
+	public UsbIrpImp() { }
+
+	/**
+	 * Constructor.
+	 * @param irp The UsbIrp this should wrap.
+	 */
+	public UsbIrpImp(UsbIrp irp) { setUsbIrp(irp); }
+
 	//*************************************************************************
-	// Public UsbIrp methods
+	// Public methods
 
 	/**
 	 * @return a unique number for this submission.
@@ -80,20 +112,6 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 		}
 	}
 
-	/**
-	 * Notify all Threads waiting for completion
-	 * <p>
-	 * This should be called <i>after</i> <code>setCompleted(true)</code>.
-	 */
-	public void notifyCompleted()
-	{
-		if (0 < waitCount) {
-			synchronized ( waitLock ) {
-				waitLock.notifyAll();
-			}
-		}
-	}
-
 	/** @return the UsbException that occured during submission */
 	public UsbException getUsbException() { return usbException; }
 
@@ -106,9 +124,6 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	 * @param accept if a short packet during this submission should be accepted (no error)
 	 */
 	public void setAcceptShortPacket( boolean accept ) { acceptShortPacket = accept; }
-
-	//*************************************************************************
-	// Recyclable methods
 
 	/** Clean this object */
 	public void clean()
@@ -124,7 +139,6 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 		setUsbException( DEFAULT_USB_EXCEPTION );
 		setDataLength( DEFAULT_DATA_LENGTH );
 		setAcceptShortPacket( DEFAULT_ACCEPT_SHORT_PACKET );
-
 	}
 
 	/**
@@ -133,9 +147,6 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	 * This should be called when the UsbIrpImp is no longer needed
 	 */
 	public void recycle() { }
-
-	//*************************************************************************
-	// Public implementation-specific methods
 
 	/**
 	 * Sets the number for this submission
@@ -163,12 +174,28 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	/**
 	 * Sets isCompleted
 	 * <p>
-	 * This <i>must</i> be called before {@link #notifyCompleted() notifyCompleted()}
-	 * to guarantee Threads do not incorrectly wait.
+	 * If this is set to true, it will wake up all
+	 * {@link #waitUntilCompleted() waiting Threads}.
 	 * @param b whether this is done
 	 * @see #notifyCompleted()
 	 */
-	public void setCompleted( boolean b ) { completed = b; }
+	public void setCompleted( boolean b )
+	{
+		completed = b;
+
+		if (!b)
+			return;
+
+		UsbIrp irp = getUsbIrp();
+
+		if (null != irp) {
+			irp.setUsbException(getUsbException());
+			irp.setDataLength(getDataLength());
+			irp.setCompleted(true);
+		}
+
+		notifyCompleted();
+	}
 
 	/**
 	 * Sets the complted result
@@ -182,8 +209,34 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	 */
 	public void setUsbException( UsbException exception ) { usbException = exception; }
 
+	/**
+	 * Set the UsbIrp to wrap.
+	 * @param irp The UsbIrp.
+	 */
+	public void setUsbIrp(UsbIrp irp) { usbIrp = irp; }
+
+	/**
+	 * Get the UsbIrp this is wrapping.
+	 * @return The UsbIrp or null.
+	 */
+	public UsbIrp getUsbIrp() { return usbIrp; }
+
+	//*************************************************************************
+	// Protected methods
+
+	protected void notifyCompleted()
+	{
+		if (0 < waitCount) {
+			synchronized ( waitLock ) {
+				waitLock.notifyAll();
+			}
+		}
+	}
+
 	//*************************************************************************
 	// Instance variables
+
+	private UsbIrp usbIrp = null;
 
 	private Object waitLock = new Object();
 	private int waitCount = 0;
