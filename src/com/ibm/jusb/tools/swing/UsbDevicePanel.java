@@ -47,26 +47,15 @@ public class UsbDevicePanel extends UsbPanel
 
 	protected void initText()
 	{
-		String manufacturer = null, product = null, serialNumber = null, speedString = null;
+		String manufacturer = null, product = null, serialNumber = null;
 
 		try { manufacturer = usbDevice.getManufacturerString(); } catch ( Exception e ) { manufacturer = "Error : " + e.getMessage(); }
 		try { product = usbDevice.getProductString(); } catch ( Exception e ) { product = "Error : " + e.getMessage(); }
 		try { serialNumber = usbDevice.getSerialNumberString(); } catch ( Exception e ) { serialNumber = "Error : " + e.getMessage(); }
 
-		if (UsbConst.DEVICE_SPEED_LOW == usbDevice.getSpeed())
-			speedString = "Low";
-		else if (UsbConst.DEVICE_SPEED_FULL == usbDevice.getSpeed())
-			speedString = "Full";
-		else if (UsbConst.DEVICE_SPEED_UNKNOWN == usbDevice.getSpeed())
-			speedString = "Unknown";
-		else if (null == usbDevice.getSpeed())
-			speedString = "NULL";
-		else
-			speedString = "Invalid";
-
 		appendln("Vendor ID : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().idVendor()));
 		appendln("Product ID : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().idProduct()));
-		appendln("Speed : " + speedString);
+		appendln("Speed : " + UsbUtil.getSpeedString(usbDevice.getSpeed()));
 		appendln("Manufacturer : " + manufacturer);
 		appendln("Product : " + product);
 		appendln("Serial Number : " + serialNumber);
