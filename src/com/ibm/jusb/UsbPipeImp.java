@@ -133,56 +133,13 @@ public class UsbPipeImp extends Object implements UsbPipe
 	}
 
 	/**
-	 * Set whether to pass on byte[]s submitted.
-	 * @param pass If this should pass on submitted byte[]s.
-	 */
-	public void setPassBytes(boolean pass) { shouldPassBytes = pass; }
-
-	/**
-	 * If this should pass byte[]s submitted.
-	 * <p>
-	 * If this is true, calls to
-	 * {@link #syncSubmit(byte[]) syncSubmit(byte[] data)}
-	 * will be passed on to UsbPipeOsImp's
-	 * {@link com.ibm.jusb.os.UsbPipeOsImp#syncSubmit(byte[]) syncSubmit(byte[] data)}.
-	 * If this is false, the byte[] will be converted to a UsbIrpImp and passed to UsbPipeOsImp's
-	 * {@link com.ibm.jusb.os.UsbPipeOsImp#syncSubmit(UsbIrpImp) syncSubmit(UsbIrpImp usbIrpImp)}.
-	 * <p>
-	 * The default is to pass byte[]s.
-	 */
-	public boolean passBytes() { return shouldPassBytes; }
-
-	/**
-	 * Set whether to pass on Lists submitted.
-	 * @param pass If this should pass on submitted Lists.
-	 */
-	public void setPassLists(boolean pass) { shouldPassLists = pass; }
-
-	/**
-	 * If this should pass Lists submitted.
-	 * <p>
-	 * If this is true, calls to
-	 * {@link #syncSubmit(List) syncSubmit(List list)} and
-	 * {@link #asyncSubmit(List) asyncSubmit(List list)}
-	 * will be passed on to UsbPipeOsImp's
-	 * {@link com.ibm.jusb.os.UsbPipeOsImp#syncSubmit(List) syncSubmit(List list)} or
-	 * {@link com.ibm.jusb.os.UsbPipeOsImp#asyncSubmit(List) asyncSubmit(List list)}.
-	 * If this is false, each individual UsbIrpImp will be passed to UsbPipeOsImp's
-	 * {@link com.ibm.jusb.os.UsbPipeOsImp#syncSubmit(UsbIrpImp) syncSubmit(UsbIrpImp usbIrpImp)} or
-	 * {@link com.ibm.jusb.os.UsbPipeOsImp#asyncSubmit(UsbIrpImp) asyncSubmit(UsbIrpImp usbIrpImp)} method.
-	 * <p>
-	 * The default is to pass Lists.
-	 */
-	public boolean passLists() { return shouldPassLists; }
-
-	/**
 	 * Synchonously submits this byte[] array to the UsbPipe.
 	 */
 	public int syncSubmit( byte[] data ) throws UsbException
 	{
 		checkOpen();
 
-		if (passBytes()) {
+		if (getUsbPipeOsImp().passBytes()) {
 			submissionCount++;
 			long sn = sequenceNumber++;
 
@@ -280,7 +237,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 		List newList = preProcessList(list);
 
-		if (passLists()) {
+		if (getUsbPipeOsImp().passLists()) {
 			submissionCount += newList.size();
 
 			try {
@@ -310,7 +267,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 		List newList = preProcessList(list);
 
-		if (passLists()) {
+		if (getUsbPipeOsImp().passLists()) {
 			submissionCount += newList.size();
 
 			try {
@@ -478,9 +435,6 @@ public class UsbPipeImp extends Object implements UsbPipe
 	private boolean active = false;
 	private boolean open = false;
 	private int errorCode = 0;
-
-	private boolean shouldPassBytes = true;
-	private boolean shouldPassLists = true;
 
 	private UsbPipeOsImp usbPipeOsImp = null;
 
