@@ -27,22 +27,31 @@ public abstract class AbstractUsbServices implements UsbServices
 	/** @return The root UsbHubImp. */
 	public UsbHubImp getRootUsbHubImp() { return rootUsbHubImp; }
 
-    /** @param listener The listener to add. */
-    public synchronized void addUsbServicesListener( UsbServicesListener listener )
-	{
-		listenerImp.addEventListener( listener );
-	}
+	/**
+	 * Create a UsbIrp.
+	 * @return A UsbIrp ready for use.
+	 */
+	public UsbIrp createUsbIrp() { return new UsbIrpImp(); }
 
-    /** @param listener The listener to remove. */
-    public synchronized void removeUsbServicesListener( UsbServicesListener listener )
-	{
-		listenerImp.removeEventListener( listener );
-	}
+	/**
+	 * Create a ControlUsbIrp.
+	 * @param bmRequestType The bmRequestType.
+	 * @param bRequest The bRequest.
+	 * @param wValue The wValue.
+	 * @param wIndex The wIndex.
+	 * @return A ControlUsbIrp ready for use.
+	 */
+	public ControlUsbIrp createControlUsbIrp(byte bmRequestType, byte bRequest, short wValue, short wIndex)
+	{ return new ControlUsbIrpImp(bmRequestType, bRequest, wValue, wIndex); }
 
-    //**************************************************************************
-    // Instance variables
+	/** @param listener The listener to add. */
+	public synchronized void addUsbServicesListener( UsbServicesListener listener )
+	{ listenerImp.addEventListener( listener ); }
+
+	/** @param listener The listener to remove. */
+	public synchronized void removeUsbServicesListener( UsbServicesListener listener )
+	{ listenerImp.removeEventListener( listener ); }
 
 	private UsbHubImp rootUsbHubImp = new VirtualRootUsbHubImp();
 	protected UsbServicesListenerImp listenerImp = new UsbServicesListenerImp();
-
 }
