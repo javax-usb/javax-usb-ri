@@ -193,7 +193,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 		if (irp.isUsbException())
 			listenerImp.errorEventOccurred(new UsbPipeErrorEvent(this,irp.getUsbException()));
 		else
-			listenerImp.dataEventOccurred(new UsbPipeDataEvent(this,irp,irp.getData(),irp.getActualLength()));
+			listenerImp.dataEventOccurred(new UsbPipeDataEvent(this,irp,irp.getData(),irp.getOffset(),irp.getActualLength()));
 	}
 
 	/**
