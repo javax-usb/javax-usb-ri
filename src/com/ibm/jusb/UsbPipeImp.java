@@ -91,6 +91,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 * Set the UsbEndpointImp.
 	 * <p>
 	 * This will also set this on the parent UsbEndpointImp.
+	 * This also sets up this pipe's queueing policy if the user
+	 * defined one in the properties file.
 	 * @param ep The UsbEndpointImp
 	 */
 	public void setUsbEndpointImp(UsbEndpointImp ep)
@@ -99,6 +101,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 
 		if (null != ep)
 			ep.setUsbPipeImp(this);
+
+		setQueuePolicy();
 	}
 
 	/**
@@ -177,7 +181,16 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	{
 		checkOpen();
 
-		getUsbPipeOsImp().syncSubmit( usbIrpToUsbIrpImp( usbIrp ) );
+		UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp( usbIrp );
+
+		if ( queueSubmissions ) {
+			queueUsbIrpImp( usbIrpImp );
+			usbIrpImp.waitUntilComplete();
+			if (usbIrpImp.isUsbException())
+				throw usbIrpImp.getUsbException();
+		} else {
+			getUsbPipeOsImp().syncSubmit( usbIrpImp );
+		}
 	}
 
 	/**
@@ -187,7 +200,13 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	{
 		checkOpen();
 
-		getUsbPipeOsImp().asyncSubmit( usbIrpToUsbIrpImp( usbIrp ) );
+		UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp( usbIrp );
+
+		if ( queueSubmissions ) {
+			queueUsbIrpImp( usbIrpImp );
+		} else {
+			getUsbPipeOsImp().asyncSubmit( usbIrpImp );
+		}
 	}
 
 	/**
@@ -197,7 +216,17 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	{
 		checkOpen();
 
-		getUsbPipeOsImp().syncSubmit( usbIrpListToUsbIrpImpList( list ) );
+		if (list.isEmpty())
+			return;
+
+		List usbIrpImpList = usbIrpListToUsbIrpImpList( list );
+
+		if ( queueSubmissions ) {
+			queueList( usbIrpImpList );
+			((UsbIrp)usbIrpImpList.get(usbIrpImpList.size()-1)).waitUntilComplete();
+		} else {
+			getUsbPipeOsImp().syncSubmit( usbIrpImpList );
+		}
 	}
 
 	/**
@@ -207,7 +236,16 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	{
 		checkOpen();
 
-		getUsbPipeOsImp().asyncSubmit( usbIrpListToUsbIrpImpList( list ) );
+		if (list.isEmpty())
+			return;
+
+		List usbIrpImpList = usbIrpListToUsbIrpImpList( list );
+
+		if ( queueSubmissions ) {
+			queueList( usbIrpImpList );
+		} else {
+			getUsbPipeOsImp().asyncSubmit( usbIrpImpList );
+		}
 	}
 
 	/**
@@ -217,7 +255,36 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	{
 		checkOpen();
 
-		getUsbPipeOsImp().abortAllSubmissions();
+		if (queueSubmissions) {
+			synchronized (abortLock) {
+				abortInProgress = true;
+
+				/* There is a difficult-to-prevent race condition after the queueManager
+				 * checks for abortInProgress and releases the abortLock, to until the
+				 * syncSumbit actually gets to the OS implementation, where this may
+				 * complete the OS imp level abort before the syncSubmit gets there,
+				 * and then that submission is stuck.  That cannot be worked around
+				 * without significant design change and help from the OS imp, which
+				 * isn't worth it - this sleep should be enough to prevent that (very rare)
+				 * race condition from happening.
+				 * FIXME - this could be fixed in the future, but may require an OS imp change.
+				 */
+				try { Thread.sleep(500); } catch ( InterruptedException iE ) { }
+
+				getUsbPipeOsImp().abortAllSubmissions();
+
+				/* It's hard to coordinate safely/correctly with the queueManager
+				 * so (slow) spinning is easiest.
+				 */
+				while (0 < queueManager.getSize()) {
+					try { abortLock.wait(500); } catch ( InterruptedException iE ) { }
+				}
+
+				abortInProgress = false;
+			}
+		} else {
+			getUsbPipeOsImp().abortAllSubmissions();
+		}
 	}
 
 	/**
@@ -332,6 +399,102 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 		return new UsbIrpImp();
 	}
 
+	/**
+	 * Add a Runnable to the queueManager.
+	 * @param r The Runnable to add.
+	 */
+	protected void addRunnable(Runnable r)
+	{
+		if (!queueManager.isRunning()) {
+			queueManager.setMaxSize(RunnableManager.SIZE_UNLIMITED);
+			queueManager.start();
+		}
+
+		queueManager.add(r);
+	}
+
+	/**
+	 * Submit a UsbIrpImp from the queueManager.
+	 * @param usbIrpImp The UsbIrpImp to submit.
+	 */
+	protected void submitUsbIrpImpFromQueue(UsbIrpImp usbIrpImp)
+	{
+		synchronized (abortLock) {
+			if (abortInProgress) {
+				usbIrpImp.setUsbException(new UsbAbortException());
+				usbIrpImp.complete();
+				return;
+			}
+		}
+		try {
+			getUsbPipeOsImp().syncSubmit(usbIrpImp);
+		} catch ( UsbException uE ) {
+			/* ignore this, as the UsbIrp's UsbException will be set and this is handled elsewhere. */
+		}
+	}
+
+	/**
+	 * Queue a UsbIrpImp
+	 * @param usbIrpImp The UsbIrpImp to queue.
+	 */
+	protected void queueUsbIrpImp(final UsbIrpImp usbIrpImp)
+	{
+		Runnable r = new Runnable()	{ public void run() { submitUsbIrpImpFromQueue(usbIrpImp); } };
+
+		addRunnable(r);
+	}
+
+	/**
+	 * Queue a List of UsbIrpImps.
+	 * @param list The List of UsbIrpImps to queue.
+	 */
+	protected void queueList(final List list)
+	{
+		Runnable r = new Runnable()
+			{
+				public void run() {
+					for (int i=0; i<list.size(); i++)
+						submitUsbIrpImpFromQueue((UsbIrpImp)list.get(i));
+				}
+			};
+
+		addRunnable(r);
+	}
+
+	/** Set the queueing policy, if defined */
+	protected void setQueuePolicy()
+	{
+		Properties p = null;
+		try {
+			p = UsbHostManager.getProperties();
+		} catch ( Exception e ) {
+/* FIXME - change UsbHostManager.getProperties() into throwing only RuntimeExcepiton */
+			e.printStackTrace();
+			throw new RuntimeException("Unexpected Exception while calling UsbHostManager.getProperties() : " + e.getMessage());
+		}
+
+		String policy = null;
+		byte endpointType = (byte)(UsbConst.ENDPOINT_TYPE_MASK & getUsbEndpoint().getUsbEndpointDescriptor().bmAttributes());
+		switch (endpointType) {
+		case UsbConst.ENDPOINT_TYPE_CONTROL:
+			policy = p.getProperty(PIPE_CONTROL_QUEUE_POLICY_KEY);
+			break;
+		case UsbConst.ENDPOINT_TYPE_INTERRUPT:
+			policy = p.getProperty(PIPE_INTERRUPT_QUEUE_POLICY_KEY);
+			break;
+		case UsbConst.ENDPOINT_TYPE_ISOCHRONOUS:
+			policy = p.getProperty(PIPE_ISOCHRONOUS_QUEUE_POLICY_KEY);
+			break;
+		case UsbConst.ENDPOINT_TYPE_BULK:
+			policy = p.getProperty(PIPE_BULK_QUEUE_POLICY_KEY);
+			break;
+		default:
+			throw new RuntimeException("Illegal endpoint type 0x" + UsbUtil.toHexString(endpointType));
+		}
+		if (null != policy)
+			queueSubmissions = Boolean.valueOf(policy).booleanValue();
+	}
+
 	//**************************************************************************
 	// Instance variables
 
@@ -342,4 +505,23 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	private UsbEndpointImp usbEndpointImp = null;
 
 	protected UsbPipeListenerImp listenerImp = new UsbPipeListenerImp();
+
+	/* If the queue policy is set to true for this pipe, all submissions will be queued and
+	 * submitted via the UsbPipeOsImp.syncSubmit() method, so the OS will not have to queue.
+	 * The OS is most likely much more efficient at queueing, so if it supports it,
+	 * OS queueing should be used.
+	 */
+	protected RunnableManager queueManager = new RunnableManager(false);
+	protected boolean queueSubmissions = false;
+	protected Object abortLock = new Object();
+	protected boolean abortInProgress = false;
+
+	//**************************************************************************
+	// Class constants
+
+	public static final String PIPE_CONTROL_QUEUE_POLICY_KEY = "com.ibm.jusb.UsbPipeImp.queueSubmissions.control";
+	public static final String PIPE_INTERRUPT_QUEUE_POLICY_KEY = "com.ibm.jusb.UsbPipeImp.queueSubmissions.interrupt";
+	public static final String PIPE_ISOCHRONOUS_QUEUE_POLICY_KEY = "com.ibm.jusb.UsbPipeImp.queueSubmissions.isochronous";
+	public static final String PIPE_BULK_QUEUE_POLICY_KEY = "com.ibm.jusb.UsbPipeImp.queueSubmissions.bulk";
+
 }
