@@ -17,6 +17,7 @@ import com.ibm.jusb.util.Recyclable;
  * Abstract class implementing most of the Request interface
  * Use the RequestFactory from the HostManager to create Request objects
  * @author E. Michael Maximilien
+ * @author Dan Streetman
  * @version 1.0.0
  */
 public abstract class AbstractRequest extends Object implements Request, Recyclable
@@ -84,6 +85,9 @@ public abstract class AbstractRequest extends Object implements Request, Recycla
 	 */
 	public short getLength() { return (short)data.length; }
 
+	/** @return the length of valid data */
+	public int getDataLength() { return dataLength; }
+
 	/** @return the data byte[] for this request */
 	public byte[] getData() { return data; }
 
@@ -116,6 +120,12 @@ public abstract class AbstractRequest extends Object implements Request, Recycla
 		this.wIndex = wIndex;
 		//<temp need to do checks>
 	}
+
+	/**
+	 * Sets the valid data length.
+	 * @param length the valid data length.
+	 */
+	public void setDataLength( int length ) { dataLength = length; }
 
 	/** 
 	 * Sets the Data array for this Request object
@@ -266,6 +276,7 @@ public abstract class AbstractRequest extends Object implements Request, Recycla
 	protected short wValue = 0x00;
 	protected short wIndex = 0x00;					 
 	protected byte[] data = new byte[ 0 ];
+	protected int dataLength = 0;
 	
 	protected RequestFactory requestFactory = null;
 

@@ -36,8 +36,6 @@
 	<property name="Jsr80Env.JSR80_RI_CLASS_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
 	<property name="Jsr80Env.JSR80_RI_DOCS_DIR" value="docs"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_DIR" value="${Jsr80Env.JSR80_RI_DOCS_DIR}/jdoc"/>
-	<property name="Jsr80Env.JSR80_RI_TEST_SRC_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}/test"/>
-	<property name="Jsr80Env.JSR80_RI_TEST_DEST_DIR" value="${Jsr80Env.JSR80_RI_DEST_DIR}/test"/>
 
 	<property name="Jsr80Env.JSR80_RI_DEBUG" value="no"/>
 	<property name="Jsr80Env.JSR80_RI_OPTIMIZE" value="yes"/>
@@ -45,9 +43,6 @@
 	<property name="Jsr80Env.JSR80_RI_VERBOSE" value="no"/>
 	<property name="Jsr80Env.JSR80_RI_QUIET" value="no"/>
 	<property name="Jsr80Env.JSR80_RI_COMPRESS" value="yes"/>
-
-	<property name="Jsr80Env.JSR80_RI_TEST_CLASSNAME" value="junit.textui.TestRunner"/>	
-	<property name="Jsr80Env.JSR80_RI_TEST_ARG" value="com.ibm.jusb.AllTests"/>
 
 	<property name="Jsr80Env.JSR80_RI_JDOC_WINDOWTITLE" value="JavaDOC for JSR80 (javax.usb) API and RI"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_DOCTITLE" value="JSR80 (javax.usb) API and RI"/>
@@ -78,8 +73,6 @@
 	<property name="jsr80.ri.jni.src.dir" value="${Jsr80Env.JSR80_RI_JNI_SRC_DIR}"/>
 	<property name="jsr80.ri.docs.dir" value="${Jsr80Env.JSR80_RI_DOCS_DIR}"/>
 	<property name="jsr80.ri.jdoc.dir" value="${Jsr80Env.JSR80_RI_JDOC_DIR}"/>
-	<property name="jsr80.ri.test.src.dir" value="${Jsr80Env.JSR80_RI_TEST_SRC_DIR}"/>
-	<property name="jsr80.ri.test.dest.dir" value="${Jsr80Env.JSR80_RI_TEST_DEST_DIR}"/>
 
 	<property name="jsr80.ri.debug" value="${Jsr80Env.JSR80_RI_DEBUG}"/>
 	<property name="jsr80.ri.optimize" value="${Jsr80Env.JSR80_RI_OPTIMIZE}"/>
@@ -113,13 +106,6 @@
 	<property name="jsr80.ri.jdoc.private" value="no"/>
 	<property name="jsr80.ri.jdoc.api.src.dir" value="${Jsr80Env.JSR80_RI_JDOC_API_SRC_DIR}"/>
 
-	<property name="jsr80.ri.test.classname" value="${Jsr80Env.JSR80_RI_TEST_CLASSNAME}"/>
-
-	<property name="jsr80.ri.test.src.dir" value="${Jsr80Env.JSR80_RI_TEST_SRC_DIR}"/>
-	<property name="jsr80.ri.test.dest.dir" value="${Jsr80Env.JSR80_RI_TEST_DEST_DIR}"/>
-	<property name="jsr80.ri.test.arg" value="${Jsr80Env.JSR80_RI_TEST_ARG}"/>
-	<property name="jsr80.ri.test.fork" value="yes"/>
-
 	<!--
 		 This task shows the various options to run this build file
 	-->
@@ -136,11 +122,6 @@
 		<echo message="  jdoc               Create JavaDOC"/>
 		<echo message="  mrproper           Clean everything"/>
 		<echo message="  version            Show RI version"/>
-		<echo message="  --------- JUnit tests ---------"/>
-		<echo message="  test-all           == test-clean test-compile test-run"/>
-		<echo message="  test-clean         Clean unit tests"/>
-		<echo message="  test-compile       Compile unit tests"/>
-		<echo message="  test-run           Run unit tests"/>
 		<echo message=""/>
 	</target>
 
@@ -194,7 +175,7 @@
 	</target>
 
 	<!-- Mr. Clean -->
-	<target name="mrproper" depends="init,clean,test-clean">
+	<target name="mrproper" depends="init,clean">
 		<echo message="Cleaning everything in JSR80 RI!"/>
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
 			<fileset dir="${jsr80.ri.src.jarfile.dir}" includes="${jsr80.ri.src.jarfile}"/>
@@ -281,7 +262,6 @@
 		<!-- Creating distribution directories -->
 		<mkdir dir="${jsr80.ri.dist.dir}"/>
 		<mkdir dir="${jsr80.ri.dist.dir}/src"/>
-		<mkdir dir="${jsr80.ri.dist.dir}/src/test"/>
 		<mkdir dir="${jsr80.ri.dist.dir}/lib"/>
 		<mkdir dir="${jsr80.ri.dist.dir}/docs"/>
 
@@ -299,11 +279,6 @@
 		<!-- Copying src files -->
 		<copy todir="${jsr80.ri.dist.dir}/src">
 			<fileset dir="${jsr80.ri.src.dir}" includes="com/ibm/jusb/**,jni/**" excludes="**/*.class"/>
-		</copy>
-
-		<!-- Copying test files -->
-		<copy todir="${jsr80.ri.dist.dir}/src/test">
-			<fileset dir="${jsr80.ri.test.src.dir}" includes="com/ibm/jusb/**" excludes="**/*.class"/>
 		</copy>
 
 		<!-- Creating Zip distribution file -->
@@ -332,65 +307,6 @@
 	-->
 	<target name="all" depends="init,clean,compile,jars,jdoc"/>
 
-	<!-- 
-		The following are unit test tasks.  We have created a series of
-		JUnit XyzTestCase classes to unit test various aspect and portions
-		of the RI.  These tasks allows compilation and running of
-		these tests.
-		Find JUnit at: http://www.junit.org
-	-->
-
-	<!--
-		Compiles all JUnit tests
-	-->
-	<target name="test-compile" depends="init,compile">
-		<mkdir dir="${jsr80.ri.test.dest.dir}"/>
-		<javac
-			srcdir="${jsr80.ri.test.src.dir}"
-			destdir="${jsr80.ri.test.dest.dir}"
-			debug="${jsr80.ri.debug}"
-			optimize="${jsr80.ri.optimize}"
-			deprecation="${jsr80.ri.deprecation}"
-			verbose="${jsr80.ri.verbose}"
-			failonerror="yes">
-				<classpath>
-					<pathelement path="${java.class.path}"/>
-					<pathelement location="${jsr80.ri.class.jarfile.dir}/${jsr80.ri.class.jarfile}"/>
-					<pathelement location="${jsr80.ri.src.jarfile.dir}/${jsr80.ri.src.jarfile}"/>
-					<pathelement path="${jsr80.ri.dest.dir}"/>
-					<pathelement path="${jsr80.ri.src.dir}"/>
-				</classpath>
-		</javac>
-	</target>
-
-	<!--
-		Runs the root "AllTests" JUnit TestSuite
-	-->
-	<target name="test-run" depends="init,test-compile">
-		<java classname="${jsr80.ri.test.classname}" fork="${jsr80.ri.test.fork}" failonerror="yes">
-			<arg value="${jsr80.ri.test.arg}"/>
-			<classpath>
-				<pathelement path="${java.class.path}"/>
-				<pathelement path="${jsr80.ri.test.dest.dir}"/>
-				<pathelement location="${jsr80.ri.class.jarfile.dir}/${jsr80.ri.class.jarfile}"/>
-				<pathelement path="${jsr80.ri.dest.dir}"/>
-			</classpath>
-		</java>
-	</target>
-
-	<!--
-		Cleans all the JUnit tests classes
-	-->
-	<target name="test-clean" depends="init">
-		<delete>
-			<fileset dir="${jsr80.ri.test.dest.dir}" includes="com/ibm/jusb/**/*.class"/>
-		</delete>
-	</target>
-
-	<!--
-		Does a full blown <clean, compile and run> for the tests classes
-	-->
-	<target name="test-all" depends="init,test-clean,test-compile,test-run"/>
 </project>
 
 

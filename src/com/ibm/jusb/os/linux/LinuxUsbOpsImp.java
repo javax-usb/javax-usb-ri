@@ -20,6 +20,7 @@ import com.ibm.jusb.util.DefaultRequestV;
 /**
  * Abstract superclass for all UsbOpsImp interface and sub-interface implementation
  * @author E. Michael Maximilien
+ * @author Dan Streetman
  * @version 1.0.0
  */
 class LinuxUsbOpsImp extends Object implements UsbOpsImp
@@ -120,10 +121,18 @@ class LinuxUsbOpsImp extends Object implements UsbOpsImp
 		} 
 		else 
 		{
-			int xferred = dcpRequest.getCompletionStatus();
-			for( int i = 8; i < xferred && ( i - 8 ) < requestData.length; i++ )
-				requestData[ i - 8 ] = bytes[ i ];
+			int xferred = dcpRequest.getCompletionStatus() - 8; /* subtract 8 for setup packet */
+			if (xferred > requestData.length) /* This should not happen; should something be done? */
+				xferred = requestData.length;
+			if ((0 < xferred))
+				System.arraycopy(bytes, 8, requestData, 0, xferred);
+
+//FIXME - abstraction layer should be passing down settable Request (something like AbstractRequest)
+			((AbstractRequest)request).setDataLength(xferred);
+//FIXME
 		}
+
+		dcpRequest.recycle();
 	}
 
 	/**
