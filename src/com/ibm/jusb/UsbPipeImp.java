@@ -179,6 +179,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			checkOpen();
 
 			UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp( usbIrp );
+			submissionList.add(usbIrpImp);
 
 			if ( queueSubmissions ) {
 				queueUsbIrpImp( usbIrpImp );
@@ -186,7 +187,6 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 				if (usbIrpImp.isUsbException())
 					throw usbIrpImp.getUsbException();
 			} else {
-				submissionList.add(usbIrpImp);
 				try {
 					getUsbPipeOsImp().syncSubmit( usbIrpImp );
 				} catch ( UsbException uE ) {
@@ -206,11 +206,11 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			checkOpen();
 
 			UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp( usbIrp );
+			submissionList.add(usbIrpImp);
 
 			if ( queueSubmissions ) {
 				queueUsbIrpImp( usbIrpImp );
 			} else {
-				submissionList.add(usbIrpImp);
 				try {
 					getUsbPipeOsImp().asyncSubmit( usbIrpImp );
 				} catch ( UsbException uE ) {
@@ -233,12 +233,12 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 				return;
 
 			List usbIrpImpList = usbIrpListToUsbIrpImpList( list );
+			submissionList.addAll(usbIrpImpList);
 
 			if ( queueSubmissions ) {
 				queueList( usbIrpImpList );
 				((UsbIrp)usbIrpImpList.get(usbIrpImpList.size()-1)).waitUntilComplete();
 			} else {
-				submissionList.addAll(usbIrpImpList);
 				try {
 					getUsbPipeOsImp().syncSubmit( usbIrpImpList );
 				} catch ( UsbException uE ) {
@@ -261,11 +261,11 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 				return;
 
 			List usbIrpImpList = usbIrpListToUsbIrpImpList( list );
+			submissionList.addAll(usbIrpImpList);
 
 			if ( queueSubmissions ) {
 				queueList( usbIrpImpList );
 			} else {
-				submissionList.addAll(usbIrpImpList);
 				try {
 					getUsbPipeOsImp().asyncSubmit( usbIrpImpList );
 				} catch ( UsbException uE ) {
@@ -540,7 +540,6 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			}
 		}
 		try {
-			submissionList.add(usbIrpImp);
 			getUsbPipeOsImp().syncSubmit(usbIrpImp);
 		} catch ( UsbException uE ) {
 			submissionList.remove(usbIrpImp);
