@@ -49,8 +49,8 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 */
 	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc )
 	{
-		setUsbConfigImp(config);
 		setInterfaceDescriptor(desc);
+		setUsbConfigImp(config);
 	}
 
 	/**
@@ -61,8 +61,8 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 */
 	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc, UsbInterfaceOsImp osImp )
 	{
-		setUsbConfigImp(config);
 		setInterfaceDescriptor(desc);
+		setUsbConfigImp(config);
 		setUsbInterfaceOsImp(osImp);
 	}
 
@@ -193,7 +193,9 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	/**
 	 * Set the UsbConfigImp.
 	 * <p>
-	 * This also adds this to the parent UsbConfigImp.
+	 * This also adds this to the parent UsbConfigImp.  The
+	 * InterfaceDescriptor <i>must</i> be {@link #setInterfaceDescriptor(InterfaceDescriptor) set}
+	 * before calling this.
 	 * @param config The parent config
 	 */
 	public void setUsbConfigImp(UsbConfigImp config)
