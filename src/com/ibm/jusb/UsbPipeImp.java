@@ -150,6 +150,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 			return result;
 		} catch ( UsbException uE ) {
 			fireErrorEvent(sn,uE.getErrorCode(),uE);
+			throw uE;
 		} finally {
 			submissionCount--;
 		}
