@@ -102,7 +102,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 		if (null != ep)
 			ep.setUsbPipeImp(this);
 
-		setQueuePolicy();
+		setPolicies();
 	}
 
 	/**
@@ -389,6 +389,9 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	public void setupUsbIrpImp(UsbIrpImp irp)
 	{
 		irp.setUsbIrpImpListener(this);
+
+		/* some implementations *cough*4690*cough* don't implement short packet detection. */
+		irp.setCreateShortPacketException(createShortPacketException && isInDirection(irp));
 	}
 
 	//**************************************************************************
@@ -575,8 +578,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 		addRunnable(r);
 	}
 
-	/** Set the queueing policy, if defined */
-	protected void setQueuePolicy()
+	/** Set the policies, if defined */
+	protected void setPolicies()
 	{
 		Properties p = null;
 		try {
@@ -606,7 +609,26 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			throw new RuntimeException("Illegal endpoint type 0x" + UsbUtil.toHexString(endpointType));
 		}
 		if (null != policy)
-			queueSubmissions = Boolean.valueOf(policy).booleanValue();
+			queueSubmissions = Boolean.valueOf(policy.trim()).booleanValue();
+
+		policy = p.getProperty(CREATE_SHORT_PACKET_EXCEPTION_POLICY_KEY);
+		if (null != policy)
+			createShortPacketException = Boolean.valueOf(policy.trim()).booleanValue();
+	}
+
+	/**
+	 * Return if this is an in-direction pipe (or UsbIrp in the case of control pipes).
+	 * @param irp The UsbIrpImp.
+	 * @return If this is an in-direction transfer.
+	 */
+	protected boolean isInDirection(UsbIrpImp irp)
+	{
+		byte dir = getUsbEndpoint().getDirection();
+
+		try { dir = (byte)(UsbConst.REQUESTTYPE_DIRECTION_MASK & ((UsbControlIrp)irp).bmRequestType()); }
+		catch ( ClassCastException ccE ) { /* not a control irp, so the pipe determines direction */ }
+
+		return UsbConst.REQUESTTYPE_DIRECTION_IN == dir;
 	}
 
 	//**************************************************************************
@@ -660,6 +682,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	protected boolean queueSubmissions = false;
 	protected boolean abortInProgress = false;
 
+	protected boolean createShortPacketException = false;
+
 	protected Hashtable listTable = new Hashtable();
 
 	protected List submissionList = new Vector();
@@ -675,5 +699,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	public static final String PIPE_INTERRUPT_QUEUE_POLICY_KEY = "com.ibm.jusb.UsbPipeImp.queueSubmissions.interrupt";
 	public static final String PIPE_ISOCHRONOUS_QUEUE_POLICY_KEY = "com.ibm.jusb.UsbPipeImp.queueSubmissions.isochronous";
 	public static final String PIPE_BULK_QUEUE_POLICY_KEY = "com.ibm.jusb.UsbPipeImp.queueSubmissions.bulk";
+
+	public static final String CREATE_SHORT_PACKET_EXCEPTION_POLICY_KEY = "com.ibm.jusb.UsbIrpImp.createShortPacketException";
 
 }

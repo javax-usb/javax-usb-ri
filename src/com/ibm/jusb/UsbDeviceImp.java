@@ -67,7 +67,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	{
 		setUsbDeviceDescriptor(desc);
 		setUsbDeviceOsImp(device);
-		setQueuePolicy();
+		setPolicies();
 	}
 
 	//**************************************************************************
@@ -557,6 +557,10 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	{
 		irp.setUsbIrpImpListener(this);
 		irp.setUsbDeviceImp(this);
+
+		/* some implementations *cough*4690*cough* don't implement short packet detection. */
+		boolean inDirection = UsbConst.REQUESTTYPE_DIRECTION_IN == (byte)(UsbConst.REQUESTTYPE_DIRECTION_MASK & irp.bmRequestType());
+		irp.setCreateShortPacketException(createShortPacketException && inDirection);
 	}
 
 	/**
@@ -677,8 +681,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		addRunnable(r);
 	}
 
-	/** Set the queueing policy, if defined */
-	protected void setQueuePolicy()
+	/** Set the policies, if defined */
+	protected void setPolicies()
 	{
 		Properties p = null;
 		try {
@@ -691,7 +695,11 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 
 		String policy = p.getProperty(DCP_QUEUE_POLICY_KEY);
 		if (null != policy)
-			queueSubmissions = Boolean.valueOf(policy).booleanValue();
+			queueSubmissions = Boolean.valueOf(policy.trim()).booleanValue();
+
+		policy = p.getProperty(CREATE_SHORT_PACKET_EXCEPTION_POLICY_KEY);
+		if (null != policy)
+			createShortPacketException = Boolean.valueOf(policy.trim()).booleanValue();
 	}
 
 	//**************************************************************************
@@ -757,6 +765,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	protected RunnableManager queueManager = new RunnableManager(false);
 	protected boolean queueSubmissions = false;
 
+	protected boolean createShortPacketException = false;
+
 	/* FIXME - should the DCP have an abortAllSubmissions() method?  If so these would be needed
 	 *	protected Object abortLock = new Object();
 	 *	protected boolean abortInProgress = false;
@@ -773,4 +783,5 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 
 	public static final String DCP_QUEUE_POLICY_KEY = "com.ibm.jusb.UsbDeviceImp.queueSubmissions";
 
+	public static final String CREATE_SHORT_PACKET_EXCEPTION_POLICY_KEY = "com.ibm.jusb.UsbIrpImp.createShortPacketException";
 }

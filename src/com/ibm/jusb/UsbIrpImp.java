@@ -57,6 +57,9 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 	 */
 	public void complete()
 	{
+		/* Some implementations *cough*4690*cough* ignore Short Packet exceptions. */
+		checkShortPacketException();
+
 		/* Complete wrapped UsbIrp fields before completing ourself */
 		completeUsbIrp();
 
@@ -160,9 +163,35 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 			throw new UsbException("UsbIrp cannot be used while isUsbException() is true.");
 	}
 
+	/**
+	 * If createShortPacketException is true, this will check for a short packet condition.
+	 * <p>
+	 * If there is a short packet condition but no exception is set, this will create and set one.
+	 */
+	protected void checkShortPacketException()
+	{
+		if (!createShortPacketException || getAcceptShortPacket())
+			return;
+
+		if ((getLength() > getActualLength()) && !isUsbException())
+			setUsbException(new UsbShortPacketException("Short Packet condition was detected by javax.usb common implementation."));
+	}
+
+	/**
+	 * This should be set by the UsbPipeImp or UsbDeviceImp if this UsbIrpImp should check/set ShortPacketExceptions.
+	 * <p>
+	 * If this is set to true, the {@link #checkShortPacketException() checkShortPacketException} method
+	 * will create and set a UsbShortPacketException during {#link #complete() complete}, if appropriate.
+	 * @param setting The setting.
+	 */
+	public void setCreateShortPacketException(boolean setting) { createShortPacketException = setting; }
+	
+
 	protected UsbIrp usbIrp = null;
 
 	protected UsbIrpImpListener usbIrpImpListener = null;
+
+	protected boolean createShortPacketException = false;
 
 	public static interface UsbIrpImpListener extends EventListener
 	{ public void usbIrpImpComplete(UsbIrpImp usbIrpImp); }
