@@ -24,7 +24,7 @@ import java.util.*;
  * with the slave Thread, but no external synchronization.  This should not be a problem
  * if the {@link #setMaxSize(long) max size} is set high enough to never be reached.  However,
  * the default size is 1.  To get an externally synchronized RunnableManager use the inner class
- * {@link com.ibm.jutil.RunnableManager.SynchronizedRunnableManager SynchronizedRunnableManager}.
+ * {@link com.ibm.jusb.util.RunnableManager.SynchronizedRunnableManager SynchronizedRunnableManager}.
  * @author Dan Streetman
  */
 public class RunnableManager

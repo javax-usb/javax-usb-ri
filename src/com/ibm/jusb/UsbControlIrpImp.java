@@ -24,7 +24,7 @@ import com.ibm.jusb.util.*;
  * This is the same as UsbIrpImp, except this contains Control-specific
  * setup packet information.
  * <p>
- * This does <i>not</i> extend {@link javax.usb.util.DefaultUsbControlIrp DefaultUsbControlIrp}.
+ * This does <i>not</i> extend javax.usb.util.DefaultUsbControlIrp.
  * @author Dan Streetman
  */
 public class UsbControlIrpImp extends UsbIrpImp implements UsbControlIrp

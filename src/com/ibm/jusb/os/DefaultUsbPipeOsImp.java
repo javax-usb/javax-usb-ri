@@ -60,7 +60,7 @@ public class DefaultUsbPipeOsImp implements UsbPipeOsImp
 	 * If {@link #allowOpen() allowOpen} is true, this does nothing, otherwise
 	 * this throws UsbException using the String specified by {@link #getOpenString() getOpenString}.
 	 * The implementation can override this method if appropriate.
-	 * @exception UsbException If {@link allowOpen() allowOpen} is false.
+	 * @exception UsbException If {@link #allowOpen() allowOpen} is false.
 	 */
 	public void open() throws UsbException
 	{

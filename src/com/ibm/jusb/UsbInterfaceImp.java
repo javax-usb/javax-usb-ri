@@ -31,11 +31,11 @@ import com.ibm.jusb.util.*;
  * <li>If the active alternate setting number is not the first added to the parent UsbConfigurationImp either
  *     {@link com.ibm.jusb.UsbConfigurationImp#addUsbInterfaceImp(UsbInterfaceImp) directly} or by
  *     {@link #setUsbConfigurationImp(UsbConfigurationImp) setUsbConfigurationImp}, it must be
- *     {@link #setActiveAlternateSettingNumber(byte) set} after creating the active alternate setting.</li>
+ *     {@link #setActiveSettingNumber(byte) set} after creating the active alternate setting.</li>
  * <li>All UsbEndpointImps must be {@link #addUsbEndpointImp(UsbEndpointImp) added}.</li>
  * </ul>
  * <p>
- * When changing the active alternate setting, call the {@link #setActiveAlternateSettingNumber(byte) setActiveAlternateSettingNumber} method.
+ * When changing the active alternate setting, call the {@link #setActiveSettingNumber(byte) setActiveSettingNumber} method.
  * This will update the parent config's active interface setting map.
  * @author Dan Streetman
  */

@@ -22,7 +22,7 @@ import com.ibm.jusb.util.*;
  * This is an optional default implementation that handles all methods.  Those
  * methods may be overridden by the implementation if desired.  The implementation
  * is not required to extend this class.  All methods are implemented using the
- * {@link #asyncSubmit(UsbIrpImp) asyncSubmit(UsbIrpImp)} method; this method,
+ * {@link #asyncSubmit(UsbControlIrpImp) asyncSubmit(UsbControlIrpImp)} method; this method,
  * at a minimum, must be implemented in order to provide any actual functionality.
  * <p>
  * The default action for this class is to throw a UsbException for all submission methods.

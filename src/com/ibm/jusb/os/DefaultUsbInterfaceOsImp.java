@@ -51,7 +51,7 @@ public class DefaultUsbInterfaceOsImp implements UsbInterfaceOsImp
 	 * <p>
 	 * This behaves exactly as the {@link #DefaultUsbInterfaceOsImp() no-parameter constructor}.
 	 * The specified String is used in UsbExceptions thrown from the {@link #claim() claim} method.
-	 * @param claim The String to use in UsbExceptions thrown in {@link claim() claim()}.
+	 * @param claim The String to use in UsbExceptions thrown in {@link #claim() claim()}.
 	 */
 	public DefaultUsbInterfaceOsImp(String claim)
 	{
@@ -89,7 +89,7 @@ public class DefaultUsbInterfaceOsImp implements UsbInterfaceOsImp
 	 * Indicate if this interface is claimed.
 	 * <p>
 	 * If {@link #allowClaim() allowClaim} is true, this returns the state of the in-Java claim.
-	 * If not, this returns the claim specified in the {@link DefaultUsbInterfaceOsImp(boolean,String) constructor}
+	 * If not, this returns the claim specified in the {@link #DefaultUsbInterfaceOsImp(boolean) constructor}
 	 * or, by default, true.
 	 * @return If this interface is claimed.
 	 */

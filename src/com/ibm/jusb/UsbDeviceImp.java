@@ -269,9 +269,6 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Sets the speed of this device.
 	 * @param o The speed.
-	 * @see javax.usb.UsbConst#DEVICE_SPEED_UNKNOWN
-	 * @see javax.usb.UsbConst#DEVICE_SPEED_LOW
-	 * @see javax.usb.UsbConst#DEVICE_SPEED_FULL
 	 * @exception IllegalArgumentException If the speed is not one of the defined speeds.
 	 */
 	public void setSpeed( Object o )
