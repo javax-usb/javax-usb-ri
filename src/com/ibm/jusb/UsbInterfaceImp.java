@@ -113,6 +113,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	{
 		checkSettingActive();
 
+//FIXME - need to check for open pipes
 		getUsbInterfaceOsImp().release();
 
 		setClaimed(false);
