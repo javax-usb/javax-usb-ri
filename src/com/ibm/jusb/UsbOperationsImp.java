@@ -57,10 +57,12 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 
 		try {
 			getUsbDeviceImp().getUsbDeviceOsImp().syncSubmit( requestImp );
+			fireDataEvent(requestImp);
 		} catch ( UsbException uE ) {
+			fireErrorEvent(requestImp);
 			throw new RequestException("Could not submit Request", uE);
 		} finally {
-//FIXME - fire dataevent or exception event
+			requestImp.setCompleted(true);
 		}
 	}
 
@@ -80,10 +82,11 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 		while (iterator.hasNext()) {
 			Request request = iterator.nextRequest();
 
-			if (request instanceof RequestImp)
-				list.add(request);
-			else
+			try {
+				list.add((RequestImp)request);
+			} catch ( ClassCastException ccE ) {
 				list.add(requestImpFactory.createRequestImp(request));
+			}
 		}
 
 		try {
