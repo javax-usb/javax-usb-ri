@@ -384,7 +384,7 @@ public class UsbInterfaceImp implements UsbInterface
 	private void checkActive() throws UsbNotActiveException
 	{
 		if (!getUsbConfiguration().isActive())
-			throw new UsbNotActiveException( "Configuration is not active" );
+			throw new UsbNotActiveException( "Configuration " + getUsbConfiguration().getUsbConfigurationDescriptor().bConfigurationValue() + " is not active" );
 	}
 
 	/** check if this specific interface setting is active */
@@ -393,8 +393,11 @@ public class UsbInterfaceImp implements UsbInterface
 		/* If the interface (i.e. parent configuration) is not active, neither are any interface settings */
 		checkActive();
 
-		if (!isActive())
-			throw new UsbNotActiveException( "Interface setting is not active" );
+		if (!isActive()) {
+			String i = UsbUtil.toHexString(getUsbInterfaceDescriptor().bInterfaceNumber());
+			String a = UsbUtil.toHexString(getUsbInterfaceDescriptor().bAlternateSetting());
+			throw new UsbNotActiveException( "UsbInterface 0x" + i + " setting 0x" + a + " is not active" );
+		}
 	}
 
 	/**
