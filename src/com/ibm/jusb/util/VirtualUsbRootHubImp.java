@@ -12,6 +12,7 @@ package com.ibm.jusb.util;
 import javax.usb.*;
 
 import com.ibm.jusb.*;
+import com.ibm.jusb.os.*;
 
 /**
  * Virtual UsbRootHub implementation.
@@ -32,7 +33,7 @@ public class VirtualUsbRootHubImp extends UsbRootHubImp implements UsbRootHub
 	public void init()
 	{
 		UsbConfigImp virtualConfig = new UsbConfigImp(this, virtualConfigDescriptor);
-		UsbInterfaceImp virtualInterface = new UsbInterfaceImp(virtualConfig, virtualInterfaceDescriptor, new VirtualUsbInterfaceOsImp());
+		UsbInterfaceImp virtualInterface = new UsbInterfaceImp(virtualConfig, virtualInterfaceDescriptor, new AbstractUsbInterfaceOsImp());
 
 		virtualConfig.addUsbInterfaceImp(virtualInterface);
 

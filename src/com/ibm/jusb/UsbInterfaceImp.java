@@ -402,7 +402,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	// Instance variables
 
 	private UsbConfigImp usbConfigImp = null;
-	private UsbInterfaceOsImp usbInterfaceOsImp = new VirtualUsbInterfaceOsImp();
+	private UsbInterfaceOsImp usbInterfaceOsImp = new AbstractUsbInterfaceOsImp();
 
 	private UsbInfoList endpoints = new DefaultUsbInfoList();
 
