@@ -319,6 +319,24 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		fireDetachEvent();
 	}
 
+	/** Compare this to another UsbDeviceImp */
+	public boolean equals(Object object)
+	{
+		UsbDeviceImp device = null;
+
+		try { device = (UsbDeviceImp)object; }
+		catch ( ClassCastException ccE ) { return false; }
+
+		if (!getSpeedString().equals(device.getSpeedString()))
+			return false;
+
+		if (!getDeviceDescriptor().equals(device.getDeviceDescriptor()))
+			return false;
+
+//FIXME - check config/interface/endpoints too
+		return true;
+	}
+
 	//**************************************************************************
 	// Protected methods
 
@@ -356,15 +374,18 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/** @return the device's default langID */
 	protected short getLangId() throws UsbException
 	{
-		byte[] data = new byte[256];
+		if (0x0000 == langId) {
+			byte[] data = new byte[256];
 
-		getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
+			getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
 
-		/* strings not supported by device */
-		if (4 > data[0])
-			return (short)0x0000;
-		else
-			return (short)((data[3] << 8) | data[2]);
+			if (4 > data[0])
+				throw new UsbException("Strings not supported by device");
+
+			langId = (short)((data[3] << 8) | data[2]);
+		}
+
+		return langId;
 	}
 
 	/**
@@ -372,6 +393,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	 * @param data StringDescriptor bytes.
 	 * @param len Length of unicode string.
 	 */
+//FIXME - move byte[] translation to StringDescriptorImp
 	protected String bytesToString(byte[] data, int len)
 	{
 		for (int i=0; i<ENCODING.length; i++) {
@@ -420,6 +442,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	private UsbDeviceOsImp usbDeviceOsImp = null;
 
 	private Hashtable stringDescriptors = new Hashtable();
+	private short langId = 0x0000;
 
 	private String speedString = "";
     
@@ -438,6 +461,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 	public static final String USB_DEVICE_NAME = "device";
 
+//FIXME - move to StringDescriptorImp
 	/**
 	 * For all encodings supported by Java, see:
 	 * <p><a href="http://java.sun.com/products/jdk/1.1/docs/guide/intl/encoding.doc.html">Java 1 (1.1) Supported Encodings</a>

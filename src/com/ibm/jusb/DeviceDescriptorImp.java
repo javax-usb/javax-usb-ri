@@ -263,6 +263,29 @@ public class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDes
         numConfigs = b;
     }
 
+	/** Compare this to another Object */
+	public boolean equals(Object object)
+	{
+		DeviceDescriptorImp desc = null;
+
+		try { desc = (DeviceDescriptorImp)object; }
+		catch ( ClassCastException ccE ) { return false; }
+
+		return
+			getBcdUsb() == desc.getBcdUsb() &&
+			getDeviceClass() == desc.getDeviceClass() &&
+			getDeviceSubClass() == desc.getDeviceSubClass() &&
+			getDeviceProtocol() == desc.getDeviceProtocol() &&
+			getMaxPacketSize() == desc.getMaxPacketSize() &&
+			getVendorId() == desc.getVendorId() &&
+			getProductId() == desc.getProductId() &&
+			getBcdDevice() == desc.getBcdDevice() &&
+			getManufacturerIndex() == desc.getManufacturerIndex() &&
+			getProductIndex() == desc.getProductIndex() &&
+			getSerialNumberIndex() == desc.getSerialNumberIndex() &&
+			getNumConfigs() == desc.getNumConfigs();
+	}
+
     //-------------------------------------------------------------------------
     // Instance variables
     //
