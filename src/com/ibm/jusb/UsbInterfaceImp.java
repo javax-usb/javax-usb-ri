@@ -24,6 +24,8 @@ import com.ibm.jusb.util.*;
  * <li>The InterfaceDescriptor must be set either in the constructor or by its {@link #setInterfaceDescriptor(InterfaceDescriptor) setter}.</li>
  * <li>The UsbInterfaceOsImp must be set either in the constructor or by its {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) setter}.</li>
  * <li>If this is not the active alternate setting, the {@link #getAlternateSettingList() alternate setting list} must be set in the constructor.</li>
+ * <li>If the active alternate setting number is not 0 (the default), it must be {@link #setActiveAlternateSettingNumber(byte) set} <i>after</i>
+ *     creating all other alternate settings.</li>
  * <li>All UsbEndpointImps must be {@link #addUsbEndpointImp(UsbEndpointImp) added}.</li>
  * </ul>
  * Note that all alternate settings must use the same alternate setting list.  Each setting creates its own list, so any inactive settings

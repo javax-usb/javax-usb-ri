@@ -28,13 +28,13 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 {
 	/**
 	 * Constructor.
-	 * @param desc This config's descriptor.
 	 * @param device The parent device.
+	 * @param desc This config's descriptor.
 	 */
-	public UsbConfigImp( ConfigDescriptor desc, UsbDeviceImp device )
+	public UsbConfigImp( UsbDeviceImp device, ConfigDescriptor desc )
 	{
-		setConfigDescriptor( desc );
 		setUsbDeviceImp( device );
+		setConfigDescriptor( desc );
 	}
 
 	//**************************************************************************

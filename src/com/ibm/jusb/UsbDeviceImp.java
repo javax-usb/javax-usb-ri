@@ -80,12 +80,14 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	public String getManufacturer()
 	{
 		try { return getString( getDeviceDescriptor().getManufacturerIndex() ); } catch ( UsbException uE ) { return null; }
+//FIXME - this should throw UsbException
 	}
 
 	/** @return the serial number of this device */
 	public String getSerialNumber()
 	{
 		try { return getString( getDeviceDescriptor().getSerialNumberIndex() ); } catch ( UsbException uE ) { return null; }
+//FIXME - this should throw UsbException
 	}
 
 	/** @return a String describing the speed of this device */
@@ -95,6 +97,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	public String getProductString()
 	{
 		try { return getString( getDeviceDescriptor().getProductIndex() ); } catch ( UsbException uE ) { return null; }
+//FIXME - this should throw UsbException
 	}
 
 	/** @return the USB device class */
