@@ -11,6 +11,8 @@ package com.ibm.jusb;
 
 import javax.usb.*;
 
+import com.ibm.jusb.os.*;
+
 /**
  * Request implementation.
  * <p>
@@ -31,13 +33,14 @@ import javax.usb.*;
  * If the processing is not successful, the {@link #getUsbException() UsbException}
  * is set via its {@link #setUsbException(UsbException) setter}.
  * In either case this is finally {@link #isCompleted() completed}
- * via the {@link #setCompleted(boolean) setter}, which then wakes up all
+ * via the {@link #complete() complete} method, which
+ * {@link #setCompleted(boolean) sets this completed} and wakes up all
  * {@link #waitUntilCompleted() waiting Threads}.
  * <p>
  * If the application has passed their own implementation of Request, the UsbDeviceImp will
  * 'wrap' their implementation with this by {@link #setRequest setting} this RequestImp's
  * {@link #getRequest() local Request}.  If the local Request is set when this is
- * {@link #setCompleted(boolean) completed}, this RequestImp's
+ * {@link #complete() completed}, this RequestImp's
  * {@link javax.usb.Request#setUsbException(UsbException) UsbException} and
  * {@link javax.usb.Request#setDataLength(int) data length} are copied
  * to the original Request, and the original Request is
@@ -52,7 +55,7 @@ import javax.usb.*;
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
-public class RequestImp implements Request,UsbOperations.SubmitResult
+public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmission
 {
 	/** Constructor */
 	public RequestImp( RequestImpFactory factory ) { requestImpFactory = factory; }
@@ -91,7 +94,7 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	public void setIndex(short i) { wIndex = i; }
 
 	/** @return the length of the <i>data</i> (not including setup bytes) for this request. */
-	public short getLength() { return (short)data.length; }
+	public short getLength() { return (short)getData().length; }
 
 	/** @return the length of valid data */
 	public int getDataLength() { return dataLength; }
@@ -105,60 +108,11 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	/** @param d the data byte[] for this request */
 	public void setData(byte[] d) { data = d; }
 
-	/** @return a formated byte[] representing this Request object */
-	public byte[] toBytes()
-	{
-		int requestBytesSize = REQUEST_HEADER_LENGTH + getData().length;
-
-		byte[] requestBytes = new byte[ requestBytesSize ];
-
-		requestBytes[ 0 ] = getRequestType();
-		requestBytes[ 1 ] = getRequestCode();
-
-		requestBytes[ 2 ] = (byte)getValue();
-		requestBytes[ 3 ] = (byte)( getValue() >> 8 );
-
-		requestBytes[ 4 ] = (byte)getIndex();
-		requestBytes[ 5 ] = (byte)( getIndex() >> 8 );
-
-		short dataLength = (short)getData().length;
-
-		requestBytes[ 6 ] = (byte)dataLength;
-		requestBytes[ 7 ] = (byte)( dataLength >> 8 );
-
-		byte[] dataBytes = getData();
-
-		for( int i = 0; i < dataBytes.length; ++i )
-			requestBytes[ REQUEST_HEADER_LENGTH + i ] = dataBytes[ i ]; 
-
-		return requestBytes;
-	}
-
 	/** Clean this object */
-	public void clean()
-	{
-		request = null;
-		number = 0;
-		usbException = null;
-		completed = false;
-
-		/* Shouldn't be any waiters.  If so they lose! */
-		waitLock = new Object();
-		waitCount = 0;
-
-		bmRequestType = 0x00;
-		bRequest = 0x00;
-		wValue = 0x0000;
-		wIndex = 0x0000;
-		data = new byte[0];
-		dataLength = 0;
-	}
+	public void clean() { }
 
 	/** Recycle this object */
-	public void recycle()
-	{
-		requestImpFactory.recycle(this);
-	}
+	public void recycle() { }
 
 	/** @return The number */
 	public long getNumber() { return number; }
@@ -184,6 +138,9 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	/** Wait (block) until this submission is completed */
 	public void waitUntilCompleted( long msecs )
 	{
+		if (isCompleted())
+			return;
+
 		synchronized ( waitLock ) {
 			waitCount++;
 			while (!isCompleted()) {
@@ -208,28 +165,50 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 
 	/**
 	 * Set this as completed.
-	 * <p>
-	 * Setting this to true performs all required completion activities, such as waking up
-	 * {@link #waitUntilCompleted(long) waiting Threads} and (if needed) setting the
-	 * {@link #getRequest() Request}'s params.
 	 * @param c If completed
 	 */
-	public void setCompleted(boolean c)
+	public void setCompleted(boolean c) { completed = c; }
+
+	/**
+	 * Complete this submission.
+	 * <p>
+	 * This will perform all required completion activities, such as waking up
+	 * {@link #waitUntilCompleted(long) waiting Threads} and (if needed) setting the
+	 * {@link #getRequest() Request}'s params.
+	 */
+	public void complete()
 	{
-		completed = c;
-
-		if (!isCompleted())
-			return;
-
-		Request request = getRequest();
-
-		if (null != request) {
-			request.setDataLength(getDataLength());
-			request.setUsbException(getUsbException());
-			request.setCompleted(true);
-		}
+		setCompleted(true);
 
 		notifyCompleted();
+
+//FIXME - the user Request's method(s) may block or generate Exception/Error which will cause problems
+		try {
+			getRequest().setDataLength(getDataLength());
+			getRequest().setUsbException(getUsbException());
+			getRequest().setCompleted(true);
+		} catch ( NullPointerException npE ) { }
+	}
+
+	public byte[] toBytes()
+	{
+		byte[] bytes = new byte[ REQUEST_HEADER_LENGTH + getLength() ];
+
+		bytes[ 0 ] = getRequestType();
+		bytes[ 1 ] = getRequestCode();
+
+		bytes[ 2 ] = (byte)getValue();
+		bytes[ 3 ] = (byte)( getValue() >> 8 );
+
+		bytes[ 4 ] = (byte)getIndex();
+		bytes[ 5 ] = (byte)( getIndex() >> 8 );
+
+		bytes[ 6 ] = (byte)getLength();
+		bytes[ 7 ] = (byte)( getLength() >> 8 );
+
+		System.arraycopy(data, 0, bytes, REQUEST_HEADER_LENGTH, getLength());
+
+		return bytes;
 	}
 
 	//**************************************************************************
@@ -262,7 +241,7 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	private byte bRequest = 0x00;
 	private short wValue = 0x0000;
 	private short wIndex = 0x0000;
-	private byte[] data = new byte[ 0 ];
+	private byte[] data = null;
 	private int dataLength = 0;
 
 	private RequestImpFactory requestImpFactory = null;

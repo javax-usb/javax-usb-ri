@@ -15,6 +15,7 @@ import javax.usb.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
+import com.ibm.jusb.os.*;
 import com.ibm.jusb.util.*;
 
 /**
@@ -35,16 +36,16 @@ import com.ibm.jusb.util.*;
  * {@link #getDataLength() data length} via its {@link #setDataLength(int) setter};
  * if unsuccessful, the implementation will set the
  * {@link #getUsbException() UsbException} via its {@link #setUsbException(UsbException) setter}.
- * In either case the implementation will then set this {@link #setCompleted(boolean) completed},
+ * In either case the implementation will then set this {@link #complete() completed},
  * which will wake up all {@link #waitUntilCompleted() waiting Threads}.
  * <p>
  * If the user provided their own UsbIrp implementation, then the UsbPipeImp will 'wrap' their
  * implementation with this UsbIrpImp by {@link #setUsbIrp(UsbIrp) setting} the local
  * {@link #getUsbIrp() UsbIrp}.  If this has a local UsbIrp when it is
- * {@link #setCompleted(boolean) completed}, this will set the proper fields on the wrapped UsbIrp.
+ * {@link #complete() completed}, this will set the proper fields on the wrapped UsbIrp.
  * @author Dan Streetman
  */
-public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult
+public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,UsbSubmission
 {
 	/** Constructor. */
 	public UsbIrpImp() { }
@@ -102,6 +103,9 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult
 	/** Wait (block) until this submission is completed */
 	public void waitUntilCompleted( long msecs, int nsecs )
 	{
+		if (isCompleted())
+			return;
+
 		synchronized ( waitLock ) {
 			waitCount++;
 			while (!isCompleted()) {
@@ -175,28 +179,29 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult
 
 	/**
 	 * Sets isCompleted
-	 * <p>
-	 * If this is set to true, it will wake up all
-	 * {@link #waitUntilCompleted() waiting Threads}.
 	 * @param b whether this is done
-	 * @see #notifyCompleted()
 	 */
-	public void setCompleted( boolean b )
+	public void setCompleted( boolean b ) { completed = b; }
+
+	/**
+	 * Complete this submission.
+	 * <p>
+	 * This will wake up all
+	 * {@link #waitUntilCompleted() waiting Threads}.
+	 */
+	public void complete()
 	{
-		completed = b;
+		setCompleted(true);
 
-		if (!b)
-			return;
+		notifyCompleted();
 
+//FIXME - the user's UsbIrp methods could block or generate Exception/Error which will cause problems
 		try {
 			UsbIrp irp = getUsbIrp();
 			irp.setUsbException(getUsbException());
 			irp.setDataLength(getDataLength());
 			irp.setCompleted(true);
-		} catch ( NullPointerException npE ) {
-		}
-
-		notifyCompleted();
+		} catch ( NullPointerException npE ) { }
 	}
 
 	/**
