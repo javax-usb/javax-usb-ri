@@ -373,6 +373,26 @@ public static class UsbPipePanel extends UsbPanel
 		controlSplitPane.resetToPreferredSizes();
 	}
 
+	protected void open()
+	{
+		try {
+			usbPipe.open();
+			refresh();
+		} catch ( UsbException uE ) {
+			JOptionPane.showMessageDialog(null, "Could not open UsbPipe : " + uE.getMessage());
+		}
+	}
+
+	protected void close()
+	{
+		try {
+			usbPipe.close();
+			refresh();
+		} catch ( UsbException uE ) {
+			JOptionPane.showMessageDialog(null, "Could not close UsbPipe : " + uE.getMessage());
+		}
+	}
+
 	private JPanel lowerMainPanel = new JPanel();
 	private JPanel openClosePanel = new JPanel();
 	private JPanel lowerSubPanel = new JPanel();
@@ -380,7 +400,7 @@ public static class UsbPipePanel extends UsbPanel
 	private JScrollPane outputScroll = new JScrollPane(outputTextArea);
 	private JPanel leftControlPanel = new JPanel();
 	private JLayeredPane rightControlPanel = new JLayeredPane();
-	private JSplitPane controlSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, leftControlPanel, rightControlPanel);
+	private JSplitPane controlSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftControlPanel, rightControlPanel);
 	private JPanel submitPanel = new JPanel();
 	private JTextArea packetListTextArea = new JTextArea();
 	private JScrollPane packetListScroll = new JScrollPane(packetListTextArea);
@@ -393,35 +413,10 @@ public static class UsbPipePanel extends UsbPanel
 	private JButton upButton = new JButton("Up");
 	private JButton downButton = new JButton("Down");
 
-	private ActionListener openListener = new ActionListener() {
-			public void actionPerformed(ActionEvent aE)
-			{
-				try {
-					usbPipe.open();
-				} catch ( UsbException uE ) {
-					JOptionPane.showMessageDialog(null, "Could not open UsbPipe : " + uE.getMessage());
-				}
-			}
-		};
-
-	private ActionListener closeListener = new ActionListener() {
-			public void actionPerformed(ActionEvent aE)
-			{
-				try {
-					usbPipe.close();
-				} catch ( UsbException uE ) {
-					JOptionPane.showMessageDialog(null, "Could not close UsbPipe : " + uE.getMessage());
-				}
-			}
-		};
-
-	private ActionListener submitListener = new ActionListener() {
-			public void actionPerformed(ActionEvent aE) { submit(); }
-		};
-
-	private ActionListener newPacketListener = new ActionListener() {
-			public void actionPerformed(ActionEvent aE) { addPacket(); }
-		};
+	private ActionListener openListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { open(); } };
+	private ActionListener closeListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { close(); } };
+	private ActionListener submitListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { submit(); } };
+	private ActionListener newPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { addPacket(); } };
 
 	private java.util.List packetList = new LinkedList();
 
