@@ -13,8 +13,6 @@ import java.util.*;
 
 import javax.usb.event.*;
 
-import com.ibm.jusb.util.*;
-
 /**
  * Implementation of UsbDeviceListener.
  * @author Dan Streetman
@@ -22,76 +20,52 @@ import com.ibm.jusb.util.*;
 public class UsbDeviceListenerImp extends EventListenerImp implements UsbDeviceListener
 {
 	/** @param event The Event to fire. */
-	public void errorEventOccurred(UsbDeviceErrorEvent event)
+	public void errorEventOccurred(final UsbDeviceErrorEvent event)
 	{
-		if (!hasListeners())
+		if (isEmpty())
 			return;
 
-		addRunnable( new ErrorEvent(event) );
-	}
-
-	/** @param event The Event to fire. */
-	public void dataEventOccurred(UsbDeviceDataEvent event)
-	{
-		if (!hasListeners())
-			return;
-
-		addRunnable( new DataEvent(event) );
-	}
-
-	/** @param event The Event to fire. */
-	public void usbDeviceDetached(UsbDeviceEvent event)
-	{
-		if (!hasListeners())
-			return;
-
-		addRunnable( new DetachEvent(event) );
-	}
-
-	private class ErrorEvent extends EventRunnable
-	{
-		public ErrorEvent() { super(); }
-		public ErrorEvent(EventObject e) { super(e); }
-
-		public void run()
-		{
-			List list = getEventListeners();
-
-			synchronized (list) {
-				for (int i=0; i<list.size(); i++)
-					((UsbDeviceListener)list.get(i)).errorEventOccurred((UsbDeviceErrorEvent)event);
+		synchronized (listeners) {
+			Iterator iterator = listeners.values().iterator();
+			while (iterator.hasNext()) {
+				EventListenerRunnableManager elrM = (EventListenerRunnableManager)iterator.next();
+				final UsbDeviceListener udL = (UsbDeviceListener)elrM.getEventListener();
+				Runnable r = new Runnable() { public void run() { udL.errorEventOccurred(event); } };
+				elrM.add(r);
 			}
 		}
 	}
 
-	private class DataEvent extends EventRunnable
+	/** @param event The Event to fire. */
+	public void dataEventOccurred(final UsbDeviceDataEvent event)
 	{
-		public DataEvent() { super(); }
-		public DataEvent(EventObject e) { super(e); }
+		if (isEmpty())
+			return;
 
-		public void run()
-		{
-			List list = getEventListeners();
-
-			synchronized (list) {
-				for (int i=0; i<list.size(); i++)
-					((UsbDeviceListener)list.get(i)).dataEventOccurred((UsbDeviceDataEvent)event);
+		synchronized (listeners) {
+			Iterator iterator = listeners.values().iterator();
+			while (iterator.hasNext()) {
+				EventListenerRunnableManager elrM = (EventListenerRunnableManager)iterator.next();
+				final UsbDeviceListener udL = (UsbDeviceListener)elrM.getEventListener();
+				Runnable r = new Runnable() { public void run() { udL.dataEventOccurred(event); } };
+				elrM.add(r);
 			}
 		}
 	}
 
-	private class DetachEvent extends EventRunnable
+	/** @param event The Event to fire. */
+	public void usbDeviceDetached(final UsbDeviceEvent event)
 	{
-		public DetachEvent() { super(); }
-		public DetachEvent(EventObject e) { super(e); }
+		if (isEmpty())
+			return;
 
-		public void run()
-		{
-			List list = getEventListeners();
-
-			synchronized (list) {
-				for (int i=0; i<list.size(); i++)
-					((UsbDeviceListener)list.get(i)).usbDeviceDetached((UsbDeviceEvent)event);
+		synchronized (listeners) {
+			Iterator iterator = listeners.values().iterator();
+			while (iterator.hasNext()) {
+				EventListenerRunnableManager elrM = (EventListenerRunnableManager)iterator.next();
+				final UsbDeviceListener udL = (UsbDeviceListener)elrM.getEventListener();
+				Runnable r = new Runnable() { public void run() { udL.usbDeviceDetached(event); } };
+				elrM.add(r);
 			}
 		}
 	}

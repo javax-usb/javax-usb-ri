@@ -11,9 +11,7 @@ package com.ibm.jusb.event;
 
 import java.util.*;
 
-import javax.usb.*;
 import javax.usb.event.*;
-import com.ibm.jusb.util.*;
 
 /**
  * Implementation of UsbPipeListener.
@@ -22,51 +20,35 @@ import com.ibm.jusb.util.*;
 public class UsbPipeListenerImp extends EventListenerImp implements UsbPipeListener
 {
 	/** @param event The Event to fire. */
-	public void errorEventOccurred(UsbPipeErrorEvent event)
+	public void errorEventOccurred(final UsbPipeErrorEvent event)
 	{
-		if (!hasListeners())
+		if (isEmpty())
 			return;
 
-		addRunnable( new ErrorEvent(event) );
-	}
-
-	/** @param event The Event to fire. */
-	public void dataEventOccurred(UsbPipeDataEvent event)
-	{
-		if (!hasListeners())
-			return;
-
-		addRunnable( new DataEvent(event) );
-	}
-
-	private class ErrorEvent extends EventRunnable
-	{
-		public ErrorEvent() { super(); }
-		public ErrorEvent(EventObject e) { super(e); }
-
-		public void run()
-		{
-			List list = getEventListeners();
-
-			synchronized (list) {
-				for (int i=0; i<list.size(); i++)
-					((UsbPipeListener)list.get(i)).errorEventOccurred((UsbPipeErrorEvent)event);
+		synchronized (listeners) {
+			Iterator iterator = listeners.values().iterator();
+			while (iterator.hasNext()) {
+				EventListenerRunnableManager elrM = (EventListenerRunnableManager)iterator.next();
+				final UsbPipeListener upL = (UsbPipeListener)elrM.getEventListener();
+				Runnable r = new Runnable() { public void run() { upL.errorEventOccurred(event); } };
+				elrM.add(r);
 			}
 		}
 	}
 
-	private class DataEvent extends EventRunnable
+	/** @param event The Event to fire. */
+	public void dataEventOccurred(final UsbPipeDataEvent event)
 	{
-		public DataEvent() { super(); }
-		public DataEvent(EventObject e) { super(e); }
+		if (isEmpty())
+			return;
 
-		public void run()
-		{
-			List list = getEventListeners();
-
-			synchronized (list) {
-				for (int i=0; i<list.size(); i++)
-					((UsbPipeListener)list.get(i)).dataEventOccurred((UsbPipeDataEvent)event);
+		synchronized (listeners) {
+			Iterator iterator = listeners.values().iterator();
+			while (iterator.hasNext()) {
+				EventListenerRunnableManager elrM = (EventListenerRunnableManager)iterator.next();
+				final UsbPipeListener upL = (UsbPipeListener)elrM.getEventListener();
+				Runnable r = new Runnable() { public void run() { upL.dataEventOccurred(event); } };
+				elrM.add(r);
 			}
 		}
 	}

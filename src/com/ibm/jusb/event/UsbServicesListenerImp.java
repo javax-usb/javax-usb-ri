@@ -13,8 +13,6 @@ import java.util.*;
 
 import javax.usb.event.*;
 
-import com.ibm.jusb.util.*;
-
 /**
  * Implementation of UsbServicesListener.
  * @author Dan Streetman
@@ -22,51 +20,35 @@ import com.ibm.jusb.util.*;
 public class UsbServicesListenerImp extends EventListenerImp implements UsbServicesListener
 {
 	/** UsbDevices attached */
-	public void usbDeviceAttached(UsbServicesEvent event)
+	public void usbDeviceAttached(final UsbServicesEvent event)
 	{
-		if (!hasListeners())
+		if (isEmpty())
 			return;
 
-		addRunnable( new AttachEvent(event) );
-	}
-
-	/** UsbDevices detached */
-	public void usbDeviceDetached(UsbServicesEvent event)
-	{
-		if (!hasListeners())
-			return;
-
-		addRunnable( new DetachEvent(event) );
-	}
-
-	private class AttachEvent extends EventRunnable
-	{
-		public AttachEvent() { super(); }
-		public AttachEvent(EventObject e) { super(e); }
-
-		public void run()
-		{
-			List list = getEventListeners();
-
-			synchronized (list) {
-				for (int i=0; i<list.size(); i++)
-					((UsbServicesListener)list.get(i)).usbDeviceAttached((UsbServicesEvent)event);
+		synchronized (listeners) {
+			Iterator iterator = listeners.values().iterator();
+			while (iterator.hasNext()) {
+				EventListenerRunnableManager elrM = (EventListenerRunnableManager)iterator.next();
+				final UsbServicesListener usL = (UsbServicesListener)elrM.getEventListener();
+				Runnable r = new Runnable() { public void run() { usL.usbDeviceAttached(event); } };
+				elrM.add(r);
 			}
 		}
 	}
 
-	private class DetachEvent extends EventRunnable
+	/** UsbDevices detached */
+	public void usbDeviceDetached(final UsbServicesEvent event)
 	{
-		public DetachEvent() { super(); }
-		public DetachEvent(EventObject e) { super(e); }
+		if (isEmpty())
+			return;
 
-		public void run()
-		{
-			List list = getEventListeners();
-
-			synchronized (list) {
-				for (int i=0; i<list.size(); i++)
-					((UsbServicesListener)list.get(i)).usbDeviceDetached((UsbServicesEvent)event);
+		synchronized (listeners) {
+			Iterator iterator = listeners.values().iterator();
+			while (iterator.hasNext()) {
+				EventListenerRunnableManager elrM = (EventListenerRunnableManager)iterator.next();
+				final UsbServicesListener usL = (UsbServicesListener)elrM.getEventListener();
+				Runnable r = new Runnable() { public void run() { usL.usbDeviceDetached(event); } };
+				elrM.add(r);
 			}
 		}
 	}

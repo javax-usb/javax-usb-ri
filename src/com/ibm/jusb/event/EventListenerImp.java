@@ -19,21 +19,17 @@ import com.ibm.jusb.util.*;
  */
 public class EventListenerImp implements EventListener
 {
-//FIXME - change model to 1 RunnableManager (Thread) per Listener
-
 	/**
 	 * Add a listener.
 	 * @param listener The listener to add.
 	 */
 	public void addEventListener( EventListener listener )
 	{
-		if (null == listener)
-			return;
-
 		synchronized (listeners) {
-			if (!listeners.contains(listener)) {
-				listeners.add( listener );
-				manager.setMaxSize(listeners.size() + 1);
+			if (!listeners.containsKey(listener)) {
+				EventListenerRunnableManager elrM = new EventListenerRunnableManager(listener);
+				elrM.setMaxSize(RunnableManager.SIZE_UNLIMITED);
+				listeners.put(listener, elrM);
 			}
 		}
 	}
@@ -44,44 +40,28 @@ public class EventListenerImp implements EventListener
 	 */
 	public void removeEventListener( EventListener listener )
 	{
-		if (null == listener)
-			return;
-
 		synchronized (listeners) {
-			if (listeners.contains(listener)) {
-				listeners.remove( listener );
-				manager.setMaxSize(listeners.size() + 1);
+			if (listeners.containsKey(listener)) {
+				RunnableManager rM = (RunnableManager)listeners.get(listener);
+				listeners.remove(listener);
+				rM.stop();
 			}
 		}
 	}
 
 	/**
-	 * Get the listeners.
-	 * @return the listeners.
+	 * @return If this has no listeners.
 	 */
-	protected List getEventListeners() { return listeners; }
+	public boolean isEmpty() { return listeners.isEmpty(); }
 
-	/**
-	 * @return If this has listeners.
-	 */
-	protected boolean hasListeners() { return !listeners.isEmpty(); }
+	protected HashMap listeners = new HashMap();
 
-	/**
-	 * Add a Runnable to be executed.
-	 * @param runnable The Runnable to be run.
-	 */
-	protected void addRunnable(Runnable runnable) { manager.add(runnable); }
-
-	private List listeners = new Vector();
-	private RunnableManager manager = new RunnableManager();
-
-	public static abstract class EventRunnable implements Runnable
+	protected class EventListenerRunnableManager extends RunnableManager
 	{
-		public EventRunnable() { }
-		public EventRunnable(EventObject e) { event = e; }
+		public EventListenerRunnableManager(EventListener el) { eventListener = el; }
 
-		public abstract void run();
+		public EventListener getEventListener() { return eventListener; }
 
-		public EventObject event = null;
+		protected EventListener eventListener = null;
 	}
 }
