@@ -1,31 +1,20 @@
-<?xml version="1.0"?>
 
-<!--
-	XML Ant (http://www.apache.org/ant) build file for JSR80 (javax.usb) RI
-	@author Dan Streetman
-	@author E. Michael Maximilien
--->
+<!-- JSR80 Platform-Independent Implementation -->
 
-<project name="javax.usb" default="help">
+<project name="JSR80 Platform-Independent Implementation" default="help">
 
-	<!-- User overrides from file -->
-	<property name="ant.prop.file.name" value=".ant-global.properties"/>
-	<property file="${user.home}/${ant.prop.file.name}"/>
-	
 	<!-- User overrides from environment -->
+	<!-- Note this depends on ANT's not overwriting preset variables -->
 	<property environment="Jsr80Env"/>
 	
-	<property name="Jsr80Env.JSR80_RI_VERSION" value="1.0.0-beta2"/>
+	<property name="Jsr80Env.JSR80_RI_VERSION" value="0.9.1"/>
 
-	<property name="Jsr80Env.JSR80_RI_SRC_JARFILE" value="jsr80_ri_src.jar"/>
-	<property name="Jsr80Env.JSR80_RI_CLASS_JARFILE" value="jsr80_ri.jar"/>
+	<property name="Jsr80Env.JSR80_RI_JARFILE" value="jsr80_ri.jar"/>
 
 	<property name="Jsr80Env.JSR80_RI_SRC_DIR" value="src"/>
 	<property name="Jsr80Env.JSR80_RI_DEST_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
 	<property name="Jsr80Env.JSR80_RI_LIB_DIR" value="lib"/>
-	<property name="Jsr80Env.JSR80_RI_JNI_SRC_DIR" value="jni/linux"/>
-	<property name="Jsr80Env.JSR80_RI_SRC_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
-	<property name="Jsr80Env.JSR80_RI_CLASS_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
+	<property name="Jsr80Env.JSR80_RI_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
 	<property name="Jsr80Env.JSR80_RI_DOCS_DIR" value="docs"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_DIR" value="${Jsr80Env.JSR80_RI_DOCS_DIR}/jdoc"/>
 
@@ -36,22 +25,20 @@
 	<property name="Jsr80Env.JSR80_RI_QUIET" value="no"/>
 	<property name="Jsr80Env.JSR80_RI_COMPRESS" value="yes"/>
 
-	<property name="Jsr80Env.JSR80_RI_JDOC_WINDOWTITLE" value="JavaDOC for JSR80 (javax.usb) API and RI"/>
-	<property name="Jsr80Env.JSR80_RI_JDOC_DOCTITLE" value="JSR80 (javax.usb) API and RI"/>
-	<property name="Jsr80Env.JSR80_RI_JDOC_BOTTOM" value="Copyright &#169; 2000-2001 JCP (Java Community Process) All Rights Reserved."/>
-	<property name="Jsr80Env.JSR80_RI_JDOC_HEADER" value="javax.usb Linux RI v${Jsr80Env.JSR80_RI_VERSION}"/>
-	<property name="Jsr80Env.JSR80_RI_JDOC_FOOTER" value="javax.usb Linux RI v${Jsr80Env.JSR80_RI_VERSION}"/>
-	<property name="Jsr80Env.JSR80_RI_JDOC_API_SRC_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_WINDOWTITLE" value="JavaDOC for JSR80 RI"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_DOCTITLE" value="JSR80 RI"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_BOTTOM" value=""/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_HEADER" value="JSR80 RI v${Jsr80Env.JSR80_RI_VERSION}"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_FOOTER" value=""/>
+
+	<property name="Jsr80Env.JSR80_RI_JDOC_PATH" value=""/>
 
 	<!-- Variable defaults -->
-	<property name="jsr80.ri.manifest.file" value="jsr80_ri.mf"/>
-
 	<property name="jsr80.ri.version" value="${Jsr80Env.JSR80_RI_VERSION}"/>
 	
 	<property name="jsr80.ri.dest.dir" value="${Jsr80Env.JSR80_RI_DEST_DIR}"/>
 	<property name="jsr80.ri.src.dir" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
 	<property name="jsr80.ri.lib.dir" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
-	<property name="jsr80.ri.jni.src.dir" value="${Jsr80Env.JSR80_RI_JNI_SRC_DIR}"/>
 	<property name="jsr80.ri.docs.dir" value="${Jsr80Env.JSR80_RI_DOCS_DIR}"/>
 	<property name="jsr80.ri.jdoc.dir" value="${Jsr80Env.JSR80_RI_JDOC_DIR}"/>
 
@@ -62,13 +49,8 @@
 	<property name="jsr80.ri.quiet" value="${Jsr80Env.JSR80_RI_QUIET}"/>
 	<property name="jsr80.ri.compress" value="${Jsr80Env.JSR80_RI_COMPRESS}"/>
 
-	<property name="jsr80.ri.jni.src.dir" value="${Jsr80Env.JSR80_RI_JNI_SRC_DIR}"/>
-	<property name="jsr80.ri.jni.dest.dir" value="${jsr80.ri.lib.dir}"/>
-	<property name="jsr80.ri.jni.library" value="libJavaxUsb.so"/>
-	<property name="jsr80.ri.src.jarfile" value="${Jsr80Env.JSR80_RI_SRC_JARFILE}"/>
-	<property name="jsr80.ri.class.jarfile" value="${Jsr80Env.JSR80_RI_CLASS_JARFILE}"/>
-	<property name="jsr80.ri.src.jarfile.dir" value="${Jsr80Env.JSR80_RI_SRC_JARFILE_DIR}"/>
-	<property name="jsr80.ri.class.jarfile.dir" value="${Jsr80Env.JSR80_RI_CLASS_JARFILE_DIR}"/>
+	<property name="jsr80.ri.jarfile" value="${Jsr80Env.JSR80_RI_JARFILE}"/>
+	<property name="jsr80.ri.jarfile.dir" value="${Jsr80Env.JSR80_RI_JARFILE_DIR}"/>
 
 	<property name="jsr80.ri.jdoc.windowtitle" value="${Jsr80Env.JSR80_RI_JDOC_WINDOWTITLE}"/>
 	<property name="jsr80.ri.jdoc.doctitle" value="${Jsr80Env.JSR80_RI_JDOC_DOCTITLE}"/>
@@ -77,7 +59,7 @@
 	<property name="jsr80.ri.jdoc.footer" value="${Jsr80Env.JSR80_RI_JDOC_FOOTER}"/>
 	<property name="jsr80.ri.jdoc.verbose" value="no"/>
 	<property name="jsr80.ri.jdoc.version" value="yes"/>
-	<property name="jsr80.ri.jdoc.author" value="yes"/>
+	<property name="jsr80.ri.jdoc.author" value="no"/>
 	<property name="jsr80.ri.jdoc.nodeprecated" value="no"/>
 	<property name="jsr80.ri.jdoc.nodeprecatedlist" value="no"/>
 	<property name="jsr80.ri.jdoc.failonerror" value="yes"/>
@@ -85,7 +67,7 @@
 	<property name="jsr80.ri.jdoc.protected" value="no"/>
 	<property name="jsr80.ri.jdoc.package" value="yes"/>
 	<property name="jsr80.ri.jdoc.private" value="no"/>
-	<property name="jsr80.ri.jdoc.api.src.dir" value="${Jsr80Env.JSR80_RI_JDOC_API_SRC_DIR}"/>
+	<property name="jsr80.ri.jdoc.path" value="${Jsr80Env.JSR80_RI_JDOC_PATH}"/>
 
 	<!-- Show help -->
 	<target name="help">
@@ -99,21 +81,16 @@
 		<echo message="  help               Show this help"/>
 		<echo message="  jars               Create JAR files"/>
 		<echo message="  jdoc               Create JavaDOC"/>
-		<echo message="  mrproper           Clean everything (including JAR/SO files)"/>
+		<echo message="  mrproper           Clean everything (including JAR files)"/>
 		<echo message=""/>
 	</target>
 
 	<!-- compile, jars, jdoc -->
 	<target name="all" depends="compile,jars,jdoc"/>
 
-	<!--
-		Simple complete compile task:
-		1) Compiles the RI Java classes
-		2) Generates the JNI stub header
-		3) Invokes "make" to compile the C JNI code
-	-->
+	<!-- Compile class files -->
 	<target name="compile">
-		<echo message="Compiling JSR80 (javax.usb) RI classes"/>
+		<echo message="Compiling class files."/>
 		<mkdir dir="${jsr80.ri.dest.dir}"/>
 		<javac
 			srcdir="${jsr80.ri.src.dir}"
@@ -122,36 +99,22 @@
 			optimize="${jsr80.ri.optimize}"
 			deprecation="${jsr80.ri.deprecation}"
 			verbose="${jsr80.ri.verbose}"
-			failonerror="yes"
-			includes="com/ibm/jusb/**/*.java"/>
+			failonerror="yes"/>
 
-		<echo message="Compiling JSR80 (javax.usb) JNI header and library"/>
-		<javah
-			class="com.ibm.jusb.os.linux.JavaxUsb"
-			destdir="${jsr80.ri.jni.src.dir}"
-			verbose="${jsr80.ri.verbose}"
-			classpath="${java.class.path}:${jsr80.ri.src.dir}"/>
-
-		<exec executable="make" dir="${jsr80.ri.jni.src.dir}" failonerror="yes">
-			<arg line="${jsr80.ri.jni.library}"/>
-		</exec>
 	</target>
 
-	<!-- Cleans the .class files -->
+	<!-- Cleans the class files -->
 	<target name="clean">
-		<echo message="Cleaning JSR80 (javax.usb) RI classes and JNI object files" />
+		<echo message="Cleaning class files." />
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
-			<fileset dir="${jsr80.ri.dest.dir}" includes="com/ibm/jusb/**/*.class"/>
+			<fileset dir="${jsr80.ri.dest.dir}" includes="**/*.class"/>
 		</delete>
 
-		<exec executable="make" dir="${jsr80.ri.jni.src.dir}" failonerror="yes">
-			<arg line="clean"/>
-		</exec>
 	</target>
 
 	<!-- Clean everything (Mr. Clean) -->
 	<target name="mrproper" depends="clean">
-		<echo message="Cleaning everything in JSR80 RI!"/>
+		<echo message="Cleaning everything."/>
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
 			<fileset dir="${jsr80.ri.src.jarfile.dir}" includes="${jsr80.ri.src.jarfile}"/>
 			<fileset dir="${jsr80.ri.class.jarfile.dir}" includes="${jsr80.ri.class.jarfile}"/>
@@ -164,39 +127,23 @@
 
 	<!-- Creates the source and class JAR files and moves JNI library -->
 	<target name="jars" depends="compile">
-		<mkdir dir="${jsr80.ri.src.jarfile.dir}"/>
+		<echo message="Creating JAR file."/>
+		<mkdir dir="${jsr80.ri.jarfile.dir}"/>
 		<jar
-			jarfile="${jsr80.ri.src.jarfile.dir}/${jsr80.ri.src.jarfile}"
-			basedir="${jsr80.ri.src.dir}"
-			compress="${jsr80.ri.compress}"
-			includes="com/ibm/jusb/**/*.java"/>
-
-		<mkdir dir="${jsr80.ri.class.jarfile.dir}"/>
-		<jar
-			jarfile="${jsr80.ri.class.jarfile.dir}/${jsr80.ri.class.jarfile}"
+			jarfile="${jsr80.ri.jarfile.dir}/${jsr80.ri.jarfile}"
 			basedir="${jsr80.ri.dest.dir}"
 			compress="${jsr80.ri.compress}"
-			includes="javax/usb/res/jusb.properties,com/ibm/jusb/**/*.class,com/ibm/jusb/**/*.gif"/>
+			includes="**/*.class,com/ibm/jusb/**/*.gif"/>
 
-		<mkdir dir="${jsr80.ri.lib.dir}"/>
-		<copy
-			file="${jsr80.ri.jni.src.dir}/${jsr80.ri.jni.library}"
-			todir="${jsr80.ri.lib.dir}"
-			overwrite="yes"/>
 	</target>
 
-	<!--
-		Builds the JavaDOC for the RI
-		Note that if the API source files are not in the RI source path,
-		AND/OR the ${jsr80.ri.jdoc.api.src.dir}, only the RI JavaDOC will be built.
-		Also note that if the API jdoc dir is the same as the RI jdoc dir, the
-		last built jdoc will be overwritten (i.e. calling this will overwrite the API jdoc).
-	-->
+	<!-- Create JavaDOC -->
 	<target name="jdoc">
+		<echo message="Creating JavaDOC."/>
 		<mkdir dir="${jsr80.ri.jdoc.dir}"/>
 		<javadoc
 			packagenames="javax.usb.*,com.ibm.jusb.*"
-			sourcepath="${jsr80.ri.src.dir}:${jsr80.ri.jdoc.api.src.dir}"
+			sourcepath="${jsr80.ri.src.dir}:${jsr80.ri.jdoc.path}"
 			destdir="${jsr80.ri.jdoc.dir}"
 			verbose="${jsr80.ri.verbose}"
 			Public="${jsr80.ri.public}"
