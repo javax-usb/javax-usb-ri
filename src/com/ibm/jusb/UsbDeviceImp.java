@@ -348,8 +348,6 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void disconnect()
 	{
-		disconnected = true;
-
 		try {
 			getParentUsbPortImp().detachUsbDeviceImp( this );
 		} catch ( IllegalArgumentException iaE ) {
@@ -359,6 +357,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		Iterator i = getUsbConfigurations().iterator();
 		while (i.hasNext())
 			((UsbConfigurationImp)i.next()).disconnect();
+
+		disconnected = true;
 
 		listenerImp.usbDeviceDetached(new UsbDeviceEvent(this));
 
