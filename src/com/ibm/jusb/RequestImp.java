@@ -12,20 +12,20 @@ package com.ibm.jusb;
 import javax.usb.*;
 
 /**
- * Default Request.
+ * Request implementation.
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
-public class DefaultRequest implements Request
+public class RequestImp implements Request,UsbOperations.SubmitResult
 {
 	/** Constructor */
-	public DefaultRequest( RequestFactory factory ) { requestFactory = factory; }
-
-	/** @return the Request code byte for this request */
-	public abstract byte getRequest();
+	public RequestImp( RequestFactoryImp factory ) { requestFactoryImp = factory; }
 
 	/** @return the bmRequestType bitmap byte for this Request */
 	public byte getRequestType() { return bmRequestType; }
+
+	/** @return the Request code byte for this request */
+	public byte getRequest() { return request; }
 
 	/** @return the wValue for this request */
 	public short getValue() { return wValue; }
@@ -71,16 +71,34 @@ public class DefaultRequest implements Request
 		return requestBytes;
 	}
 
+	/** Clean this object */
+	public void clean()
+	{
+		bmRequestType = 0x00;
+		bRequest = 0x00;
+		wValue = 0x0000;
+		wIndex = 0x0000;
+		data = new byte[0];
+		dataLength = 0;
+	}
+
+	/** Recycle this object */
+	public void recycle()
+	{
+		requestFactoryImp.recycle(this);
+	}
+
 	//**************************************************************************
 	// Instance variables
 
 	protected byte bmRequestType = 0x00;
+	protected byte bRequest = 0x00;
 	protected short wValue = 0x0000;
 	protected short wIndex = 0x0000;
 	protected byte[] data = new byte[ 0 ];
 	protected int dataLength = 0;
 
-	protected RequestFactory requestFactory = null;
+	protected RequestFactoryImp requestFactoryImp = null;
 
 	//**************************************************************************
 	// Class constants

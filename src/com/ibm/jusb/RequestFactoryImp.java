@@ -17,33 +17,13 @@ import javax.usb.util.DefaultRequestBundle;
 import com.ibm.jusb.util.DefaultRequestV;
 
 /**
- * Default implementation of the RequestFactory interface to create Request objects
+ * RequestFactory implementation.
  * @author E. Michael Maximilien
- * @version 1.0.0
+ * @author Dan Streetman
  */
-public class DefaultRequestFactory extends Object implements RequestFactory
+public class RequestFactoryImp implements RequestFactory
 {
-    //-------------------------------------------------------------------------
-    // Ctor(s)
-    //
-
 	DefaultRequestFactory() {}
-
-    //-------------------------------------------------------------------------
-    // Public methods - create a RequestBundle
-    //
-
-	/**
-	 * @return a RequestBundle object that is used to aggregate and submit 
-	 * vendor or class specific requests (standard request cannot be bundled)
-	 */
-	public RequestBundle createRequestBundle()
-	{
-		if( freeBundleList.isEmpty() == false )
-			return (RequestBundle)freeBundleList.remove( 0 );
-
-		return new DefaultRequestFactory.MyRequestBundle( this );
-	}
 
 	//-------------------------------------------------------------------------
 	// Public methods
@@ -57,7 +37,7 @@ public class DefaultRequestFactory extends Object implements RequestFactory
 	public void recycle( Request request )
 	{
 		request.clean();
-		addToFreeMap( request );
+		freeRequestList.add( request );
 	}
 
 	/**
@@ -69,6 +49,18 @@ public class DefaultRequestFactory extends Object implements RequestFactory
 	{
 		requestBundle.clean();
 		freeBundleList.add( requestBundle );
+	}
+
+	/**
+	 * @return a RequestBundle object that is used to aggregate and submit 
+	 * vendor or class specific requests (standard request cannot be bundled)
+	 */
+	public RequestBundle createRequestBundle()
+	{
+		if( freeBundleList.isEmpty() == false )
+			return (RequestBundle)freeBundleList.remove( 0 );
+
+		return new DefaultRequestFactory.MyRequestBundle( this );
 	}
 
     //-------------------------------------------------------------------------
@@ -87,13 +79,10 @@ public class DefaultRequestFactory extends Object implements RequestFactory
 	public Request createVendorRequest( byte bmRequestType, byte requestType,
 										short wValue, short wIndex, byte[] data ) throws RequestException
 	{
-        VendorRequest request = null;
+        Request request = null;
 
-		if( isAvailableRequestInFreeMap( VendorRequest.VENDOR_REQUEST_NAME ) )
-			request = (VendorRequest)getNextAvailableRequestInFreeMap( VendorRequest.VENDOR_REQUEST_NAME );
-		else
-            request = new VendorRequest( this, requestType );
-
+!!!!!!!!!!FIX....
+		request.setRequest( RequestConst.REQUEST_VENDOR );
 		request.setRequestType( bmRequestType );
 		request.setValue( wValue );
 		request.setIndex( wIndex );
@@ -409,7 +398,7 @@ public class DefaultRequestFactory extends Object implements RequestFactory
 	 */
 	public Request createGetStateRequest( short wIndex, byte[] data ) throws RequestException
 	{
-        GetStateRequest request = null;
+        Request request = null;
 
 		if( isAvailableRequestInFreeMap( GetStateRequest.GET_STATE_REQUEST_NAME ) )
 			request = (GetStateRequest)getNextAvailableRequestInFreeMap( GetStateRequest.GET_STATE_REQUEST_NAME );
@@ -423,63 +412,11 @@ public class DefaultRequestFactory extends Object implements RequestFactory
 	}
 
 	//-------------------------------------------------------------------------
-	// Protected methods
-	//
-
-	/**
-	 * Adds the Request to the free map
-	 * @param request the Request object
-	 */
-	protected void addToFreeMap( Request request )
-	{
-		if( freeRequestMap.containsKey( request.toString() ) )
-		{
-			List freeRequestList = (List)freeRequestMap.get( request.toString() );
-			freeRequestList.add( request );
-		}
-		else
-		{
-			List freeRequestList = new ArrayList();
-			freeRequestMap.put( request.toString(), freeRequestList );
-			freeRequestList.add( request );
-		}
-	}
-
-	/**
-	 * @return true if there are any available free Request object from the
-	 * freeRequestMap
-	 * @param requestName the Request name (unique per Request type)
-	 */
-	protected boolean isAvailableRequestInFreeMap( String requestName )
-	{
-		if( freeRequestMap.containsKey( requestName ) )
-			return ( (List)freeRequestMap.get( requestName ) ).size() > 0;
-
-		return false;
-	}
-
-	/**
-	 * @return the next available Request from the freeRequestMap
-	 * @param requestName the Request name (unique per Request type)
-	 */
-	protected Request getNextAvailableRequestInFreeMap( String requestName )
-	{
-		List requestList = null;
-
-		if( freeRequestMap.containsKey( requestName ) )
-			requestList = (List)freeRequestMap.get( requestName );
-		else
-			throw new RuntimeException( "Could not get next available Request object!" );
-
-		return (Request)requestList.get( 0 );
-	}
-
-	//-------------------------------------------------------------------------
 	// Instance variables
 	//
 
-	private Map freeRequestMap = new HashMap();
-	private List freeBundleList = new ArrayList();
+	private List freeRequestList = new Vector();
+	private List freeBundleList = new Vector();
 
 	//-------------------------------------------------------------------------
 	// Inner classes

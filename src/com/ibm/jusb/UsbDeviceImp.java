@@ -18,10 +18,9 @@ import javax.usb.util.*;
 import com.ibm.jusb.os.*;
 
 /**
- * Abstract implementation of the UsbDevice interface
+ * Platform-independent implementation of UsbDevice.
  * @author E. Michael Maximilien
  * @author Dan Streetman
- * @version 1.0.0
  */
 public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 {
@@ -38,10 +37,6 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 	/** @return true if this is a UsbHub and false otherwise */
 	public boolean isUsbHub() { return false; }
-
-	//-------------------------------------------------------------------------
-	// Public interface methods
-	//
 
 	/** @return the manufacturer of this device */
 	public String getManufacturer()
@@ -218,19 +213,11 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		listenerList.remove( listener );
 	}
 
-	//-------------------------------------------------------------------------
-	// Public accept method for the Visitor pattern
-	//
-
 	/**
 	 * Visitor.accept method
 	 * @param visitor the UsbInfoVisitor visiting this UsbInfo
 	 */
 	public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbDevice( this ); }
-
-	//-------------------------------------------------------------------------
-	// Protected and package methods
-	//
 
 	/** @return the associated UsbDeviceImp */
 	public UsbDeviceOsImp getUsbDeviceOsImp() { return usbDeviceOsImp; }
@@ -239,19 +226,19 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	public void setUsbDeviceOsImp( UsbDeviceOsImp deviceImp ) { usbDeviceOsImp = deviceImp; }
 
 	/** @param desc the new device descriptor */
-	void setDeviceDescriptor( DeviceDescriptor desc ) { setDescriptor( desc ); }
+	public void setDeviceDescriptor( DeviceDescriptor desc ) { setDescriptor( desc ); }
 
 	/**
 	 * @param index the index of the new string descriptor
 	 * @param desc the new string descriptor
 	 */
-	void setStringDescriptor( byte index, StringDescriptor desc )
+	public void setStringDescriptor( byte index, StringDescriptor desc )
 	{
 		stringDescriptors.put( new Byte( index ), desc );
 	}
 
 	/** Update the StringDescriptor at the specified index. */
-	void requestStringDescriptor( byte index )
+	public void requestStringDescriptor( byte index )
 	{
 		/* Do a StringDescriptor Request here, and update the cache */
 	}
@@ -259,7 +246,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/**
 	 * @return the specified StringDescriptor.
 	 */
-	StringDescriptor getCachedStringDescriptor( byte index )
+	public StringDescriptor getCachedStringDescriptor( byte index )
 	{
 		return (StringDescriptor)stringDescriptors.get( new Byte( index ) );
 	}
@@ -267,7 +254,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/**
 	 * @return the String from the specified STringDescriptor
 	 */
-	String getCachedString( byte index )
+	public String getCachedString( byte index )
 	{
 		StringDescriptor desc = getCachedStringDescriptor( index );
 
@@ -278,32 +265,32 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	 * Sets the speed of this device 
 	 * @param s the String argument
 	 */
-	void setSpeedString( String s ) { speedString = s; }
+	public void setSpeedString( String s ) { speedString = s; }
 
 	/**
 	 * Sets the active config index
 	 * @param num the active config number (0 if device has been unconfigured)
 	 */
-	void setActiveUsbConfigNumber( byte num ) { activeConfigNumber = num; }
+	public void setActiveUsbConfigNumber( byte num ) { activeConfigNumber = num; }
 
 	/**
 	 * @param usbHub the parent UsbHub
 	 * @param port the parent port index the UsbDevice is attached to
 	 */
-	void connect( UsbHubImp usbHub, byte port ) throws UsbException
+	public void connect( UsbHubImp usbHub, byte port ) throws UsbException
 	{
 		usbHub.addDevice( this, port );
 		usbPort = usbHub.getUsbPort( port );
 	}
 
 	/** @param the configuration to add */
-	void addUsbConfig( UsbConfig config ) { configs.addUsbInfo( config ); }
+	public void addUsbConfig( UsbConfig config ) { configs.addUsbInfo( config ); }
 
 	/**
 	 * Disconnect UsbDevice
 	 * @exception javax.usb.UsbException if there was a problem removing the device
 	 */
-	void disconnect() throws UsbException
+	public void disconnect() throws UsbException
 	{
 		try {
 			((UsbHubImp)getUsbPort().getUsbHub()).removeDevice( this, getUsbPort().getPortNumber() );

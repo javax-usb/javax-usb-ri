@@ -14,31 +14,26 @@ import javax.usb.util.*;
 import javax.usb.os.*;
 
 /**
- * Default implementation the interface for all the standard USB operations to a device
+ * Implementation of UsbOperations.
  * @author E. Michael Maximilien
- * @version 0.0.1
+ * @author Dan Streetman
  */
-public class DefaultStandardOperations extends AbstractUsbOperations implements StandardOperations
+public class UsbOperationsImp implements StandardOperations,VendorOperations,ClassOperations
 {
-    //-------------------------------------------------------------------------
-    // Ctor(s)
-    //
-
-	/**
-	 * 1-arg ctor
-	 * @param usbDevice the UsbDevice for this operations class
-	 * @param standardOpsImp the StandardOpsImp object
-	 * @exception javax.usb.UsbException if the RequestFactory could not be found
-	 */
-	public DefaultStandardOperations( UsbDevice usbDevice, UsbOpsImp ops  ) throws UsbException
+	public UsbOperationsImp( UsbDeviceImp devImp )
 	{ 
-		super( usbDevice ); 
-		opsImp = ops;
+		usbDeviceImp = devImp;
 	}
 
     //-------------------------------------------------------------------------
-    // Public request methods
+    // Public methods
     //
+
+	/** @return the UsbDevice */
+	public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
+
+	/** @return The UsbDeviceImp */
+	public UsbDeviceImp getUsbDeviceImp() { return usbDeviceImp; }
 
 	/**
 	 * Performs a synchronous standard operation by submitting the standard request object
@@ -47,7 +42,7 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 	 */
 	public synchronized void syncSubmit( Request request ) throws RequestException
 	{
-		getOpsImp().syncSubmit( request );
+		getUsbDeviceImp().syncSubmit( request );
 	}
 
 	/**
@@ -59,7 +54,7 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 	 */
 	public synchronized void syncSubmit( RequestBundle requestBundle ) throws RequestException
 	{
-		getOpsImp().syncSubmit( requestBundle );
+		getUsbDeviceImp().syncSubmit( requestBundle );
 	}
 
 	/**
@@ -69,13 +64,11 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 	 */
 	public UsbOperations.SubmitResult asyncSubmit( Request request ) throws RequestException
 	{
-		return getOpsImp().asyncSubmit( request );
+		return getUsbDeviceImp().asyncSubmit( request );
 	}
 
-    //-------------------------------------------------------------------------
-    // Public operations methods
-	// NOTE: all operations are simplified of all arguments that are not necessary or superfluous
-    //
+	//**************************************************************************
+	// Standard Operations
 
 	/**
 	 * Used to disable to clear or disable a specific feature
@@ -192,6 +185,8 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 
 		syncSubmit( request );
 
+		getUsbDeviceImp().setActiveUsbConfigNumber( (byte)wValue );
+
 		return request;
 	}
 
@@ -244,9 +239,7 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 
 		syncSubmit( request );
 
-                /* Change the "active" flag */
-		( (UsbInterfaceAbstraction)usbDevice.getActiveUsbConfig().getUsbInterface( (byte)wIndex ) )
-			.setActiveAlternateSettingNumber( (byte)wValue );
+		getUsbDeviceImp().getActiveUsbConfigImp().getUsbInterfaceImp( (byte)wIndex ).setActiveAlternateSettingNumber( (byte)wValue );
 
 		return request;
 	}
@@ -268,16 +261,165 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 		return request;
 	}
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
+	// VendorOperations
+
+	/**
+	 * Used to submit any vendor request.  Note that the bmRequestType field bits 6..5
+	 * must be set to 0x02 for Vendor type according to the USB 1.1. specification
+	 * @param bmRequestType the request type bitmap
+	 * @param requestType the specific request type
+	 * @param wValue the word feature selector value
+	 * @param wIndex Zero or Interface or Endpoint index
+	 * @param data a byte array for the request Data
+	 * @return a Request object that is created for this submission
+	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
+	 */
+	public Request vendorRequest( byte bmRequestType, byte requestType, short wValue, short wIndex, byte[] data ) throws RequestException
+	{
+		Request vendorRequest = getRequestFactory().createVendorRequest( bmRequestType, requestType, wValue, wIndex, data );
+
+		syncSubmit( vendorRequest );
+
+		return vendorRequest;
+	}
+
+	//**************************************************************************
+	// Class Operations
+
+	/**
+	 * Used to submit any class request.  Note that the bmRequestType field bits 6..5
+	 * must be set to 0x01 for Class type according to the USB 1.1. specification
+	 * @param bmRequestType the request type bitmap
+	 * @param requestType the specific request type
+	 * @param wValue the word feature selector value
+	 * @param wIndex Zero or Interface or Endpoint index
+	 * @param data a byte array for the request Data
+	 * @return a Request object that is created for this submission
+	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
+	 */
+	public Request classRequest( byte bmRequestType, byte requestType, short wValue, short wIndex, byte[] data ) throws RequestException
+	{
+		Request classRequest = getRequestFactory().createClassRequest( bmRequestType, requestType, wValue, wIndex, data );
+
+		syncSubmit( classRequest );
+
+		return classRequest;
+	}
+
+	//**************************************************************************
+	// HubClassOperations
+
+	/**
+	 * Used to disable to clear or disable a specific feature
+	 * @param bmRequestType the request type bitmap
+	 * @param wValue the feature value selector
+	 * @param wIndex the port number (1 based)
+	 * @return a Request object that is created for this submission
+	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
+	 */
+	public Request clearFeature( byte bmRequestType, short wValue, short wIndex ) throws RequestException
+	{
+		Request request = getRequestFactory().createClearFeatureRequest( bmRequestType, wValue, wIndex );
+
+		syncSubmit( request );
+
+		return request;
+	}
+
+	/**
+	 * Returns the state of the hub
+	 * @param wIndex the port number (1 based)
+	 * @param data byte array of size 1 for the port bus state
+	 * @return a Request object that is created for this submission
+	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
+	 */
+	public Request getState( short wIndex, byte[] data ) throws RequestException
+	{
+		Request request = getRequestFactory().createGetStateRequest( wIndex, data );
+
+		syncSubmit( request );
+
+		return request;
+	}
+
+	/**
+	 * Returns the specified descriptor if it exists
+	 * @param wValue the descriptor type and index
+	 * @param wIndex zero or the language ID for String descriptor
+	 * @param data a byte array of the correct length to contain the descriptor data bytes
+	 * @return a Request object that is created for this submission
+	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
+	 */
+	public Request getDescriptor( short wValue, short wIndex, byte[] data ) throws RequestException
+	{
+		Request request = getRequestFactory().createGetDescriptorRequest( wValue, wIndex, data );
+
+		syncSubmit( request );
+
+		return request;
+	}
+
+	/**
+	 * Returns the status for the specified recipient
+	 * @param bmRequestType the request type bitmap
+	 * @param wIndex 0 for GetHubStatus and the port number for GetPortStatus
+	 * @param data a byte[] of size 4 to contain the hub status
+	 * @return a Request object that is created for this submission
+	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
+	 */
+	public Request getStatus( byte bmRequestType, short wIndex, byte[] data ) throws RequestException
+	{
+		Request request = getRequestFactory().createGetStatusRequest( bmRequestType, wIndex, data );
+
+		syncSubmit( request );
+
+		return request;
+	}
+
+	/**
+	 * Update existing descriptor or add new descriptor
+	 * @param wValue the descriptor type and index
+	 * @param wIndex the language ID if the descriptor is a String descriptor or zero
+	 * @return a Request object that is created for this submission
+	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
+	 */
+	public Request setDescriptor( short wValue, short wIndex, byte[] data ) throws RequestException
+	{
+		Request request = getRequestFactory().createSetDescriptorRequest( wValue, wIndex, data );
+
+		syncSubmit( request );
+
+		return request;
+	}
+
+	/**
+	 * Sets or enable a specific feature
+	 * @param bmRequestType the request type bitmap
+	 * @param wValue the feature selector value
+	 * @param wIndex zero or port number (1 based)
+	 * @return a Request object that is created for this submission
+	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
+	 */
+	public Request setFeature( byte bmRequestType, short wValue, short wIndex ) throws RequestException
+	{
+		Request request = getRequestFactory().createSetFeatureRequest( bmRequestType, wValue, wIndex );
+
+		syncSubmit( request );
+
+		return request;
+	}
+
+	//**************************************************************************
 	// Protected methods
-	//
 
-	/** @return the UsbOpsImp object */
-	protected UsbOpsImp getOpsImp() { return opsImp; }
+	/** @return A RequestFactory */
+	protected RequestFactory getRequestFactory() { return requestFactory; }
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Instance variables
-	//
 
-	private UsbOpsImp opsImp = null;
+	protected UsbDeviceImp usbDeviceImp = null;
+	protected RequestFactory requestFactory = new DefaultRequestFactory.java
+
 }
