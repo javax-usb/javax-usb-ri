@@ -60,6 +60,9 @@ public interface UsbPipeOsImp
 	 * of completion by calling UsbPipeImp.UsbIrpImpCompleted();
 	 * since the operation is synchronous the pipe performs all completion
 	 * activities after the method returns (or throws UsbException).
+	 * <p>
+	 * If the UsbIrpImp is successful, its data length must be {@link com.ibm.jusb.UsbIrpImp#setDataLength(int) set}.
+	 * If unsuccessful, simply throw the UsbException.
 	 * @param irp the UsbIrpImp to use for this submission.
      * @exception javax.usb.UsbException If the data transfer was unsuccessful.
 	 */
@@ -92,6 +95,9 @@ public interface UsbPipeOsImp
 	 * <i>only if</i> the platform 'accepted' the submission by successfully
 	 * returning from this method.  If the platform throws a UsbException from this
 	 * method, it should <i>not</i> also call UsbIrpImpCompleted().
+	 * <p>
+	 * If the UsbIrpImp is successful, its data length must be {@link com.ibm.jusb.UsbIrpImp#setDataLength(int) set};
+	 * if unsuccessful, its UsbException must be {@link com.ibm.jusb.UsbIrpImp#setUsbException(UsbException) set}.
 	 * @param irp the UsbIrpImp to use for this submission
      * @exception javax.usb.UsbException If the initial submission was unsuccessful.
 	 */
