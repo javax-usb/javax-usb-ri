@@ -65,9 +65,8 @@ public class SwingUsbView
 		s.splitPane.setDividerLocation(0.35);
 	}
 
-	protected void createTree(UsbHub hub, DefaultMutableTreeNode node)
+	protected synchronized void createTree(UsbHub hub, DefaultMutableTreeNode node)
 	{
-System.out.println("Creating tree for hub " + hub.getUsbDeviceDescriptor().idVendor() + ":" + hub.getUsbDeviceDescriptor().idProduct());
 		Iterator iterator = hub.getUsbPorts().iterator();
 		while (iterator.hasNext()) {
 			UsbPort port = (UsbPort)iterator.next();
@@ -200,9 +199,9 @@ System.out.println("Creating tree for hub " + hub.getUsbDeviceDescriptor().idVen
 			{
 				UsbDevice device = usE.getUsbDevice();
 
-System.out.println("Got device connect for " + 
-UsbUtil.toHexString(usE.getUsbDevice().getUsbDeviceDescriptor().idVendor()) + ":" +
-UsbUtil.toHexString(usE.getUsbDevice().getUsbDeviceDescriptor().idProduct()));
+				if (deviceTable.containsKey(device)) // This is already in the tree.
+					return;
+
 				if (deviceTable.containsKey(device.getParentUsbPort().getUsbHub())) {
 					DefaultMutableTreeNode parent = (DefaultMutableTreeNode)deviceTable.get(device.getParentUsbPort().getUsbHub());
 					int index = UsbUtil.unsignedInt(device.getParentUsbPort().getPortNumber()) - 1;
