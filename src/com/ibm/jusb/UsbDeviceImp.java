@@ -208,7 +208,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 				try { getActiveUsbConfigImp().getUsbInterfaceImp((byte)irp.wIndex()).setActiveSettingNumber((byte)irp.wValue()); }
 				catch ( Exception e ) { /* FIXME - log? */ }
 			}
-			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp,irp.getData(),irp.getActualLength()));
+			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp,irp.getData(),irp.getOffset(),irp.getActualLength()));
 		}
 	}
 
@@ -228,11 +228,23 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	public void setDeviceDescriptor( DeviceDescriptor desc ) { deviceDescriptor = desc; }
 
 	/**
-	 * @return the specified StringDescriptor.
+	 * Get a cached StringDescriptor.
+	 * @param index The index of the StringDescriptor.
+	 * @return The specified StringDescriptor, or null.
 	 */
 	public StringDescriptor getCachedStringDescriptor( byte index )
 	{
-		return (StringDescriptor)stringDescriptors.get( new Byte( index ).toString() );
+		return (StringDescriptor)stringDescriptors.get( new Byte(index).toString() );
+	}
+
+	/**
+	 * Set a cached StringDescriptor.
+	 * @param index The index.
+	 * @param desc The StringDescriptor.
+	 */
+	public void setCachedStringDescriptor( byte index, StringDescriptor desc )
+	{
+		stringDescriptors.put( new Byte(index).toString(), desc );
 	}
 
 	/**
@@ -323,7 +335,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 */
 	public void syncSubmit( ControlUsbIrp irp ) throws UsbException
 	{
-		getUsbDeviceOsImp().syncSubmit( controlUsbIrpToControlUsbIrpImp( irp ) );
+		synchronized (submitLock) {
+			getUsbDeviceOsImp().syncSubmit( controlUsbIrpToControlUsbIrpImp( irp ) );
+		}
 	}
 
 	/**
@@ -333,7 +347,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 */
 	public void asyncSubmit( ControlUsbIrp irp ) throws UsbException
 	{
-		getUsbDeviceOsImp().asyncSubmit( controlUsbIrpToControlUsbIrpImp( irp ) );
+		synchronized (submitLock) {
+			getUsbDeviceOsImp().asyncSubmit( controlUsbIrpToControlUsbIrpImp( irp ) );
+		}
 	}
 
 	/**
@@ -347,7 +363,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 */
 	public void syncSubmit( List list ) throws UsbException
 	{
-		getUsbDeviceOsImp().syncSubmit( controlUsbIrpListToControlUsbIrpImpList( list ) );
+		synchronized (submitLock) {
+			getUsbDeviceOsImp().syncSubmit( controlUsbIrpListToControlUsbIrpImpList( list ) );
+		}
 	}
 
 	/**
@@ -361,7 +379,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 */
 	public void asyncSubmit( List list ) throws UsbException
 	{
-		getUsbDeviceOsImp().asyncSubmit( controlUsbIrpListToControlUsbIrpImpList( list ) );
+		synchronized (submitLock) {
+			getUsbDeviceOsImp().asyncSubmit( controlUsbIrpListToControlUsbIrpImpList( list ) );
+		}
 	}
 
 	//**************************************************************************
@@ -373,11 +393,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 		if (0x0000 == langId) {
 			byte[] data = new byte[256];
 
-//FIXME - implement using javax.usb.util package standard ops method?
-data[0] = 0;
-//getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
+			int len = StandardRequest.getDescriptor( this, UsbConst.DESCRIPTOR_TYPE_STRING, (byte)0, (short)0, data );
 
-			if (4 > data[0])
+			if (4 > len || 4 > UsbUtil.unsignedInt(data[0]))
 				throw new UsbException("Strings not supported by device");
 
 			langId = (short)((data[3] << 8) | data[2]);
@@ -391,26 +409,23 @@ data[0] = 0;
 	{
 		byte[] data = new byte[256];
 
-//FIXME - implement using javax.usb.util package standard ops method?
-//Request request = getStandardOperations().getDescriptor( (short)((DescriptorConst.DESCRIPTOR_TYPE_STRING << 8) | (index)), getLangId(), data );
-throw new UsbException("Not implemented.");
+		int len = StandardRequest.getDescriptor( this, UsbConst.DESCRIPTOR_TYPE_STRING, index, getLangId(), data );
 
-		/* requested string not present */
-//if (2 > request.getActualLength())
-//			return;
+		/* requested string not present or invalid */
+		if (2 > len || 2 > UsbUtil.unsignedInt(data[0]))
+			return;
 
-		/* claimed length must be at least 2; length byte and type byte are mandatory. */
-//		if (2 > UsbUtil.unsignedInt(data[0]))
-//			throw new UsbException("String Descriptor length byte is an invalid length, minimum length must be 2, claimed length " + UsbUtil.unsignedInt(data[0]));
+		/* String claims to be longer than actual data transferred */
+		if (UsbUtil.unsignedInt(data[0]) > len)
+			throw new UsbException("String Descriptor length byte is longer than Descriptor data");
 
 		/* string length (descriptor len minus 2 for header) */
-//		int len = UsbUtil.unsignedInt(data[0]) - 2;
+		int strLen = UsbUtil.unsignedInt(data[0]) - 2;
 
-//		if (request.getLength() < (len + 2))
-//			throw new UsbException("String Descriptor length byte is longer than Descriptor data");
+		byte[] bString = new byte[strLen];
+		System.arraycopy(data, 2, bString, 0, strLen);
 
-//FIXME - fix this
-//setStringDescriptor( index, new StringDescriptorImp( data[0], data[1], bytesToString(data,len) ) );
+		setCachedStringDescriptor( index, new StringDescriptorImp( data[0], data[1], bString ) );
 	}
 
 	/**
@@ -419,9 +434,6 @@ throw new UsbException("Not implemented.");
 	 */
 	protected void setupControlUsbIrpImp( ControlUsbIrpImp controlUsbIrpImp )
 	{
-		controlUsbIrpImp.setUsbException( null );
-		controlUsbIrpImp.setActualLength( 0 );
-		controlUsbIrpImp.setComplete( false );
 		controlUsbIrpImp.setCompletion( this );
 	}
 
@@ -464,6 +476,8 @@ throw new UsbException("Not implemented.");
 	// Instance variables
 
 	private UsbDeviceOsImp usbDeviceOsImp = null;
+
+	private Object submitLock = new Object();
 
 	private DeviceDescriptor deviceDescriptor = null;
 
