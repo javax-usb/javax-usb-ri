@@ -36,6 +36,8 @@ public class UsbPipePanel extends UsbPanel
 		refresh();
 	}
 
+	public UsbPipe getUsbPipe() { return usbPipe; }
+
 	protected void refresh()
 	{
 		clear();

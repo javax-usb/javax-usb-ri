@@ -47,6 +47,8 @@ public class UsbDevicePanel extends UsbPanel
 		refresh();
 	}
 
+	public UsbDevice getUsbDevice() { return usbDevice; }
+
 	protected void refresh()
 	{
 		clear();

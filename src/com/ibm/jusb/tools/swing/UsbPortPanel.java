@@ -41,6 +41,8 @@ public class UsbPortPanel extends UsbPanel
 		refresh();
 	}
 
+	public UsbPort getUsbPort() { return usbPort; }
+
 	protected void refresh()
 	{
 		clear();

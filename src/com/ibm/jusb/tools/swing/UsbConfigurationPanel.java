@@ -41,6 +41,8 @@ public class UsbConfigurationPanel extends UsbPanel
 		refresh();
 	}
 
+	public UsbConfiguration getUsbConfiguration() { return usbConfiguration; }
+
 	protected void refresh()
 	{
 		clear();

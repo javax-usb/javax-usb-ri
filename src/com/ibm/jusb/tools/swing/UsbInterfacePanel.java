@@ -45,6 +45,8 @@ public class UsbInterfacePanel extends UsbPanel
 		refresh();
 	}
 
+	public UsbInterface getUsbInterface() { return usbInterface; }
+
 	protected void refresh()
 	{
 		clear();

@@ -42,6 +42,8 @@ public class UsbEndpointPanel extends UsbPanel
 
 	}
 
+	public UsbEndpoint getUsbEndpoint() { return usbEndpoint; }
+
 	protected void refresh()
 	{
 		clear();
