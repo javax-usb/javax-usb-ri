@@ -10,6 +10,7 @@ package com.ibm.jusb;
  */
 
 import javax.usb.UsbDescriptor;
+import javax.usb.util.UsbUtil;
 
 /**
  * UsbDescriptor implementation.
@@ -44,20 +45,27 @@ public class UsbDescriptorImp implements UsbDescriptor
 	 */
 	public boolean equals(Object object)
 	{
-		if (null == object)
-			return false;
+		try { return toString().equals(object.toString()); }
+		catch ( NullPointerException npE ) { return false; }
+	}
 
-		if (this == object)
-			return true;
+	/**
+	 * Get the hashcode.
+	 * <p>
+	 * This is implemented using the {@link #toString() String}'s hashCode.
+	 * @return The hashcode.
+	 */
+	public int hashCode() { return toString().hashCode(); }
 
-		UsbDescriptorImp desc = null;
-
-		try { desc = (UsbDescriptorImp)object; }
-		catch ( ClassCastException ccE ) { return false; }
-
+	/**
+	 * Get a String representing this.
+	 * @return A String representing this.
+	 */
+	public String toString()
+	{
 		return
-			bLength() == desc.bLength() &&
-			bDescriptorType() == desc.bDescriptorType();
+			"bLength : " + UsbUtil.unsignedInt(bLength()) + "\n" +
+			"bDescriptorType : 0x" + UsbUtil.toHexString(bDescriptorType()) + "\n";
 	}
 
 	private byte bLength = 0x00;

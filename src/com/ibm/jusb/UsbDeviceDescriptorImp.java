@@ -10,6 +10,7 @@ package com.ibm.jusb;
  */
 
 import javax.usb.UsbDeviceDescriptor;
+import javax.usb.util.UsbUtil;
 
 /*
  * UsbDeviceDescriptor implementation.
@@ -139,36 +140,25 @@ public class UsbDeviceDescriptorImp extends UsbDescriptorImp implements UsbDevic
     public byte bNumConfigurations() { return bNumConfigurations; }
 
 	/**
-	 * Compare this to an Object.
-	 * @param object The Object.
-	 * @return If this is equal to the Object.
+	 * Get a String representing this.
+	 * @return A String representing this.
 	 */
-	public boolean equals(Object object)
+	public String toString()
 	{
-		if (!super.equals(object))
-			return false;
-
-		if (this == object)
-			return true;
-
-		UsbDeviceDescriptorImp desc = null;
-
-		try { desc = (UsbDeviceDescriptorImp)object; }
-		catch ( ClassCastException ccE ) { return false; }
-
 		return
-			bcdUSB() == desc.bcdUSB() &&
-			bDeviceClass() == desc.bDeviceClass() &&
-			bDeviceSubClass() == desc.bDeviceSubClass() &&
-			bDeviceProtocol() == desc.bDeviceProtocol() &&
-			bMaxPacketSize0() == desc.bMaxPacketSize0() &&
-			idVendor() == desc.idVendor() &&
-			idProduct() == desc.idProduct() &&
-			bcdDevice() == desc.bcdDevice() &&
-			iManufacturer() == desc.iManufacturer() &&
-			iProduct() == desc.iProduct() &&
-			iSerialNumber() == desc.iSerialNumber() &&
-			bNumConfigurations() == desc.bNumConfigurations();
+			super.toString() +
+			"bcdUSB : " + UsbUtil.toHexString(bcdUSB()) + "\n" +
+			"bDeviceClass : 0x" + UsbUtil.toHexString(bDeviceClass()) + "\n" +
+			"bDeviceSubClass : 0x" + UsbUtil.toHexString(bDeviceSubClass()) + "\n" +
+			"bDeviceProtocol : 0x" + UsbUtil.toHexString(bDeviceProtocol()) + "\n" +
+			"bMaxPacketSize0 : " + UsbUtil.unsignedInt(bMaxPacketSize0()) + "\n" +
+			"idVendor : 0x" + UsbUtil.toHexString(idVendor()) + "\n" +
+			"idProduct : 0x" + UsbUtil.toHexString(idProduct()) + "\n" +
+			"bcdDevice : " + UsbUtil.toHexString(bcdDevice()) + "\n" +
+			"iManufacturer : " + UsbUtil.unsignedInt(iManufacturer()) + "\n" +
+			"iProduct : " + UsbUtil.unsignedInt(iProduct()) + "\n" +
+			"iSerialNumber : " + UsbUtil.unsignedInt(iSerialNumber()) + "\n" +
+			"bNumConfigurations : " + UsbUtil.unsignedInt(bNumConfigurations()) + "\n";
 	}
 
     private short bcdUSB = 0x0000;

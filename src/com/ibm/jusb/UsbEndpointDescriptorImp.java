@@ -10,6 +10,7 @@ package com.ibm.jusb;
  */
 
 import javax.usb.UsbEndpointDescriptor;
+import javax.usb.util.UsbUtil;
 
 /**
  * UsbEndpointDescriptor implementation.
@@ -64,28 +65,17 @@ public class UsbEndpointDescriptorImp extends UsbDescriptorImp implements UsbEnd
 	public byte bInterval() { return bInterval; }
 
 	/**
-	 * Compare this to an Object.
-	 * @param object The Object to compare to.
-	 * @return If this is equal to the Object.
+	 * Get a String representing this.
+	 * @return A String representing this.
 	 */
-	public boolean equals(Object object)
+	public String toString()
 	{
-		if (!super.equals(object))
-			return false;
-
-		if (this == object)
-			return true;
-
-		UsbEndpointDescriptorImp desc = null;
-
-		try { desc = (UsbEndpointDescriptorImp)object; }
-		catch ( ClassCastException ccE ) { return false; }
-
 		return
-			bEndpointAddress() == desc.bEndpointAddress() &&
-			bmAttributes() == desc.bmAttributes() &&
-			wMaxPacketSize() == desc.wMaxPacketSize() &&
-			bInterval() == desc.bInterval();
+			super.toString() +
+			"bEndpointAddress : 0x" + UsbUtil.toHexString(bEndpointAddress()) + "\n" +
+			"bmAttributes : 0x" + UsbUtil.toHexString(bmAttributes()) + "\n" +
+			"wMaxPacketSize : " + UsbUtil.unsignedInt(wMaxPacketSize()) + "\n" +
+			"bInterval : " + UsbUtil.unsignedInt(bInterval()) + "\n";
 	}
 
 	private byte bEndpointAddress = 0x00;

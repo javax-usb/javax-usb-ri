@@ -10,6 +10,7 @@ package com.ibm.jusb;
  */
 
 import javax.usb.UsbInterfaceDescriptor;
+import javax.usb.util.UsbUtil;
 
 /**
  * UsbInterfaceDescriptor implementation.
@@ -93,31 +94,20 @@ public class UsbInterfaceDescriptorImp extends UsbDescriptorImp implements UsbIn
     public byte iInterface() { return iInterface; }
 
 	/**
-	 * Compare this to an Object.
-	 * @param object The Object to compare to.
-	 * @return If this is equal to the Object.
+	 * Get a String representing this.
+	 * @return A String representing this.
 	 */
-	public boolean equals(Object object)
+	public String toString()
 	{
-		if (!super.equals(object))
-			return false;
-
-		if (this == object)
-			return true;
-
-		UsbInterfaceDescriptorImp desc = null;
-
-		try { desc = (UsbInterfaceDescriptorImp)object; }
-		catch ( ClassCastException ccE ) { return false; }
-
 		return
-			bInterfaceNumber() == desc.bInterfaceNumber() &&
-			bAlternateSetting() == desc.bAlternateSetting() &&
-			bNumEndpoints() == desc.bNumEndpoints() &&
-			bInterfaceClass() == desc.bInterfaceClass() &&
-			bInterfaceSubClass() == desc.bInterfaceSubClass() &&
-			bInterfaceProtocol() == desc.bInterfaceProtocol() &&
-			iInterface() == desc.iInterface();
+			super.toString() +
+			"bInterfaceNumber : " + UsbUtil.unsignedInt(bInterfaceNumber()) + "\n" +
+			"bAlternateSetting : " + UsbUtil.unsignedInt(bAlternateSetting()) + "\n" +
+			"bNumEndpoints : " + UsbUtil.unsignedInt(bNumEndpoints()) + "\n" +
+			"bInterfaceClass : 0x" + UsbUtil.toHexString(bInterfaceClass()) + "\n" +
+			"bInterfaceSubClass : 0x" + UsbUtil.toHexString(bInterfaceSubClass()) + "\n" +
+			"bInterfaceProtocol : 0x" + UsbUtil.toHexString(bInterfaceProtocol()) + "\n" +
+			"iInterface : " + UsbUtil.unsignedInt(iInterface()) + "\n";
 	}
 
     private byte bInterfaceNumber = 0x00;

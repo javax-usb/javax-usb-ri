@@ -9,12 +9,11 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.*;
-import javax.usb.util.*;
+import javax.usb.UsbConfigurationDescriptor;
+import javax.usb.util.UsbUtil;
 
 /**
  * UsbConfigurationDescriptor implementation.
- * @author E. Michael Maximilien
  * @author Dan Streetman
  */
 public class UsbConfigurationDescriptorImp extends UsbDescriptorImp implements UsbConfigurationDescriptor
@@ -86,30 +85,19 @@ public class UsbConfigurationDescriptorImp extends UsbDescriptorImp implements U
     public byte bMaxPower() { return bMaxPower; }
 
 	/**
-	 * Compare this to an Object.
-	 * @param object The Object to compare to.
-	 * @return If this is equal to the Object.
+	 * Get a String representing this.
+	 * @return A String representing this.
 	 */
-	public boolean equals(Object object)
+	public String toString()
 	{
-		if (!super.equals(object))
-			return false;
-
-		if (this == object)
-			return true;
-
-		UsbConfigurationDescriptorImp desc = null;
-
-		try { desc = (UsbConfigurationDescriptorImp)object; }
-		catch ( ClassCastException ccE ) { return false; }
-
 		return
-			wTotalLength() == desc.wTotalLength() &&
-			bNumInterfaces() == desc.bNumInterfaces() &&
-			bConfigurationValue() == desc.bConfigurationValue() &&
-			iConfiguration() == iConfiguration() &&
-			bmAttributes() == bmAttributes() &&
-			bMaxPower() == bMaxPower();
+			super.toString() +
+			"wTotalLength : " + UsbUtil.unsignedInt(wTotalLength()) + "\n" +
+			"bNumInterfaces : " + UsbUtil.unsignedInt(bNumInterfaces()) + "\n" +
+			"bConfigurationValue : " + UsbUtil.unsignedInt(bConfigurationValue()) + "\n" +
+			"iConfiguration : " + UsbUtil.unsignedInt(iConfiguration()) + "\n" +
+			"bmAttributes : 0x" + UsbUtil.toHexString(bmAttributes()) + "\n" +
+			"bMaxPower : " + (2 * UsbUtil.unsignedInt(bMaxPower())) + " mA\n";
 	}
 
 	private short wTotalLength = 0x0000;
