@@ -39,8 +39,6 @@ public class UsbServicesListenerImp extends EventListenerImp implements UsbServi
 		addRunnable( new DetachEvent(event) );
 	}
 
-//FIXME - event firing should use a list copy or be sync'd with add/remove of listeners
-
 	private class AttachEvent extends EventRunnable
 	{
 		public AttachEvent() { super(); }
@@ -49,8 +47,11 @@ public class UsbServicesListenerImp extends EventListenerImp implements UsbServi
 		public void run()
 		{
 			List list = getEventListeners();
-			for (int i=0; i<list.size(); i++)
-				((UsbServicesListener)list.get(i)).usbDeviceAttached((UsbServicesEvent)event);
+
+			synchronized (list) {
+				for (int i=0; i<list.size(); i++)
+					((UsbServicesListener)list.get(i)).usbDeviceAttached((UsbServicesEvent)event);
+			}
 		}
 	}
 
@@ -62,8 +63,11 @@ public class UsbServicesListenerImp extends EventListenerImp implements UsbServi
 		public void run()
 		{
 			List list = getEventListeners();
-			for (int i=0; i<list.size(); i++)
-				((UsbServicesListener)list.get(i)).usbDeviceDetached((UsbServicesEvent)event);
+
+			synchronized (list) {
+				for (int i=0; i<list.size(); i++)
+					((UsbServicesListener)list.get(i)).usbDeviceDetached((UsbServicesEvent)event);
+			}
 		}
 	}
 }                                                                             

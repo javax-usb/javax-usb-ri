@@ -39,8 +39,6 @@ public class UsbPipeListenerImp extends EventListenerImp implements UsbPipeListe
 		addRunnable( new DataEvent(event) );
 	}
 
-//FIXME - event firing should use a list copy or be sync'd with add/remove of listeners
-
 	private class ErrorEvent extends EventRunnable
 	{
 		public ErrorEvent() { super(); }
@@ -49,8 +47,11 @@ public class UsbPipeListenerImp extends EventListenerImp implements UsbPipeListe
 		public void run()
 		{
 			List list = getEventListeners();
-			for (int i=0; i<list.size(); i++)
-				((UsbPipeListener)list.get(i)).errorEventOccurred((UsbPipeErrorEvent)event);
+
+			synchronized (list) {
+				for (int i=0; i<list.size(); i++)
+					((UsbPipeListener)list.get(i)).errorEventOccurred((UsbPipeErrorEvent)event);
+			}
 		}
 	}
 
@@ -62,8 +63,11 @@ public class UsbPipeListenerImp extends EventListenerImp implements UsbPipeListe
 		public void run()
 		{
 			List list = getEventListeners();
-			for (int i=0; i<list.size(); i++)
-				((UsbPipeListener)list.get(i)).dataEventOccurred((UsbPipeDataEvent)event);
+
+			synchronized (list) {
+				for (int i=0; i<list.size(); i++)
+					((UsbPipeListener)list.get(i)).dataEventOccurred((UsbPipeDataEvent)event);
+			}
 		}
 	}
 }                                                                             

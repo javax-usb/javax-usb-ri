@@ -48,8 +48,6 @@ public class UsbDeviceListenerImp extends EventListenerImp implements UsbDeviceL
 		addRunnable( new DetachEvent(event) );
 	}
 
-//FIXME - event firing should use a list copy or be sync'd with add/remove of listeners
-
 	private class ErrorEvent extends EventRunnable
 	{
 		public ErrorEvent() { super(); }
@@ -58,8 +56,11 @@ public class UsbDeviceListenerImp extends EventListenerImp implements UsbDeviceL
 		public void run()
 		{
 			List list = getEventListeners();
-			for (int i=0; i<list.size(); i++)
-				((UsbDeviceListener)list.get(i)).errorEventOccurred((UsbDeviceErrorEvent)event);
+
+			synchronized (list) {
+				for (int i=0; i<list.size(); i++)
+					((UsbDeviceListener)list.get(i)).errorEventOccurred((UsbDeviceErrorEvent)event);
+			}
 		}
 	}
 
@@ -71,8 +72,11 @@ public class UsbDeviceListenerImp extends EventListenerImp implements UsbDeviceL
 		public void run()
 		{
 			List list = getEventListeners();
-			for (int i=0; i<list.size(); i++)
-				((UsbDeviceListener)list.get(i)).dataEventOccurred((UsbDeviceDataEvent)event);
+
+			synchronized (list) {
+				for (int i=0; i<list.size(); i++)
+					((UsbDeviceListener)list.get(i)).dataEventOccurred((UsbDeviceDataEvent)event);
+			}
 		}
 	}
 
@@ -84,8 +88,11 @@ public class UsbDeviceListenerImp extends EventListenerImp implements UsbDeviceL
 		public void run()
 		{
 			List list = getEventListeners();
-			for (int i=0; i<list.size(); i++)
-				((UsbDeviceListener)list.get(i)).usbDeviceDetached((UsbDeviceEvent)event);
+
+			synchronized (list) {
+				for (int i=0; i<list.size(); i++)
+					((UsbDeviceListener)list.get(i)).usbDeviceDetached((UsbDeviceEvent)event);
+			}
 		}
 	}
 }
