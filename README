@@ -16,11 +16,9 @@ ANT       http://jakarta.apache.org/ant
 The ANT tool uses XML buildfiles to create the project.  Run ant in
 the toplevel directory to list all available targets.
 
-the "all" target creates everything.
-
 ****************
 * Installation *
 ****************
 
-Add the lib/jsr80_ri.jar to your CLASSPATH.
+Add lib/jsr80_ri.jar to your CLASSPATH.
 
