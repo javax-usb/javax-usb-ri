@@ -24,7 +24,7 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 		super(virtualDeviceDescriptor, new VirtualRootUsbDeviceOsImp());
 		setSpeed(UsbConst.DEVICE_SPEED_FULL);
 		UsbConfigurationImp virtualConfiguration = new UsbConfigurationImp(this, virtualConfigurationDescriptor);
-		UsbInterfaceImp virtualInterface = new UsbInterfaceImp(virtualConfiguration, virtualInterfaceDescriptor, new DefaultUsbInterfaceOsImp());
+		UsbInterfaceImp virtualInterface = new UsbInterfaceImp(virtualConfiguration, virtualInterfaceDescriptor, new VirtualRootUsbInterfaceOsImp());
 		setActiveUsbConfigurationNumber(CONFIG_NUM);
 	}
 
@@ -134,6 +134,15 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 		(byte)0x00, /* subclass */
 		(byte)0x00, /* protocol */
 		(byte)0x00 ); /* iface index */
+
+	/**
+	 * No-claim UsbInterfaceOsImp.
+	 */
+	private static class VirtualRootUsbInterfaceOsImp extends DefaultUsbInterfaceOsImp implements UsbInterfaceOsImp
+	{
+		public void claim() throws UsbException { throw new UsbException("Cannot claim an interface on a virtual root hub."); }
+		public boolean isClaimed() { return true; }
+	}
 
 	/**
 	 * Class to intercept Standard Requests.
