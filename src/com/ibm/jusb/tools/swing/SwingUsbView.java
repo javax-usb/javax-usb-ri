@@ -9,7 +9,6 @@ package com.ibm.jusb.tools.swing;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import java.awt.*;
 import java.util.*;
 
 import javax.swing.*;
@@ -42,13 +41,15 @@ public class SwingUsbView
 		tree.addTreeSelectionListener(selectionListener);
 		tree.addTreeExpansionListener(expansionListener);
 
+		deviceTable.put(rootHub, rootNode);
+
+		services.addUsbServicesListener(topologyListener);
+
 		createTree(rootHub, rootNode);
 
 		tree.setSelectionPath(new TreePath(rootNode.getPath()));
 
 		frame.setSize(MID_SIZE);
-
-		services.addUsbServicesListener(topologyListener);
 	}
 
 	/** Main */
@@ -66,6 +67,7 @@ public class SwingUsbView
 
 	protected void createTree(UsbHub hub, DefaultMutableTreeNode node)
 	{
+System.out.println("Creating tree for hub " + hub.getUsbDeviceDescriptor().idVendor() + ":" + hub.getUsbDeviceDescriptor().idProduct());
 		Iterator iterator = hub.getUsbPorts().iterator();
 		while (iterator.hasNext()) {
 			UsbPort port = (UsbPort)iterator.next();
@@ -198,8 +200,16 @@ public class SwingUsbView
 			{
 				UsbDevice device = usE.getUsbDevice();
 
+System.out.println("Got device connect for " + 
+UsbUtil.toHexString(usE.getUsbDevice().getUsbDeviceDescriptor().idVendor()) + ":" +
+UsbUtil.toHexString(usE.getUsbDevice().getUsbDeviceDescriptor().idProduct()));
 				if (deviceTable.containsKey(device.getParentUsbPort().getUsbHub())) {
 					DefaultMutableTreeNode parent = (DefaultMutableTreeNode)deviceTable.get(device.getParentUsbPort().getUsbHub());
+					int index = UsbUtil.unsignedInt(device.getParentUsbPort().getPortNumber()) - 1;
+					while (parent.getChildCount() <= index) {
+						parent.add(getPortNode(device.getParentUsbPort().getUsbHub().getUsbPort((byte)(parent.getChildCount()+1))));
+						treeModel.reload(parent);
+					}
 					DefaultMutableTreeNode node = (DefaultMutableTreeNode)parent.getChildAt(UsbUtil.unsignedInt(device.getParentUsbPort().getPortNumber()) - 1);
 					if (device.isUsbHub()) {
 						node.setUserObject(new UsbHubPanel((UsbHub)device));
@@ -250,7 +260,7 @@ public class SwingUsbView
 			}
 		};
 
-	protected static final Dimension DEFAULT_SIZE = new Dimension(640,480);
-	protected static final Dimension MID_SIZE = new Dimension(800,600);
+	protected static final java.awt.Dimension DEFAULT_SIZE = new java.awt.Dimension(640,480);
+	protected static final java.awt.Dimension MID_SIZE = new java.awt.Dimension(800,600);
 
 }
