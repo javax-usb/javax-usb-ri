@@ -295,21 +295,13 @@ public class UsbPipeImp extends Object implements UsbPipe
 	 * Register's the listener object for UsbPipeEvent
 	 * @param listener the UsbPipeListener instance
 	 */
-	public void addUsbPipeListener( UsbPipeListener listener ) { usbPipeEventHelper.addUsbPipeListener( listener ); }
+	public void addUsbPipeListener( UsbPipeListener listener ) { usbPipeEventHelper.addEventListener( listener ); }
 
 	/**
 	 * Removes the listener object from the listener list
 	 * @param listener the UsbPipeListener instance
 	 */
-	public void removeUsbPipeListener( UsbPipeListener listener ) { usbPipeEventHelper.removeUsbPipeListener( listener ); }
-
-	/**
-	 * Get this pipe's event helper.
-	 * <p>
-	 * This can be used to fire events to listeners (in a seperate Thread).
-	 * @returns a UsbPipeEventHelper object.
-	 */
-	public UsbPipeEventHelper getUsbPipeEventHelper() { return usbPipeEventHelper; }
+	public void removeUsbPipeListener( UsbPipeListener listener ) { usbPipeEventHelper.removeEventListener( listener ); }
 
 	//**************************************************************************
 	// Protected methods
@@ -324,7 +316,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	{
 		UsbPipeDataEvent event = new UsbPipeDataEvent(this,sn,data,length);
 
-		getUsbPipeEventHelper().fireUsbPipeDataEvent(event);
+		usbPipeEventHelper.dataEventOccurred(event);
 	}
 
 	/**
@@ -337,7 +329,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	{
 		UsbPipeErrorEvent event = new UsbPipeErrorEvent(this,sn,ec,uE);
 
-		getUsbPipeEventHelper().fireUsbPipeErrorEvent(event);
+		usbPipeEventHelper.errorEventOccurred(event);
 	}
 
 	/**
@@ -422,7 +414,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 	private UsbPipeOsImp usbPipeOsImp = null;
 
-	private UsbPipeEventHelper usbPipeEventHelper = new UsbPipeEventHelper( this, new FifoScheduler() );
+	private UsbPipeEventHelper usbPipeEventHelper = new UsbPipeEventHelper();
 
 	private UsbIrpImpFactory usbIrpImpFactory = new UsbIrpImpFactory();
 

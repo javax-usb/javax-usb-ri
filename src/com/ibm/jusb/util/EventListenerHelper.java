@@ -68,4 +68,17 @@ public class EventListenerHelper implements EventListener
 	private List listeners = new Vector();
 
 	private RunnableManager manager = new RunnableManager();
+
+	//**************************************************************************
+	// Inner classes
+
+	public static abstract class EventRunnable implements Runnable
+	{
+		public EventRunnable() { }
+		public EventRunnable(EventObject e) { event = e; }
+
+		public abstract void run();
+
+		public EventObject event = null;
+	}
 }

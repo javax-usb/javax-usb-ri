@@ -19,7 +19,7 @@ import com.ibm.jusb.util.*;
  * Helper class to handle multiplexing UsbDeviceEvents to listeners.
  * @author Dan Streetman
  */
-public class UsbDeviceEventHelper extends EventListenerHelper
+public class UsbDeviceEventHelper extends EventListenerHelper implements UsbDeviceListener
 {
 	/** @param event The Event to fire. */
 	public void errorEventOccurred(UsbDeviceErrorEvent event)
@@ -27,9 +27,7 @@ public class UsbDeviceEventHelper extends EventListenerHelper
 		if (!hasListeners())
 			return;
 
-		ErrorEvent eE = new ErrorEvent();
-		eE.udeE = event;
-		addRunnable(eE);
+		addRunnable( new ErrorEvent(event) );
 	}
 
 	/** @param event The Event to fire. */
@@ -38,9 +36,7 @@ public class UsbDeviceEventHelper extends EventListenerHelper
 		if (!hasListeners())
 			return;
 
-		DataEvent dE = new DataEvent();
-		dE.uddE = event;
-		addRunnable(dE);
+		addRunnable( new DataEvent(event) );
 	}
 
 	/** @param event The Event to fire. */
@@ -49,46 +45,47 @@ public class UsbDeviceEventHelper extends EventListenerHelper
 		if (!hasListeners())
 			return;
 
-		DetachEvent dE = new DetachEvent();
-		dE.udE = event;
-		addRunnable(dE);
+		addRunnable( new DetachEvent(event) );
 	}
 
 //FIXME - event firing should use a list copy or be sync'd with add/remove of listeners
 
-	private class ErrorEvent implements Runnable
+	private class ErrorEvent extends EventRunnable
 	{
+		public ErrorEvent() { super(); }
+		public ErrorEvent(EventObject e) { super(e); }
+
 		public void run()
 		{
 			List list = getEventListeners();
 			for (int i=0; i<list.size(); i++)
-				((UsbDeviceListener)list.get(i)).errorEventOccurred(udeE);
+				((UsbDeviceListener)list.get(i)).errorEventOccurred((UsbDeviceErrorEvent)event);
 		}
-
-		public UsbDeviceErrorEvent udeE = null;
 	}
 
-	private class DataEvent implements Runnable
+	private class DataEvent extends EventRunnable
 	{
+		public DataEvent() { super(); }
+		public DataEvent(EventObject e) { super(e); }
+
 		public void run()
 		{
 			List list = getEventListeners();
 			for (int i=0; i<list.size(); i++)
-				((UsbDeviceListener)list.get(i)).dataEventOccurred(uddE);
+				((UsbDeviceListener)list.get(i)).dataEventOccurred((UsbDeviceDataEvent)event);
 		}
-
-		public UsbDeviceDataEvent uddE = null;
 	}
 
-	private class DetachEvent implements Runnable
+	private class DetachEvent extends EventRunnable
 	{
+		public DetachEvent() { super(); }
+		public DetachEvent(EventObject e) { super(e); }
+
 		public void run()
 		{
 			List list = getEventListeners();
 			for (int i=0; i<list.size(); i++)
-				((UsbDeviceListener)list.get(i)).usbDeviceDetached(udE);
+				((UsbDeviceListener)list.get(i)).usbDeviceDetached((UsbDeviceEvent)event);
 		}
-
-		public UsbDeviceEvent udE = null;
 	}
 }
