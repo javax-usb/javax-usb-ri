@@ -76,6 +76,9 @@ public class UsbStringDescriptorImp extends UsbDescriptorImp implements UsbStrin
 		if (!super.equals(object))
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbStringDescriptorImp desc = null;
 
 		try { desc = (UsbStringDescriptorImp)object; }

@@ -47,6 +47,9 @@ public class UsbDescriptorImp implements UsbDescriptor
 		if (null == object)
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbDescriptorImp desc = null;
 
 		try { desc = (UsbDescriptorImp)object; }

@@ -102,6 +102,9 @@ public class UsbInterfaceDescriptorImp extends UsbDescriptorImp implements UsbIn
 		if (!super.equals(object))
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbInterfaceDescriptorImp desc = null;
 
 		try { desc = (UsbInterfaceDescriptorImp)object; }

@@ -93,6 +93,9 @@ public class UsbEndpointImp implements UsbEndpoint
 		if (null == object)
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbEndpointImp ep = null;
 
 		try { ep = (UsbEndpointImp)object; }

@@ -95,6 +95,9 @@ public class UsbConfigurationDescriptorImp extends UsbDescriptorImp implements U
 		if (!super.equals(object))
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbConfigurationDescriptorImp desc = null;
 
 		try { desc = (UsbConfigurationDescriptorImp)object; }

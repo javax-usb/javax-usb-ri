@@ -346,6 +346,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 		if (null == object)
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbDeviceImp device = null;
 
 		try { device = (UsbDeviceImp)object; }

@@ -73,6 +73,9 @@ public class UsbEndpointDescriptorImp extends UsbDescriptorImp implements UsbEnd
 		if (!super.equals(object))
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbEndpointDescriptorImp desc = null;
 
 		try { desc = (UsbEndpointDescriptorImp)object; }

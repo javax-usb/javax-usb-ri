@@ -184,6 +184,9 @@ public class UsbConfigurationImp implements UsbConfiguration
 		if (null == object)
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbConfigurationImp configuration = null;
 
 		try { configuration = (UsbConfigurationImp)object; }

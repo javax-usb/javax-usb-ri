@@ -327,6 +327,9 @@ public class UsbInterfaceImp implements UsbInterface
 		if (null == object)
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbInterfaceImp iface = null;
 
 		try { iface = (UsbInterfaceImp)object; }

@@ -148,6 +148,9 @@ public class UsbDeviceDescriptorImp extends UsbDescriptorImp implements UsbDevic
 		if (!super.equals(object))
 			return false;
 
+		if (this == object)
+			return true;
+
 		UsbDeviceDescriptorImp desc = null;
 
 		try { desc = (UsbDeviceDescriptorImp)object; }
