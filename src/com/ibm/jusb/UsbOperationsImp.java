@@ -60,10 +60,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 		try {
 			getUsbDeviceImp().getUsbDeviceOsImp().syncSubmit( requestImp );
 		} catch ( UsbException uE ) {
-			requestImp.setUsbException(uE);
 			throw new RequestException("Exception in Request submission", uE);
-		} finally {
-			getUsbDeviceImp().requestImpCompleted(requestImp);
 		}
 	}
 
@@ -98,9 +95,6 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 			getUsbDeviceImp().getUsbDeviceOsImp().syncSubmit( list );
 		} catch ( UsbException uE ) {
 			throw new RequestException("Exception in RequestBundle submission", uE);
-		} finally {
-			for (int i=0; i<list.size(); i++)
-				getUsbDeviceImp().requestImpCompleted((RequestImp)list.get(i));
 		}
 	}
 
