@@ -79,4 +79,10 @@ public class VirtualUsbDeviceOsImp implements UsbDeviceOsImp
 		t.start();
 	}
 
+	//**************************************************************************
+	// Class constants
+
+	public static final String VIRTUAL_ROOT_HUB_MANUFACTURER = "JSR80 Reference Implementation (platform-independent section)";
+	public static final String VIRTUAL_ROOT_HUB_PRODUCT = "JSR80 Virtual Root Hub";
+	public static final String VIRTUAL_ROOT_HUB_SERIALNUMBER = "19741113";
 }
