@@ -24,7 +24,6 @@ import com.ibm.jusb.os.*;
  * <p>
  * The port numbering is 1-based, not 0-based.
  * @author Dan Streetman
- * @author E. Michael Maximilien
  */
 public class UsbHubImp extends UsbDeviceImp implements UsbHub
 {
@@ -49,6 +48,8 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 
 	//**************************************************************************
 	// Public methods
+
+//FIXME - should resizing be used for all hubs?
 
 	/**
 	 * Resizes to the specified number of ports.
@@ -127,6 +128,8 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 
 	/** @return true if this is the virtual root hub */
 	public boolean isRootUsbHub() { return false;  }
+
+//FIXME - get the hub descriptor, use that value for #ports and other values!
 
 	/** @return the number of ports for this hub */
 	public byte getNumberOfPorts() { return (byte)portList.size(); }

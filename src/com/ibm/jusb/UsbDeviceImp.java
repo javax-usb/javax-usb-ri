@@ -41,9 +41,8 @@ import com.ibm.jusb.util.*;
  * {@link com.ibm.jusb.UsbHubImp@addUsbDeviceImp(UsbDeviceImp,byte) addUsbDeviceImp} method, which resizes if needed and
  * sets up the UsbPortImp.
  * @author Dan Streetman
- * @author E. Michael Maximilien
  */
-public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
+public class UsbDeviceImp implements UsbDevice
 {
 	/**
 	 * Constructor.
@@ -65,11 +64,11 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/** @param the UsbDeviceOsImp to use */
 	public void setUsbDeviceOsImp( UsbDeviceOsImp deviceImp ) { usbDeviceOsImp = deviceImp; }
 
-	/** @return the port that this device is attached to */
-	public UsbPort getUsbPort() { return getUsbPortImp(); }
+	/** @return The port that this device is attached to */
+	public UsbPort getParentUsbPort() { return getUsbPortImp(); }
 
-	/** @return the port that this device is attached to */
-	public UsbPortImp getUsbPortImp() { return usbPortImp; }
+	/** @return The port that this device is attached to */
+	public UsbPortImp getParentUsbPortImp() { return usbPortImp; }
 
 	/** @param The parent port */
 	public void setUsbPortImp( UsbPortImp port ) { usbPortImp = port; }
@@ -77,59 +76,20 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/** @return true if this is a UsbHub and false otherwise */
 	public boolean isUsbHub() { return false; }
 
-	/** @return the manufacturer of this device */
-	public String getManufacturer()
-	{
-		try { return getString( getDeviceDescriptor().getManufacturerIndex() ); } catch ( UsbException uE ) { return null; }
-//FIXME - this should throw UsbException
-	}
+	/** @return The manufacturer string. */
+	public String getManufacturerString() throws UsbException { return getString( getDeviceDescriptor().iManufacturer() ); }
 
-	/** @return the serial number of this device */
-	public String getSerialNumber()
-	{
-		try { return getString( getDeviceDescriptor().getSerialNumberIndex() ); } catch ( UsbException uE ) { return null; }
-//FIXME - this should throw UsbException
-	}
+	/** @return The serial number string. */
+	public String getSerialNumberString() throws UsbException { return getString( getDeviceDescriptor().iSerialNumber() ); }
 
-	/** @return a String describing the speed of this device */
-	public String getSpeedString() { return speedString; }
+	/** @return The product string. */
+	public String getProductString() throws UsbException { return getString( getDeviceDescriptor().iProduct() ); }
 
-	/** @return a String describing this product */
-	public String getProductString()
-	{
-		try { return getString( getDeviceDescriptor().getProductIndex() ); } catch ( UsbException uE ) { return null; }
-//FIXME - this should throw UsbException
-	}
-
-	/** @return the USB device class */
-	public byte getDeviceClass() { return getDeviceDescriptor().getDeviceClass(); }
-
-	/** @return the USB device subclass */
-	public byte getDeviceSubClass() { return getDeviceDescriptor().getDeviceSubClass(); }
-
-	/** @returnt the USB device protocol */
-	public byte getDeviceProtocol() { return getDeviceDescriptor().getDeviceProtocol(); }
-
-	/** @return the maximum packet size */
-	public byte getMaxPacketSize() { return getDeviceDescriptor().getMaxPacketSize(); }
-
-	/** @return the number of configurations */
-	public byte getNumConfigs() { return getDeviceDescriptor().getNumConfigs(); }
-
-	/** @return the vendor ID */
-	public short getVendorId() { return getDeviceDescriptor().getVendorId(); }
-
-	/** @return the product ID */
-	public short getProductId() { return getDeviceDescriptor().getProductId(); }
-
-	/** @return the BCD USB version for this device */
-	public short getBcdUsb() { return getDeviceDescriptor().getBcdUsb(); }
-
-	/** @return the BCD revision number for this device */
-	public short getBcdDevice() { return getDeviceDescriptor().getBcdDevice(); }
+	/** @return The speed of this device. */
+	public Object getSpeed() { return speed; }
 
 	/** @return the UsbConfig objects associated with this UsbDevice */
-	public UsbInfoListIterator getUsbConfigs() { return configs.usbInfoListIterator(); }
+	public List getUsbConfigs() { return Collections.unmodifiableList(configs); }
 
 	/** @return the UsbConfig with the specified number as reported by getConfigNumber() */
 	public UsbConfig getUsbConfig( byte number ) { return getUsbConfigImp(number); }
@@ -139,23 +99,23 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	{
 		synchronized ( configs ) {
 			for (int i=0; i<configs.size(); i++) {
-				UsbConfigImp config = (UsbConfigImp)configs.getUsbInfo(i);
+				UsbConfigImp config = (UsbConfigImp)configs.get(i);
 
-				if (number == config.getConfigNumber())
+				if (number == config.getConfigDescriptor().getConfigNumber())
 					return config;
 			}
 		}
 
-		throw new UsbRuntimeException( "No UsbConfig with number " + UsbUtil.unsignedInt( number ) );
+		return null;
 	}
 
 	/** @return if the specified UsbConfig is contained in this UsbDevice */
 	public boolean containsUsbConfig( byte number )
 	{
-		try { getUsbConfig( number ); }
-		catch ( UsbRuntimeException urE ) { return false; }
-
-		return true;
+		if (null == getUsbConfig( number ))
+			return false;
+		else
+			return true;
 	}
 
 	/** @return if this device is configured */
@@ -171,7 +131,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	public UsbConfigImp getActiveUsbConfigImp() { return getUsbConfigImp( getActiveUsbConfigNumber() ); }
 
 	/** @return the device descriptor for this device */
-	public DeviceDescriptor getDeviceDescriptor() { return (DeviceDescriptor)getDescriptor(); }
+	public DeviceDescriptor getDeviceDescriptor() { return deviceDescriptor; }
 
 	/*
 	 * @return the specified string descriptor
@@ -205,35 +165,23 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		return ( null == desc ? null : desc.getString() );
 	}
 
-	/** @return A UsbOperationsImp object */
-	public UsbOperationsImp getUsbOperationsImp() { return usbOperationsImp; }
-
-	/** @return A StandardOperations object */
-	public StandardOperations getStandardOperations() { return getUsbOperationsImp(); }
-
-	/** @return A ClassOperations object */
-	public ClassOperations getClassOperations() { return getUsbOperationsImp(); }
-
-	/** @return A VendorOperations object */
-	public VendorOperations getVendorOperations() { return getUsbOperationsImp(); }
-
 	/** @param requestImp The RequestImp that completed. */
-	public void requestImpCompleted(RequestImp requestImp)
-	{
-		if (requestImp.isUsbException()) {
-			fireErrorEvent(requestImp.getUsbException());
-		} else {
-			if (requestImp.isSetConfigurationRequest()) {
-				try { setActiveUsbConfigNumber((byte)requestImp.getValue()); }
-				catch ( Exception e ) { /* log? */ }
-			} else if (requestImp.isSetInterfaceRequest()) {
-				try { getActiveUsbConfigImp().getUsbInterfaceImp((byte)requestImp.getIndex()).setActiveAlternateSettingNumber((byte)requestImp.getValue()); }
-				catch ( Exception e ) { /* log? */ }
-			}
-
-			fireDataEvent(requestImp.getData(),requestImp.getDataLength());
-		}
-	}
+	//public void requestImpCompleted(RequestImp requestImp)
+	//{
+	//	if (requestImp.isUsbException()) {
+	//		fireErrorEvent(requestImp.getUsbException());
+	//	} else {
+	//		if (requestImp.isSetConfigurationRequest()) {
+	//			try { setActiveUsbConfigNumber((byte)requestImp.getValue()); }
+	//			catch ( Exception e ) { /* log? */ }
+	//		} else if (requestImp.isSetInterfaceRequest()) {
+	//			try { getActiveUsbConfigImp().getUsbInterfaceImp((byte)requestImp.getIndex()).setActiveAlternateSettingNumber((byte)requestImp.getValue()); }
+	//			catch ( Exception e ) { /* log? */ }
+	//		}
+	//
+	//		fireDataEvent(requestImp.getData(),requestImp.getDataLength());
+	//	}
+	//}
 
 	/** @param the listener to add */
 	public void addUsbDeviceListener( UsbDeviceListener listener ) 
@@ -247,23 +195,8 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		usbDeviceEventHelper.removeEventListener(listener);
 	}
 
-	/**
-	 * Visitor.accept method
-	 * @param visitor the UsbInfoVisitor visiting this UsbInfo
-	 */
-	public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbDevice( this ); }
-
 	/** @param desc the new device descriptor */
-	public void setDeviceDescriptor( DeviceDescriptor desc ) { setDescriptor( desc ); }
-
-	/**
-	 * @param index the index of the new string descriptor
-	 * @param desc the new string descriptor
-	 */
-	public void setStringDescriptor( byte index, StringDescriptor desc )
-	{
-		stringDescriptors.put( new Byte( index ), desc );
-	}
+	public void setDeviceDescriptor( DeviceDescriptor desc ) { deviceDescriptor = desc; }
 
 	/**
 	 * @return the specified StringDescriptor.
@@ -274,20 +207,20 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	}
 
 	/**
-	 * @return the String from the specified STringDescriptor
+	 * Sets the speed of this device.
+	 * @param o The speed.
+	 * @see javax.usb.UsbConst#DEVICE_SPEED_UNKNOWN
+	 * @see javax.usb.UsbConst#DEVICE_SPEED_LOW
+	 * @see javax.usb.UsbConst#DEVICE_SPEED_FULL
+	 * @exception IllegalArgumentException If the speed is not one of the defined speeds.
 	 */
-	public String getCachedString( byte index )
+	public void setSpeed( Object o )
 	{
-		StringDescriptor desc = getCachedStringDescriptor( index );
-
-		return ( null == desc ? null : desc.getString() );
+		if (UsbConst.DEVICE_SPEED_UNKNOWN == o || UsbConst.DEVICE_SPEED_LOW == o || UsbConst.DEVICE_SPEED_FULL == o)
+			speed = o;
+		else
+			throw new IllegalArgumentException("Device speed must be DEVICE_SPEED_UNKNOWN, DEVICE_SPEED_LOW, or DEVICE_SPEED_FULL.");
 	}
-
-	/**
-	 * Sets the speed of this device 
-	 * @param s the String argument
-	 */
-	public void setSpeedString( String s ) { speedString = s; }
 
 	/**
 	 * Sets the active config index
@@ -342,7 +275,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		try { device = (UsbDeviceImp)object; }
 		catch ( ClassCastException ccE ) { return false; }
 
-		if (!getSpeedString().equals(device.getSpeedString()))
+		if (!getSpeed().equals(device.getSpeed()))
 			return false;
 
 		if (!getDeviceDescriptor().equals(device.getDeviceDescriptor()))
@@ -361,9 +294,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	 */
 	protected void fireErrorEvent(UsbException uE)
 	{
-		UsbDeviceErrorEvent udeE = new UsbDeviceErrorEvent(this,/*FIXME - no sn*/(long)0,uE.getErrorCode(),uE);
-
-		usbDeviceEventHelper.errorEventOccurred(udeE);
+		usbDeviceEventHelper.errorEventOccurred(new UsbDeviceErrorEvent(this,uE));
 	}
 
 	/**
@@ -373,26 +304,24 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	 */
 	protected void fireDataEvent(byte[] data, int len)
 	{
-		UsbDeviceDataEvent uddE = new UsbDeviceDataEvent(this,/*FIXME - no sn*/(long)0,data,len);
-
-		usbDeviceEventHelper.dataEventOccurred(uddE);
+		usbDeviceEventHelper.dataEventOccurred(new UsbDeviceDataEvent(this,data,len));
 	}
 
 	/** Fire detach event. */
 	protected void fireDetachEvent()
 	{
-		UsbDeviceEvent udE = new UsbDeviceEvent(this);
-
-		usbDeviceEventHelper.usbDeviceDetached(udE);
+		usbDeviceEventHelper.usbDeviceDetached(new UsbDeviceEvent(this));
 	}
 
 	/** @return the device's default langID */
-	protected short getLangId() throws UsbException
+	protected synchronized short getLangId() throws UsbException
 	{
 		if (0x0000 == langId) {
 			byte[] data = new byte[256];
 
-			getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
+//FIXME
+//getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
+throw new UsbException("Not implemented");
 
 			if (4 > data[0])
 				throw new UsbException("Strings not supported by device");
@@ -403,39 +332,14 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		return langId;
 	}
 
-	/**
-	 * Convert byte[] to String
-	 * @param data StringDescriptor bytes.
-	 * @param len Length of unicode string.
-	 */
-//FIXME - move byte[] translation to StringDescriptorImp
-	protected String bytesToString(byte[] data, int len)
-	{
-		for (int i=0; i<ENCODING.length; i++) {
-			try { return new String( data, 2, len, ENCODING[i] ); }
-			catch ( UnsupportedEncodingException ueE ) { }
-		}
-
-		/* Fallback to 8BIT encoding - ignore high byte */
-		byte[] s = new byte[len/2];
-
-		for (int i=0; i<s.length; i++)
-			s[i] = data[2 + i*2];
-
-		try {
-			return new String( s, ENCODING_8BIT );
-		} catch ( UnsupportedEncodingException ueE ) {
-			/* No encodings supported!  Fallback to platform, but String will likely be corrupted here */
-			return new String( s );
-		}
-	}
-
 	/** Update the StringDescriptor at the specified index. */
 	protected void requestStringDescriptor( byte index ) throws UsbException
 	{
 		byte[] data = new byte[256];
 
 		Request request = getStandardOperations().getDescriptor( (short)((DescriptorConst.DESCRIPTOR_TYPE_STRING << 8) | (index)), getLangId(), data );
+
+//FIXME - this need changing!
 
 		/* requested string not present */
 		if (2 > request.getDataLength())
@@ -480,28 +384,4 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 	public static final String USB_DEVICE_NAME = "device";
 
-//FIXME - move to StringDescriptorImp
-	/**
-	 * For all encodings supported by Java, see:
-	 * <p><a href="http://java.sun.com/products/jdk/1.1/docs/guide/intl/encoding.doc.html">Java 1 (1.1) Supported Encodings</a>
-	 * <p><a href="http://java.sun.com/j2se/1.3/docs/guide/intl/encoding.doc.html">Java 2 (1.3) Supported Encodings</a>
-	 * <p><a href="http://java.sun.com/j2se/1.3/docs/api/java/lang/package-summary.html#charenc">Java 2 (1.3) Required Encodings</a>
-	 * <p>
-	 * Conversion attempts to use encodings in this order:
-	 * <ul>
-	 * <li><code>UnicodeLittleUnmarked</code> (16-bit)</li>
-	 * <li><code>UnicodeLittle</code> (16-bit)</li>
-	 * <li><code>UTF-16LE</code> (16-bit)</li>
-	 * <li><code>ASCII</code> (8-bit)</li>
-	 * <li>Platform default (8-bit)</li>
-	 * </ul>
-	 * The high bytes are discarded before attempting the 8-bit encodings.
-	 */
-	public static final String[] ENCODING = {
-		"UnicodeLittleUnmarked", /* Present in Sun Java 1.3 rt.jar (not 1.1) */
-		"UnicodeLittle", /* Present in Sun Java 1.3 rt.jar and Sun Java 1.1 i18n.jar */
-		"UTF-16LE", /* Required by Sun Java 1.3 Package Specifications */
-	};
-	/** Fallback encoding if no 16-bit encoding is supported */
-	public static final String ENCODING_8BIT = "ASCII"; /* Present in Sun Java 1.3 rt.jar and Sun Java 1.1 i18n.jar */
 }
