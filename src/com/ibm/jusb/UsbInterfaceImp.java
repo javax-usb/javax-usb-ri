@@ -179,7 +179,7 @@ public class UsbInterfaceImp implements UsbInterface
 	}
 
 	/** @return The endpoints. */
-	public List getUsbEndpoints() { return endpoints; }
+	public List getUsbEndpoints() { return Collections.unmodifiableList(endpoints); }
 
 	/**
 	 * @param index The index of the UsbEndpoint to get.
