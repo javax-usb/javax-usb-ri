@@ -30,7 +30,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeTopologyListene
 	descriptor = open( USBDEVFS_DEVICES, O_RDONLY, 0 );
 	if ( 0 >= descriptor ) {
 		dbg( MSG_ERROR, "TopologyListener : Could not open %s\n", USBDEVFS_DEVICES );
-		return;
+		goto TOPOLOGY_LISTENER_CLEANUP;
 	}
 
 	devpoll.fd = descriptor;
@@ -68,5 +68,8 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeTopologyListene
 	(*env)->CallVoidMethod( env, linuxTopologyListener, setListening, JNI_FALSE );
 	dbg( MSG_DEBUG1, "TopologyListener : Exiting.\n" );
 	close( descriptor );
+
+TOPOLOGY_LISTENER_CLEANUP:
+	(*env)->DeleteLocalRef( env, LinuxTopologyListener );
 }
 

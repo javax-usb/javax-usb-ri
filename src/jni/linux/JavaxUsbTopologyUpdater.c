@@ -73,7 +73,7 @@ JNIEXPORT jint JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeTopologyUpdater
 				devices += build_device( env, JavaxUsb, LinuxTopologyUpdater, linuxTopologyUpdater, isRootHub, hcAddress, rootHub, port );
 			}
 
-			while (devs) free(devlist[--devs]);
+			while (0 < devs) free(devlist[--devs]);
 			if (devlist) free(devlist);
 		}
 		chdir(USBDEVFS_PATH);

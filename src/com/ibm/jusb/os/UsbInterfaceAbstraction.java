@@ -137,7 +137,7 @@ public class UsbInterfaceAbstraction extends AbstractUsbInfo implements UsbInter
 				return ep;
 		}
 
-		throw new UsbRuntimeException( "No UsbEndpoint with address " + UsbUtil.unsignedInt( address ) );
+		throw new UsbRuntimeException( "No UsbEndpoint with address 0x" + UsbUtil.toHexString( address ) );
 	}
 
 	/**

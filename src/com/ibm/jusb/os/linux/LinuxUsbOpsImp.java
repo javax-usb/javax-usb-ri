@@ -45,6 +45,8 @@ class LinuxUsbOpsImp extends Object implements UsbOpsImp
 	 */
 	public void syncSubmit( Request request ) throws RequestException
 	{
+		number++;
+
 		//<temp>Need to create a UsbRequest interface or something to make this cast cleaner</temp>
         ( (AbstractRequest)request ).accept( syncSubmitDcpRequestV );
 
@@ -81,9 +83,15 @@ class LinuxUsbOpsImp extends Object implements UsbOpsImp
 	 */
 	public UsbOperations.SubmitResult asyncSubmit( Request request ) throws RequestException
 	{
-		//<temp>
-		throw new RuntimeException( "Not yet implemented.  Will be in v1.0.0-beta3" );
-		//</temp>
+		number++;
+
+		//<temp>Need to create a UsbRequest interface or something to make this cast cleaner</temp>
+        ( (AbstractRequest)request ).accept( asyncSubmitDcpRequestV );
+
+		if( asyncSubmitDcpRequestV.isInException() )
+			throw asyncSubmitDcpRequestV.getRequestException();		
+
+		return asyncSubmitDcpRequestV.getSubmitResult();
 	}
 
 	//-------------------------------------------------------------------------
@@ -133,6 +141,74 @@ class LinuxUsbOpsImp extends Object implements UsbOpsImp
 		}
 
 		dcpRequest.recycle();
+	}
+
+	/**
+	 * Does an async submission of a DCP request that is not a SetConfiguration or SetInterface
+	 * request.
+	 * @param request the Request object to submit
+	 * @exception javax.usb.RequestException if something went wrong while transmitting
+	 */
+	protected UsbOperations.SubmitResult asyncSubmitDcpRequest( final Request request ) throws RequestException
+	{
+		final LinuxDcpRequest dcpRequest = (LinuxDcpRequest)getLinuxDcpRequestFactory().takeLinuxRequest();
+		final byte[] bytes = request.toBytes();
+		final byte[] requestData = request.getData();
+
+		dcpRequest.setData( bytes );
+
+		try
+		{
+			getLinuxDeviceImp().getLinuxDeviceProxy().submitRequest( dcpRequest );
+		}
+		catch( UsbException ue ) { throw new RequestException( "Error submitting request!", ue ); }
+
+		final LinuxSubmitResult result = new LinuxSubmitResult(dcpRequest);
+
+		result.setNumber(number);
+		result.setRequest(request);
+		result.setData(requestData);
+		result.setDataLength(requestData.length);
+
+		Runnable r = new Runnable() {
+				public void run()
+				{
+					dcpRequest.waitUntilRequestCompleted();
+
+					if( dcpRequest.getCompletionStatus() < 0 ) 
+						{
+							int error = dcpRequest.getCompletionStatus();
+							dcpRequest.recycle();
+						    result.setUsbException( new UsbException( JavaxUsb.nativeGetErrorMessage( error ), error ) );
+						} 
+					else 
+						{
+							int xferred = dcpRequest.getCompletionStatus() - 8; /* subtract 8 for setup packet */
+							if (xferred > requestData.length) /* This should not happen; should something be done? */
+								xferred = requestData.length;
+							if ((0 < xferred))
+								System.arraycopy(bytes, 8, requestData, 0, xferred);
+							
+							//FIXME - abstraction layer should be passing down settable Request (something like AbstractRequest)
+							((AbstractRequest)request).setDataLength(xferred);
+							//FIXME
+
+							result.setDataLength(xferred);
+						}
+
+					result.setCompleted(true);
+
+					dcpRequest.recycle();
+					
+				}
+			};
+
+		Thread t = new Thread(r);
+		t.setDaemon(true);
+		t.setName("Async Request " + result.getNumber());
+		t.start();
+
+		return result;
 	}
 
 	/**
@@ -220,7 +296,10 @@ class LinuxUsbOpsImp extends Object implements UsbOpsImp
 
 	private LinuxDeviceImp linuxDeviceImp = null;
 
+	private AsyncSubmitDcpRequestV asyncSubmitDcpRequestV = new AsyncSubmitDcpRequestV();
 	private SyncSubmitDcpRequestV syncSubmitDcpRequestV = this.new SyncSubmitDcpRequestV();
+
+	private long number = 0;
 
 	//-------------------------------------------------------------------------
 	// Inner classes
@@ -293,5 +372,83 @@ class LinuxUsbOpsImp extends Object implements UsbOpsImp
 		//
 
 		private RequestException requestException = null;
+	}
+
+	/**
+	 * Simple visitor to select the correct asyncSubmitDcp method
+	 * @author E. Michael Maximilien
+	 * @author Dan Streetman
+	 */
+	protected class AsyncSubmitDcpRequestV extends DefaultRequestV
+	{
+		public RequestException getRequestException() { return requestException; }
+		public boolean isInException() { return ( requestException != null ); }
+
+		public UsbOperations.SubmitResult getSubmitResult() { return submitResult; }
+
+		public void visitStandardRequest( Request request ) { visitRequest( request ); }
+		public void visitVendorRequest( Request request ) { visitRequest( request ); }
+		public void visitClassRequest( Request request ) { visitRequest( request ); }
+
+        public void visitSetConfigurationRequest( Request request ) 
+		{
+			requestException = new RequestException( "Async SetConfiguration not possible" );
+		}
+
+		public void visitSetInterfaceRequest( Request request ) 
+		{
+			requestException = new RequestException( "Async SetConfiguration not possible" );
+		}
+
+		protected void visitRequest( Request request )
+		{
+			requestException = null;
+
+			try{ submitResult = LinuxUsbOpsImp.this.asyncSubmitDcpRequest( request ); }
+			catch( RequestException e ) { requestException = e; }
+		}
+		
+		private RequestException requestException = null;
+		private UsbOperations.SubmitResult submitResult = null;
+	}
+
+	public class LinuxSubmitResult implements UsbOperations.SubmitResult
+	{
+		public LinuxSubmitResult(LinuxRequest r) { linuxRequest = r; }
+
+		public long getNumber() { return number; }
+
+		public Request getRequest() { return request; }
+
+		public byte[] getData() { return data; }
+
+		public int getDataLength() { return dataLength; }
+
+		public boolean isCompleted() { return completed; }
+
+		public UsbException getUsbException() { return usbException; }
+
+		public boolean isInUsbException() { return null != usbException; }
+
+		public void recycle() { }
+
+		public void waitUntilCompleted() { linuxRequest.waitUntilRequestCompleted(); }
+
+		public void waitUntilCompleted(long timeout) { linuxRequest.waitUntilRequestCompleted(/* ignore time.  tough. */); }
+
+		public void setNumber(long n) { number = n; }
+		public void setRequest(Request r) { request = r; }
+		public void setData(byte[] d) { data = d; }
+		public void setDataLength(int l) { dataLength = l; }
+		public void setCompleted(boolean c) { completed = c; }
+		public void setUsbException(UsbException uE) { usbException = uE; }
+
+		private long number = 0;
+		private Request request = null;
+		private byte[] data = null;
+		private int dataLength = 0;
+		private boolean completed = false;
+		private UsbException usbException = null;
+		private LinuxRequest linuxRequest = null;
 	}
 }

@@ -48,7 +48,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSubmitDcpReques
 		(*env)->CallVoidMethod( env, linuxRequestProxy, removePendingVector, linuxDcpRequest );
 		(*env)->CallVoidMethod( env, linuxDcpRequest, setSubmissionStatus, -ENOMEM );
 		(*env)->CallVoidMethod( env, linuxDcpRequest, setSubmitCompleted, JNI_TRUE );
-		return;
+		goto DCP_SUBMIT_CLEANUP;
 	}
 
 	memset(urb, 0, sizeof(*urb));
@@ -83,6 +83,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSubmitDcpReques
 	(*env)->CallVoidMethod( env, linuxDcpRequest, setSubmissionStatus, result );
 	(*env)->CallVoidMethod( env, linuxDcpRequest, setSubmitCompleted, JNI_TRUE );
 
+DCP_SUBMIT_CLEANUP:
 	(*env)->DeleteLocalRef( env, LinuxRequestProxy );
 	(*env)->DeleteLocalRef( env, linuxRequestProxy );
 	(*env)->DeleteLocalRef( env, LinuxDcpRequest );
@@ -104,9 +105,12 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeAbortDcpRequest
 	setUrbAddress = (*env)->GetMethodID( env, LinuxDcpRequest, "setUrbAddress", "(I)V" );
 	getLinuxRequestProxy = (*env)->GetMethodID( env, LinuxDcpRequest, "getLinuxRequestProxy", "()Lcom/ibm/jusb/os/linux/LinuxRequestProxy;" );
 	linuxRequestProxy = (*env)->CallObjectMethod( env, linuxDcpRequest, getLinuxRequestProxy );
+	(*env)->DeleteLocalRef( env, LinuxDcpRequest );
 	LinuxRequestProxy = (*env)->GetObjectClass( env, linuxRequestProxy );
+	(*env)->DeleteLocalRef( env, LinuxRequestProxy );
 	getFileDescriptor = (*env)->GetMethodID( env, LinuxRequestProxy, "getFileDescriptor", "()I" );
 	fd = (*env)->CallIntMethod( env, linuxRequestProxy, getFileDescriptor );
+	(*env)->DeleteLocalRef( env, linuxRequestProxy );
 
 	dbg( MSG_DEBUG2, "nativeAbortDcpRequest : Canceling URB\n" );
 
@@ -154,7 +158,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeCompleteDcpRequ
 		(*env)->CallVoidMethod( env, linuxDcpRequest, setCompletionStatus, -ENODATA );
 		(*env)->CallVoidMethod( env, linuxDcpRequest, setRequestCompleted, JNI_TRUE );
 		(*env)->CallVoidMethod( env, linuxRequestProxy, requestCompleted, linuxDcpRequest );
-		return;
+		goto DCP_COMPLETE_CLEANUP;
 	}
 
 	debug_urb( "nativeCompleteDcpRequest", urb );
@@ -175,6 +179,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeCompleteDcpRequ
 
 	dbg( MSG_DEBUG2, "nativeCompleteDcpRequest : Completed URB\n" );
 
+DCP_COMPLETE_CLEANUP:
 	(*env)->DeleteLocalRef( env, LinuxDcpRequest );
 	(*env)->DeleteLocalRef( env, linuxRequestProxy );
 	(*env)->DeleteLocalRef( env, LinuxRequestProxy );
@@ -211,7 +216,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSetConfiguratio
 		(*env)->CallVoidMethod( env, linuxRequestProxy, removePendingVector, linuxSetConfigurationRequest );
 		(*env)->CallVoidMethod( env, linuxSetConfigurationRequest, setSubmissionStatus, -ENOMEM );
 		(*env)->CallVoidMethod( env, linuxSetConfigurationRequest, setSubmitCompleted, JNI_TRUE );
-		return;
+		goto DCP_CONFIGURATION_CLEANUP;
 	}
 
 	*configuration = (unsigned int)(*env)->CallIntMethod( env, linuxSetConfigurationRequest, getConfiguration );
@@ -240,6 +245,8 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSetConfiguratio
 	(*env)->CallVoidMethod( env, linuxRequestProxy, requestCompleted, linuxSetConfigurationRequest );
 
 	free(configuration);
+
+DCP_CONFIGURATION_CLEANUP:
 	(*env)->DeleteLocalRef( env, LinuxRequestProxy );
 	(*env)->DeleteLocalRef( env, linuxRequestProxy );
 	(*env)->DeleteLocalRef( env, LinuxSetConfigurationRequest );
@@ -277,7 +284,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSetInterface
 		(*env)->CallVoidMethod( env, linuxRequestProxy, removePendingVector, linuxSetInterfaceRequest );
 		(*env)->CallVoidMethod( env, linuxSetInterfaceRequest, setSubmissionStatus, -ENOMEM );
 		(*env)->CallVoidMethod( env, linuxSetInterfaceRequest, setSubmitCompleted, JNI_TRUE );
-		return;
+		goto DCP_INTERFACE_CLEANUP;
 	}
 
 	interface->interface = (unsigned int)(*env)->CallIntMethod( env, linuxSetInterfaceRequest, getInterface );
@@ -307,6 +314,8 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSetInterface
 	(*env)->CallVoidMethod( env, linuxRequestProxy, requestCompleted, linuxSetInterfaceRequest );
 
 	free(interface);
+
+DCP_INTERFACE_CLEANUP:
 	(*env)->DeleteLocalRef( env, LinuxRequestProxy );
 	(*env)->DeleteLocalRef( env, linuxRequestProxy );
 	(*env)->DeleteLocalRef( env, LinuxSetInterfaceRequest );

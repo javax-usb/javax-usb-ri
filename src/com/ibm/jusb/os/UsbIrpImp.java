@@ -350,7 +350,7 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	private static final boolean DEFAULT_ACTIVE = false;
 	private static final boolean DEFAULT_COMPLETED = false;
 	private static final boolean DEFAULT_RESUBMIT = false;
-	private static final boolean DEFAULT_ACCEPT_SHORT_PACKET = false;
+	private static final boolean DEFAULT_ACCEPT_SHORT_PACKET = true;
 	private static final int DEFAULT_DATA_LENGTH = -1;
 	private static final UsbException DEFAULT_USB_EXCEPTION = null;
 

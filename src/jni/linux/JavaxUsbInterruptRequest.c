@@ -11,10 +11,9 @@
 #include "JavaxUsb.h"
 
 /*
- * JavaxUsbPipeRequest.c
+ * JavaxUsbInterruptRequest.c
  *
- * This handles I/O on a (non-Isochronous) pipe
- * For Isochronous pipes, see JavaxUsbIsochronousRequest.c
+ * This handles I/O on an Interrupt pipe
  *
  */
 
@@ -52,7 +51,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSubmitInterrupt
 		(*env)->CallVoidMethod( env, linuxRequestProxy, removePendingVector, linuxPipeRequest );
 		(*env)->CallVoidMethod( env, linuxPipeRequest, setSubmissionStatus, -ENOMEM );
 		(*env)->CallVoidMethod( env, linuxPipeRequest, setSubmitCompleted, JNI_TRUE );
-		return;
+		goto INTERRUPT_SUBMIT_CLEANUP;
 	}
 
 	memset(urb, 0, sizeof(*urb));
@@ -90,6 +89,12 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeSubmitInterrupt
 
 	(*env)->CallVoidMethod( env, linuxPipeRequest, setSubmissionStatus, result );
 	(*env)->CallVoidMethod( env, linuxPipeRequest, setSubmitCompleted, JNI_TRUE );
+
+INTERRUPT_SUBMIT_CLEANUP:
+	(*env)->DeleteLocalRef( env, LinuxPipeRequest );
+	(*env)->DeleteLocalRef( env, data );
+	(*env)->DeleteLocalRef( env, linuxRequestProxy );
+	(*env)->DeleteLocalRef( env, LinuxRequestProxy );
 }
 
 JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeCompleteInterruptRequest
@@ -124,7 +129,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeCompleteInterru
 		(*env)->CallVoidMethod( env, linuxPipeRequest, setCompletionStatus, -ENODATA );
 		(*env)->CallVoidMethod( env, linuxPipeRequest, setRequestCompleted, JNI_TRUE );
 		(*env)->CallVoidMethod( env, linuxRequestProxy, requestCompleted, linuxPipeRequest );
-		return;
+		goto INTERRUPT_COMPLETE_CLEANUP;
 	}
 
 	debug_urb( "nativeCompleteInterruptRequest", urb );
@@ -143,4 +148,9 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeCompleteInterru
 	free(urb);
 
 	dbg( MSG_DEBUG2, "nativeCompleteInterruptRequest : Completed URB\n" );
+
+INTERRUPT_COMPLETE_CLEANUP:
+	(*env)->DeleteLocalRef( env, LinuxPipeRequest );
+	(*env)->DeleteLocalRef( env, linuxRequestProxy );
+	(*env)->DeleteLocalRef( env, LinuxRequestProxy );
 }

@@ -399,6 +399,23 @@ class JavaxUsb {
 		byte manufacturerIndex, byte productIndex, byte serialNumberIndex, byte numConfigs, short vendorId,
 		short productId, short bcdDevice, short bcdUsb, String speedString )
 	{
+		/* BUG - Java (IBM JVM at least) does not handle certain JNI byte -> Java byte (or shorts) */
+		/* Email ddstreet@ieee.org for more info */
+		length += 0;
+		type += 0;
+		deviceClass += 0;
+		deviceSubClass += 0;
+		deviceProtocol += 0;
+		maxDefaultEndpointSize += 0;
+		manufacturerIndex += 0;
+		productIndex += 0;
+		serialNumberIndex += 0;
+		numConfigs += 0;
+		vendorId += 0;
+		productId += 0;
+		bcdDevice += 0;
+		bcdUsb += 0;
+
 		speedString = ( null == speedString ? "" : speedString.trim() );
 
 		DeviceDescriptor desc = getDescriptorFactory().createDeviceDescriptor( length, type,
@@ -414,6 +431,16 @@ class JavaxUsb {
 		byte numInterfaces, byte configValue, byte configIndex, byte attributes,
 		byte maxPowerNeeded, boolean active )
 	{
+		/* BUG - Java (IBM JVM at least) does not handle certain JNI byte -> Java byte (or shorts) */
+		/* Email ddstreet@ieee.org for more info */
+		length += 0;
+		type += 0;
+		numInterfaces += 0;
+		configValue += 0;
+		configIndex += 0;
+		attributes += 0;
+		maxPowerNeeded += 0;
+
 		ConfigDescriptor desc = getDescriptorFactory().createConfigDescriptor( length, type,
 			numInterfaces, configValue, configIndex, attributes, maxPowerNeeded );
 
@@ -431,6 +458,18 @@ class JavaxUsb {
 		byte interfaceNumber, byte alternateNumber, byte numEndpoints,
 		byte interfaceClass, byte interfaceSubClass, byte interfaceProtocol, byte interfaceIndex )
 	{
+		/* BUG - Java (IBM JVM at least) does not handle certain JNI byte -> Java byte (or shorts) */
+		/* Email ddstreet@ieee.org for more info */
+		length += 0;
+		type += 0;
+		interfaceNumber += 0;
+		alternateNumber += 0;
+		numEndpoints += 0;
+		interfaceClass += 0;
+		interfaceSubClass += 0;
+		interfaceProtocol += 0;
+		interfaceIndex += 0;
+
 		InterfaceDescriptor desc = getDescriptorFactory().createInterfaceDescriptor( length, type,
 			interfaceNumber, alternateNumber, numEndpoints, interfaceClass, interfaceSubClass,
 			interfaceProtocol, interfaceIndex );
@@ -443,6 +482,15 @@ class JavaxUsb {
 		byte length, byte type,
 		byte endpointAddress, byte attributes, byte interval, short maxPacketSize )
 	{
+		/* BUG - Java (IBM JVM at least) does not handle certain JNI byte -> Java byte (or shorts) */
+		/* Email ddstreet@ieee.org for more info */
+		length += 0;
+		type += 0;
+		endpointAddress += 0;
+		attributes += 0;
+		interval += 0;
+		maxPacketSize += 0;
+
 		EndpointDescriptor desc = getDescriptorFactory().createEndpointDescriptor( length, type,
 			endpointAddress, attributes, interval, maxPacketSize );
 
@@ -454,6 +502,12 @@ class JavaxUsb {
 		byte length, byte type,
 		byte index, String newString )
 	{
+		/* BUG - Java (IBM JVM at least) does not handle certain JNI byte -> Java byte (or shorts) */
+		/* Email ddstreet@ieee.org for more info */
+		length += 0;
+		type += 0;
+		index += 0;
+
 		StringDescriptor desc = getDescriptorFactory().createStringDescriptor( length, type, newString );
 
 		device.accept( getInitUsbInfoV() );

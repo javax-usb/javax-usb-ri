@@ -47,7 +47,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeDeviceProxy
 	int loop_count;
 #endif /* SIGSUSPEND_WORKS */
 
-	jclass LinuxDeviceProxy, LinuxProxyThread, LinuxRequest, UsbDevice;
+	jclass LinuxDeviceProxy, LinuxProxyThread, LinuxRequest;
 	jobject linuxProxyThread, linuxRequest, usbDevice;
 	jstring usbDeviceKey;
 	jmethodID startupCompleted, getLinuxProxyThread, setPID, setSignal, dequeueRequestVector, dequeueCancelVector;
@@ -68,7 +68,6 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeDeviceProxy
 	dequeueCancelVector = (*env)->GetMethodID( env, LinuxDeviceProxy, "dequeueCancelVector", "()Lcom/ibm/jusb/os/linux/LinuxRequest;" );
 	getUsbDevice = (*env)->GetMethodID( env, LinuxDeviceProxy, "getUsbDevice", "()Ljavax/usb/UsbDevice;" );
 	usbDevice = (*env)->CallObjectMethod( env, linuxDeviceProxy, getUsbDevice );
-	UsbDevice = (*env)->GetObjectClass( env, usbDevice );
 	getUsbDeviceKey = (*env)->GetStaticMethodID( env, JavaxUsb, "getUsbDeviceKey", "(Ljavax/usb/UsbDevice;)Ljava/lang/String;" );
 	usbDeviceKey = (*env)->CallStaticObjectMethod( env, JavaxUsb, getUsbDeviceKey, usbDevice );
 
@@ -77,7 +76,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeDeviceProxy
 		(*env)->SetIntField( env, linuxDeviceProxy, startupErrnoID, -ENODEV );
 		(*env)->SetBooleanField( env, linuxDeviceProxy, isRunningID, JNI_FALSE );
 		(*env)->CallVoidMethod( env, linuxDeviceProxy, startupCompleted );
-		return;
+		goto DEVICE_PROXY_CLEANUP;
 	}
 
 	errno = 0;
@@ -86,7 +85,7 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeDeviceProxy
 		(*env)->SetIntField( env, linuxDeviceProxy, startupErrnoID, -errno );
 		(*env)->SetBooleanField( env, linuxDeviceProxy, isRunningID, JNI_FALSE );
 		(*env)->CallVoidMethod( env, linuxDeviceProxy, startupCompleted );
-		return;
+		goto DEVICE_PROXY_CLEANUP;
 	}
 
 	(*env)->CallVoidMethod( env, linuxDeviceProxy, setFileDescriptor, fd );
@@ -174,6 +173,13 @@ JNIEXPORT void JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeDeviceProxy
 #endif /* SIGSUSPEND_WORKS */
 
 	close( fd );
+
+DEVICE_PROXY_CLEANUP:
+	(*env)->DeleteLocalRef( env, LinuxDeviceProxy );
+	(*env)->DeleteLocalRef( env, linuxProxyThread );
+	(*env)->DeleteLocalRef( env, LinuxProxyThread );
+	(*env)->DeleteLocalRef( env, usbDevice );
+	if (usbDeviceKey) (*env)->DeleteLocalRef( env, usbDeviceKey );
 }
 
 /** Signal a process */
@@ -198,7 +204,8 @@ inline void debug_urb( char *calling_method, struct usbdevfs_urb *urb )
 	dbg( MSG_DEBUG3, "%s : URB endpoint = %x\n", calling_method, urb->endpoint );
 	dbg( MSG_DEBUG3, "%s : URB status = %d\n", calling_method, urb->status );
 	dbg( MSG_DEBUG3, "%s : URB signal = %d\n", calling_method, urb->signr );
-	dbg( MSG_DEBUG3, "%s : URB data length = %d\n", calling_method, urb->buffer_length );
+	dbg( MSG_DEBUG3, "%s : URB buffer length = %d\n", calling_method, urb->buffer_length );
+	dbg( MSG_DEBUG3, "%s : URB actual length = %d\n", calling_method, urb->actual_length );
 	if (urb->buffer) {
 		dbg( MSG_DEBUG3, "%s : URB data = ", calling_method );
 		for (i=0; i<urb->buffer_length; i++) dbg( MSG_DEBUG3, "%2.2x ", ((unsigned char *)urb->buffer)[i] );
