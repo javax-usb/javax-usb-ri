@@ -24,29 +24,15 @@ import com.ibm.jusb.*;
  */
 public interface UsbPipeOsImp
 {
-    /**
-     * Open this pipe.
+	/**
+	 * Open this pipe.
 	 * <p>
 	 * The platform can perform whatever operations it likes.
 	 * This method does not currently require the platform to guarantee
 	 * anything after returning.
-     * @exception javax.usb.UsbException If this pipe could not be opened.
-     */
-    public void open() throws UsbException;
-
-    /**
-     * Synchonously submits this byte[] array to the platform implementation.
-	 * <p>
-	 * Where required, the platform implementation should use defaults from
-	 * {@link javax.usb.UsbIrp UsbIrp}; e.g., UsbIrp's
-	 * {@link javax.usb.UsbIrp#getAcceptShortPacket() getAcceptShortPacket}
-	 * defaults to true, so the platform should also accept short packets for
-	 * this submission.
-     * @param data the byte[] data
-	 * @return the status of the submission.
-     * @exception javax.usb.UsbException If the data transfer was unsuccessful.
-     */
-    public int syncSubmit( UsbPipeImp pipe, byte[] data ) throws UsbException;
+	 * @exception javax.usb.UsbException If this pipe could not be opened.
+	 */
+	public void open() throws UsbException;
 
 	/**
 	 * Synchronously submits this UsbIrpImp to the platform implementation.
@@ -55,9 +41,9 @@ public interface UsbPipeOsImp
 	 * {@link com.ibm.jusb.UsbIrpImp UsbIrpImp's documentation}.  In addition,
 	 * if a UsbException occurs, the implementation should throw it.
 	 * @param irp the UsbIrpImp to use for this submission.
-     * @exception javax.usb.UsbException If the data transfer was unsuccessful.
+	 * @exception javax.usb.UsbException If the data transfer was unsuccessful.
 	 */
-    public void syncSubmit( UsbIrpImp irp ) throws UsbException;
+	public void syncSubmit( UsbIrpImp irp ) throws UsbException;
 
 	/**
 	 * Synchronously submits a List of UsbIrpImps to the platform implementation.
@@ -75,40 +61,40 @@ public interface UsbPipeOsImp
 	 * method as each UsbIrpImp completes, or defer calling until all
 	 * UsbIrpImps in the list have been processed.
 	 * @param list the UsbIrpImps to use for this submission.
-     * @exception javax.usb.UsbException If any of the UsbIrpImps were unsuccessful (optional).
+	 * @exception javax.usb.UsbException If any of the UsbIrpImps were unsuccessful (optional).
 	 */
-    public void syncSubmit( List list ) throws UsbException;
+	public void syncSubmit( List list ) throws UsbException;
 
 	/**
 	 * Asynchronously submits this UsbIrpImp to the platform implementation.
 	 * <p>
-	 * This should return as soon as possible.  The implementation must perform
+	 * This should return as soon as possible.	The implementation must perform
 	 * all actions specified in the
 	 * {@link com.ibm.jusb.UsbIrpImp UsbIrpImp's documentation}.  In addition,
 	 * if the UsbIrpImp is not accepted for processing (i.e. before returning from
 	 * this method), a UsbException should be thrown.  Otherwise (i.e. after returning
 	 * from this method) no UsbException can be thrown (but should be set on the UsbIrpImp).
 	 * @param irp the UsbIrpImp to use for this submission
-     * @exception javax.usb.UsbException If the UsbIrpImp was not accepted by the implementation.
+	 * @exception javax.usb.UsbException If the UsbIrpImp was not accepted by the implementation.
 	 */
-    public void asyncSubmit( UsbIrpImp irp ) throws UsbException;
+	public void asyncSubmit( UsbIrpImp irp ) throws UsbException;
 
 	/**
 	 * Asynchronously submits a List of UsbIrpImps to the platform implementation.
 	 * <p>
-	 * This should return as soon as possible.  If any of the UsbIrpImps
+	 * This should return as soon as possible.	If any of the UsbIrpImps
 	 * were not accepted by the implementation, no further UsbIrpImps should be attempted,
 	 * and the UsbException should be thrown.  UsbIrpImps already accepted should continue
-	 * their normal execution.  The implementation must perform all actions specified in the
+	 * their normal execution.	The implementation must perform all actions specified in the
 	 * {@link com.ibm.jusb.UsbIrpImp UsbIrpImp's documentation} for all UsbIrpImps in the list.
 	 * <p>
 	 * Note that the UsbIrpImp that fails (if any) and all those after it may be completed immediately,
 	 * which will result in UsbIrpImps in the beginning of the List being in-progress, while the UsbIrpImps
 	 * in the end of the List will be complete.
 	 * @param irp the UsbIrpImp to use for this submission
-     * @exception javax.usb.UsbException If one of the UsbIrpImps was not accepted by the implementation.
+	 * @exception javax.usb.UsbException If one of the UsbIrpImps was not accepted by the implementation.
 	 */
-    public void asyncSubmit( List list ) throws UsbException;
+	public void asyncSubmit( List list ) throws UsbException;
 
 	/**
 	 * Stop all submissions in progress.
@@ -120,8 +106,8 @@ public interface UsbPipeOsImp
 	 */
 	public void abortAllSubmissions();
 
-    /**
-     * Close the pipe.
-     */
-    public void close();
+	/**
+	 * Close the pipe.
+	 */
+	public void close();
 }

@@ -62,6 +62,18 @@ public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmiss
 	/** @param device The UsbDeviceImp */
 	public void setUsbDeviceImp(UsbDeviceImp device) { usbDeviceImp = device; }
 
+	/** @return If this request is a SET_CONFIGURATION request */
+	public boolean isSetConfigurationRequest()
+	{
+		return REQUESTTYPE_SET_CONFIGURATION == getRequestType() && REQUEST_SET_CONFIGURATION == getRequestCode();
+	}
+
+	/** @return If this request is a SET_INTERFACE request */
+	public boolean isSetInterfaceRequest()
+	{
+		return REQUESTTYPE_SET_INTERFACE == getRequestType() && REQUEST_SET_INTERFACE == getRequestCode();
+	}
+
 	/** @return the bmRequestType bitmap byte for this Request */
 	public byte getRequestType() { return bmRequestType; }
 
@@ -255,4 +267,21 @@ public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmiss
 	// Class constants
 
 	public static final int REQUEST_HEADER_LENGTH = 8;
+
+	private static final byte REQUESTTYPE_SET_CONFIGURATION =
+		RequestConst.REQUESTTYPE_DIRECTION_OUT &
+		RequestConst.REQUESTTYPE_TYPE_STANDARD &
+		RequestConst.REQUESTTYPE_RECIPIENT_DEVICE;
+
+	private static final byte REQUEST_SET_CONFIGURATION =
+		RequestConst.REQUEST_SET_CONFIGURATION;
+
+	private static final byte REQUESTTYPE_SET_INTERFACE =
+		RequestConst.REQUESTTYPE_DIRECTION_OUT &
+		RequestConst.REQUESTTYPE_TYPE_STANDARD &
+		RequestConst.REQUESTTYPE_RECIPIENT_INTERFACE;
+
+	private static final byte REQUEST_SET_INTERFACE =
+		RequestConst.REQUEST_SET_INTERFACE;
+
 }

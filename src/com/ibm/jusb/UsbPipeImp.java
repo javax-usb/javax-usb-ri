@@ -153,21 +153,11 @@ public class UsbPipeImp extends Object implements UsbPipe
 	{
 		checkOpen();
 
-		submissionCount++;
-		long sn = sequenceNumber++;
+		UsbIrpImp usbIrpImp = createUsbIrpImp();
+		usbIrpImp.setData(data);
+		syncSubmit(usbIrpImp);
 
-		try {
-			int result = getUsbPipeOsImp().syncSubmit(this,data);
-
-			fireDataEvent(sn,data,result);
-
-			return result;
-		} catch ( UsbException uE ) {
-			fireErrorEvent(sn,uE.getErrorCode(),uE);
-			throw uE;
-		} finally {
-			submissionCount--;
-		}
+		return usbIrpImp.getDataLength();
 	}
 
 	/**
@@ -177,13 +167,11 @@ public class UsbPipeImp extends Object implements UsbPipe
 	{
 		checkOpen();
 
-		UsbIrpImp result = createSubmitResult();
+		UsbIrpImp usbIrpImp = createUsbIrpImp();
+		usbIrpImp.setData(data);
+		asyncSubmit(usbIrpImp);
 
-		result.setData(data);
-
-		asyncSubmit(result);
-
-		return result;
+		return usbIrpImp;
 	}
 
 	/**
@@ -199,14 +187,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 		submissionCount++;
 
-		try {
-			getUsbPipeOsImp().syncSubmit( usbIrpImp );
-		} catch ( UsbException uE ) {
-			usbIrpImp.setUsbException(uE);
-			throw uE;
-		} finally {
-			usbIrpImpCompleted(usbIrpImp);
-		}
+		getUsbPipeOsImp().syncSubmit( usbIrpImp );
 	}
 
 	/**
@@ -222,14 +203,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 		submissionCount++;
 
-		try {
-			getUsbPipeOsImp().asyncSubmit( usbIrpImp );
-		} catch ( UsbException uE ) {
-			usbIrpImp.setUsbException(uE);
-			usbIrpImp.setCompleted(true);
-			submissionCount--;
-			throw uE;
-		}
+		getUsbPipeOsImp().asyncSubmit( usbIrpImp );
 	}
 
 	/**
@@ -243,13 +217,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 		submissionCount += newList.size();
 
-		try {
-			getUsbPipeOsImp().syncSubmit( newList );
-		} catch ( UsbException uE ) {
-			throw uE;
-		} finally {
-			postProcessList(newList);
-		}
+		getUsbPipeOsImp().syncSubmit( newList );
 	}
 
 	/**
@@ -263,12 +231,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 		submissionCount += newList.size();
 
-		try {
-			getUsbPipeOsImp().asyncSubmit( newList );
-		} catch ( UsbException uE ) {
-			submissionCount -= newList.size();
-			throw uE;
-		}
+		getUsbPipeOsImp().asyncSubmit( newList );
 	}
 
 	/**
@@ -295,8 +258,6 @@ public class UsbPipeImp extends Object implements UsbPipe
 			fireErrorEvent(irp.getSequenceNumber(),irp.getUsbException().getErrorCode(),irp.getUsbException());
 		else
 			fireDataEvent(irp.getSequenceNumber(),irp.getData(),irp.getDataLength());
-
-		irp.setCompleted(true);
 	}
 
 	/**
@@ -375,12 +336,6 @@ public class UsbPipeImp extends Object implements UsbPipe
 		return newlist;
 	}
 
-	protected void postProcessList(List list)
-	{
-		for (int i=0; i<list.size(); i++)
-			usbIrpImpCompleted( (UsbIrpImp)list.get(i) );
-	}
-
 	/**
 	 * Check if this pipe is active.
 	 * @throws UsbException If the pipe is not active.
@@ -403,8 +358,8 @@ public class UsbPipeImp extends Object implements UsbPipe
 			throw new UsbException("UsbPipe not open");
 	}
 
-	/** Get a uniquely-numbered SubmitResult */
-	protected UsbIrpImp createSubmitResult()
+	/** Get a uniquely-numbered UsbIrpImp */
+	protected UsbIrpImp createUsbIrpImp()
 	{
 		UsbIrpImp irp = usbIrpImpFactory.createUsbIrpImp();
 

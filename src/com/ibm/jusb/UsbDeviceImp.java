@@ -220,10 +220,19 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/** @param requestImp The RequestImp that completed. */
 	public void requestImpCompleted(RequestImp requestImp)
 	{
-		if (requestImp.isUsbException())
+		if (requestImp.isUsbException()) {
 			fireErrorEvent(requestImp.getUsbException());
-		else
+		} else {
+			if (requestImp.isSetConfigurationRequest()) {
+				try { setActiveUsbConfigNumber((byte)requestImp.getValue()); }
+				catch ( Exception e ) { /* log? */ }
+			} else if (requestImp.isSetInterfaceRequest()) {
+				try { getActiveUsbConfigImp().getUsbInterfaceImp((byte)requestImp.getIndex()).setActiveAlternateSettingNumber((byte)requestImp.getValue()); }
+				catch ( Exception e ) { /* log? */ }
+			}
+
 			fireDataEvent(requestImp.getData(),requestImp.getDataLength());
+		}
 	}
 
 	/** @param the listener to add */

@@ -19,56 +19,34 @@ import com.ibm.jusb.*;
  * Abstract implementation for UsbPipeOsImp.
  * <p>
  * This is an optional abstract class that handles all optional methods.  Those
- * methods may be overridden by the implementation if desired.  The implementation
+ * methods may be overridden by the implementation if desired.	The implementation
  * does not have to extend this abstract class.
  * @author Dan Streetman
  */
 public abstract class AbstractUsbPipeOsImp implements UsbPipeOsImp
 {
-    /**
-     * Open this pipe.
+	/**
+	 * Open this pipe.
 	 * <p>
 	 * This is implemented as a no-op.
-     */
-    public void open() throws UsbException { }
+	 */
+	public void open() throws UsbException { }
 
-    /**
-     * Close the pipe.
+	/**
+	 * Close the pipe.
 	 * <p>
 	 * This is implemented as a no-op.
-     */
-    public void close() { }
-
-    /**
-     * Synchonously submits this byte[] array to the platform implementation.
-	 * <p>
-	 * This is implemented using {@link #syncSubmit(UsbIrpImp) syncSubmit(UsbIrpImp)}.
-	 * @param pipe The UsbPipeImp
-     * @param data the byte[] data
-	 * @return the status of the submission.
-     * @exception javax.usb.UsbException If the data transfer was unsuccessful.
-     */
-    public int syncSubmit( UsbPipeImp pipe, byte[] data ) throws UsbException
-	{
-		UsbIrpImp usbIrpImp = usbIrpImpFactory.createUsbIrpImp();
-
-		usbIrpImp.setData(data);
-
-		pipe.setupUsbIrpImp(usbIrpImp);
-
-		syncSubmit(usbIrpImp);
-
-		return usbIrpImp.getDataLength();
-	}
+	 */
+	public void close() { }
 
 	/**
 	 * Synchronously submits this UsbIrpImp to the platform implementation.
 	 * <p>
 	 * This is implemented using {@link #asyncSubmit(UsbIrpImp) asyncSubmit(UsbIrpImp)}.
 	 * @param irp the UsbIrpImp to use for this submission.
-     * @exception javax.usb.UsbException If the data transfer was unsuccessful.
+	 * @exception javax.usb.UsbException If the data transfer was unsuccessful.
 	 */
-    public void syncSubmit( UsbIrpImp irp ) throws UsbException
+	public void syncSubmit( UsbIrpImp irp ) throws UsbException
 	{
 		asyncSubmit(irp);
 
@@ -83,11 +61,11 @@ public abstract class AbstractUsbPipeOsImp implements UsbPipeOsImp
 	 * <p>
 	 * This is implemented using {@link #syncSubmit(UsbIrpImp) syncSubmit(UsbIrpImp)}.
 	 * This implementation does not throw UsbException; errors are set on a per-UsbIrpImp basis
-	 * but overall execution continues.  Persistent errors will cause all remaining UsbIrpImps to
+	 * but overall execution continues.	 Persistent errors will cause all remaining UsbIrpImps to
 	 * fail and have their UsbException set, but no UsbException will be thrown.
 	 * @param list the UsbIrpImps to use for this submission.
 	 */
-    public void syncSubmit( List list ) throws UsbException
+	public void syncSubmit( List list ) throws UsbException
 	{
 		for (int i=0; i<list.size(); i++) {
 			try { syncSubmit((UsbIrpImp)list.get(i)); }
@@ -104,9 +82,9 @@ public abstract class AbstractUsbPipeOsImp implements UsbPipeOsImp
 	 * Already submitted UsbIrpImps will continue to their normal completion.
 	 * The UsbException is then thrown.
 	 * @param list The List of UsbIrpImps.
-     * @exception javax.usb.UsbException If one of the UsbIrpImps was not accepted by the implementation.
+	 * @exception javax.usb.UsbException If one of the UsbIrpImps was not accepted by the implementation.
 	 */
-    public void asyncSubmit( List list ) throws UsbException
+	public void asyncSubmit( List list ) throws UsbException
 	{
 		int i = 0;
 
@@ -127,9 +105,9 @@ public abstract class AbstractUsbPipeOsImp implements UsbPipeOsImp
 	 * <p>
 	 * The OS-implementation must implement this method.
 	 * @param irp the UsbIrpImp to use for this submission
-     * @exception javax.usb.UsbException If the initial submission was unsuccessful.
+	 * @exception javax.usb.UsbException If the initial submission was unsuccessful.
 	 */
-    public abstract void asyncSubmit( UsbIrpImp irp ) throws UsbException;
+	public abstract void asyncSubmit( UsbIrpImp irp ) throws UsbException;
 
 	/**
 	 * Stop all submissions in progress.
