@@ -1,6 +1,4 @@
 
-This RI release is an UNOFFICIAL modification of the JSR80 RI
-
 The JCP web site for the JSR80 is: http://jcp.org/detail/80.jsp
 The location of this modification is http://javax-usb.sourceforge.net
 
@@ -15,24 +13,12 @@ ANT       http://jakarta.apache.org/ant (make sure to get the optional.jar file!
 * Build *
 *********
 
-The ANT tool uses XML buildfiles to create the project.  The default
-name for the buildfile is 'build.xml'.  The default target (for the
-buildfile provided) is 'help'.
-
-Since the buildfile provided is called 'build.xml', you don't need to
-specify it.  The help target (which is the default target if no target
-is specified) lists all available targets.
-
-To build the API, simply
-
-% ant all
-
-Then add the .class jarfile, which is placed (by default) in the lib/
-directory, to your CLASSPATH.
+The ANT tool uses XML buildfiles to create the project.  Run ant in
+the toplevel directory to list all available targets.  To build the RI,
+use the "all" target which compiles all classes and creates the jarfiles.
 
 ****************
 * Installation *
 ****************
 
-Create the .class jarfile (jsr80.jar) and put it into your CLASSPATH.
-
+Add the class jarfile (or class destination directory) to your CLASSPATH.
