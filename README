@@ -1,17 +1,38 @@
-#
-# This file constitutes the main README for the JSR80 RI
-# @author E. Michael Maximilien (maxim@us.ibm.com) 
-# @author Dan Streetman (ddstreet@us.ibm.com)
-#
 
-This API release is based on the version 1.0.0 of the JSR80 specification.
+This RI release is an UNOFFICIAL modification of the JSR80 RI
 
 The JCP web site for the JSR80 is: http://jcp.org/detail/80.jsp
-The IBM dW web site for this project is: http://oss.software.ibm.com/developerworks/projects/javaxusb
+The location of this modification is http://javax-usb.sourceforge.net
 
-Installation:
+****************
+* Requirements *
+****************
 
-Directory structure:
+Java      Standard Edition version 1.2 or greater - Micro Edition has not been tested but may work
+ANT       http://jakarta.apache.org/ant (make sure to get the optional.jar file!)
 
-More information:
+*********
+* Build *
+*********
+
+The ANT tool uses XML buildfiles to create the project.  The default
+name for the buildfile is 'build.xml'.  The default target (for the
+buildfile provided) is 'help'.
+
+Since the buildfile provided is called 'build.xml', you don't need to
+specify it.  The help target (which is the default target if no target
+is specified) lists all available targets.
+
+To build the API, simply
+
+% ant all
+
+Then add the .class jarfile, which is placed (by default) in the lib/
+directory, to your CLASSPATH.
+
+****************
+* Installation *
+****************
+
+Create the .class jarfile (jsr80.jar) and put it into your CLASSPATH.
 
