@@ -132,10 +132,12 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	}
 
 	/** Closes this UsbPipe. */
-	public void close() throws UsbNotActiveException,UsbNotOpenException
+	public void close() throws UsbException,UsbNotActiveException,UsbNotOpenException
 	{
 		checkOpen();
-			
+
+/* FIXME - keep track of # of outstanding submissions? need to throw UsbException if any */
+
 		getUsbPipeOsImp().close();
 		open = false;
 	}
