@@ -9,6 +9,7 @@ package com.ibm.jusb.tools;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -254,6 +255,7 @@ public static class UsbEndpointPanel extends UsbPanel
 		super();
 		usbEndpoint = ep;
 		string = "UsbEndpoint 0x" + UsbUtil.toHexString(ep.getEndpointAddress());
+		refresh();
 	}
 
 	protected void refresh()
@@ -298,7 +300,9 @@ public static class UsbPipePanel extends UsbPanel
 	{
 		super();
 		usbPipe = pipe;
+		initPanels();
 		string = "UsbPipe";
+		refresh();
 	}
 
 	protected void refresh()
@@ -314,6 +318,112 @@ public static class UsbPipePanel extends UsbPanel
 		appendln("Is Open : " + usbPipe.isOpen());
 		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbPipe.getMaxPacketSize()));
 	}
+
+	protected void initPanels()
+	{
+		outputTextArea.setEditable(false);
+		packetListTextArea.setEditable(false);
+
+		openButton.addActionListener(openListener);
+		closeButton.addActionListener(closeListener);
+		submitButton.addActionListener(submitListener);
+		newPacketButton.addActionListener(newPacketListener);
+
+		openClosePanel.add(openButton);
+		openClosePanel.add(closeButton);
+
+		submitPanel.add(submitButton);
+		submitPanel.add(newPacketButton);
+		submitPanel.add(removeButton);
+		submitPanel.add(upButton);
+		submitPanel.add(downButton);
+
+		leftControlPanel.setLayout(new BorderLayout());
+		leftControlPanel.add(submitPanel, BorderLayout.WEST);
+		leftControlPanel.add(packetListScroll, BorderLayout.EAST);
+
+		lowerSubPanel.setLayout(new BorderLayout());
+		lowerSubPanel.add(outputScroll, BorderLayout.NORTH);
+		lowerSubPanel.add(controlSplitPane, BorderLayout.SOUTH);
+
+		lowerMainPanel.setLayout(new BorderLayout());
+		lowerMainPanel.add(openClosePanel, BorderLayout.NORTH);
+		lowerMainPanel.add(lowerSubPanel, BorderLayout.SOUTH);
+		add(lowerMainPanel, BorderLayout.SOUTH);
+	}
+
+	protected void submit()
+	{
+	}
+
+	protected void refreshPacketList()
+	{
+		packetListTextArea.replaceRange("", 0, packetListTextArea.getText().length());
+		for (int i=0; i<packetList.size(); i++)
+			packetListTextArea.append("Packet #" + i + "\n");
+	}
+
+	protected void addPacket()
+	{
+		UsbIrpPanel irpPanel = new UsbIrpPanel();
+		packetList.add(irpPanel);
+		rightControlPanel.add(irpPanel, JLayeredPane.DEFAULT_LAYER);
+		rightControlPanel.moveToFront(irpPanel);
+		refreshPacketList();
+		controlSplitPane.resetToPreferredSizes();
+	}
+
+	private JPanel lowerMainPanel = new JPanel();
+	private JPanel openClosePanel = new JPanel();
+	private JPanel lowerSubPanel = new JPanel();
+	private JTextArea outputTextArea = new JTextArea();
+	private JScrollPane outputScroll = new JScrollPane(outputTextArea);
+	private JPanel leftControlPanel = new JPanel();
+	private JLayeredPane rightControlPanel = new JLayeredPane();
+	private JSplitPane controlSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, leftControlPanel, rightControlPanel);
+	private JPanel submitPanel = new JPanel();
+	private JTextArea packetListTextArea = new JTextArea();
+	private JScrollPane packetListScroll = new JScrollPane(packetListTextArea);
+
+	private JButton openButton = new JButton("Open");
+	private JButton closeButton = new JButton("Close");
+	private JButton submitButton = new JButton("Submit");
+	private JButton newPacketButton = new JButton("New");
+	private JButton removeButton = new JButton("Remove");
+	private JButton upButton = new JButton("Up");
+	private JButton downButton = new JButton("Down");
+
+	private ActionListener openListener = new ActionListener() {
+			public void actionPerformed(ActionEvent aE)
+			{
+				try {
+					usbPipe.open();
+				} catch ( UsbException uE ) {
+					JOptionPane.showMessageDialog(null, "Could not open UsbPipe : " + uE.getMessage());
+				}
+			}
+		};
+
+	private ActionListener closeListener = new ActionListener() {
+			public void actionPerformed(ActionEvent aE)
+			{
+				try {
+					usbPipe.close();
+				} catch ( UsbException uE ) {
+					JOptionPane.showMessageDialog(null, "Could not close UsbPipe : " + uE.getMessage());
+				}
+			}
+		};
+
+	private ActionListener submitListener = new ActionListener() {
+			public void actionPerformed(ActionEvent aE) { submit(); }
+		};
+
+	private ActionListener newPacketListener = new ActionListener() {
+			public void actionPerformed(ActionEvent aE) { addPacket(); }
+		};
+
+	private java.util.List packetList = new LinkedList();
 
 	private UsbPipe usbPipe = null;
 }
