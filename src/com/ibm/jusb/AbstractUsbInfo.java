@@ -59,7 +59,6 @@ public abstract class AbstractUsbInfo implements UsbInfo
     // Instance variables
     //
 
-    private UsbInfoToStringV toStringV = new UsbInfoToStringV();
     private String name = "";
 	private Descriptor descriptor = null;
 }

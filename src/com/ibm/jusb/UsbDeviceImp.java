@@ -17,6 +17,7 @@ import javax.usb.event.*;
 import javax.usb.util.*;
 
 import com.ibm.jusb.os.*;
+import com.ibm.jusb.util.*;
 
 /**
  * UsbDevice platform-independent implementation.
@@ -215,19 +216,24 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/** @param requestImp The RequestImp that completed. */
 	public void requestImpCompleted(RequestImp requestImp)
 	{
-//FIXME - create a listener helper for deviceimp, fire dataevent here
+		if (requestImp.isUsbException())
+			fireErrorEvent(requestImp.getUsbException());
+		else
+			fireDataEvent(requestImp.getData(),requestImp.getDataLength());
+
+		requestImp.setCompleted(true);
 	}
 
 	/** @param the listener to add */
 	public void addUsbDeviceListener( UsbDeviceListener listener ) 
 	{
-		listenerList.add( listener );
+		usbDeviceEventHelper.addEventListener(listener);
 	}
 
 	/** @param the listener to remove */
 	public void removeUsbDeviceListener( UsbDeviceListener listener )
 	{
-		listenerList.remove( listener );
+		usbDeviceEventHelper.removeEventListener(listener);
 	}
 
 	/**
@@ -310,59 +316,41 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	{
 		getUsbPortImp().detachUsbDeviceImp( this );
 
-		/* Choose parallel or series notification */
-		fireDetachEventsParallel();
+		fireDetachEvent();
 	}
 
 	//**************************************************************************
 	// Protected methods
 
-	/** Fire detach events on all listeners in parallel */
-	protected void fireDetachEventsParallel()
+	/**
+	 * Fire an error event.
+	 * @param uE The UsbException.
+	 */
+	protected void fireErrorEvent(UsbException uE)
 	{
-		synchronized ( listenerList ) {
-			for (int i=0; i<listenerList.size(); i++) {
-				final UsbDeviceListener listener = (UsbDeviceListener)listenerList.elementAt(i);
+		UsbDeviceErrorEvent udeE = new UsbDeviceErrorEvent(this,/*FIXME - no sn*/(long)0,uE.getErrorCode(),uE);
 
-				Runnable detachRunnable = new Runnable() {
-					public void run() {
-						listener.usbDeviceDetached( new UsbDeviceEvent( UsbDeviceImp.this ) );
-					}
-				};
-
-				Thread detachThread = new Thread( detachRunnable );
-
-				detachThread.setName( getName() + " parallel detach notification Thread " + i );
-				detachThread.setDaemon( true );
-
-				detachThread.start();
-			}
-		}
+		usbDeviceEventHelper.errorEventOccurred(udeE);
 	}
 
-	/** Fire detach events on all listeners in series */
-	protected void fireDetachEventsSeries()
+	/**
+	 * Fire a data event.
+	 * @param data The data.
+	 * @param len The data length.
+	 */
+	protected void fireDataEvent(byte[] data, int len)
 	{
-		Runnable detachRunnable = new Runnable() {
-			Vector list = UsbDeviceImp.this.listenerList;
+		UsbDeviceDataEvent uddE = new UsbDeviceDataEvent(this,/*FIXME - no sn*/(long)0,data,len);
 
-			public void run() {
-				synchronized ( list ) {
-					for (int i=0; i<list.size(); i++) {
-						UsbDeviceListener listener = (UsbDeviceListener)list.elementAt(i);
+		usbDeviceEventHelper.dataEventOccurred(uddE);
+	}
 
-						listener.usbDeviceDetached( new UsbDeviceEvent( UsbDeviceImp.this ) );
-					}
-				}
-			}
-		};
+	/** Fire detach event. */
+	protected void fireDetachEvent()
+	{
+		UsbDeviceEvent udE = new UsbDeviceEvent(this);
 
-		Thread detachThread = new Thread( detachRunnable );
-
-		detachThread.setName( getName() + " series detach notification Thread" );
-		detachThread.setDaemon( true );
-
-		detachThread.start();
+		usbDeviceEventHelper.usbDeviceDetached(udE);
 	}
 
 	/** @return the device's default langID */
@@ -431,8 +419,6 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 	private UsbDeviceOsImp usbDeviceOsImp = null;
 
-	private Vector listenerList = new Vector();
-
 	private Hashtable stringDescriptors = new Hashtable();
 
 	private String speedString = "";
@@ -443,6 +429,8 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	private UsbPortImp usbPortImp = null;
 
 	private UsbOperationsImp usbOperationsImp = new UsbOperationsImp(this);
+
+	private UsbDeviceEventHelper usbDeviceEventHelper = new UsbDeviceEventHelper();
 
 	//-------------------------------------------------------------------------
 	// Class constants

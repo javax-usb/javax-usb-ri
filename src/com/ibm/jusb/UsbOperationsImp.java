@@ -57,12 +57,11 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 
 		try {
 			getUsbDeviceImp().getUsbDeviceOsImp().syncSubmit( requestImp );
-			fireDataEvent(requestImp);
 		} catch ( UsbException uE ) {
-			fireErrorEvent(requestImp);
-			throw new RequestException("Could not submit Request", uE);
+			requestImp.setUsbException(uE);
+			throw new RequestException("Exception in Request submission", uE);
 		} finally {
-			requestImp.setCompleted(true);
+			getUsbDeviceImp().requestImpCompleted(requestImp);
 		}
 	}
 
@@ -92,9 +91,10 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 		try {
 			getUsbDeviceImp().getUsbDeviceOsImp().syncSubmit( list );
 		} catch ( UsbException uE ) {
-			throw new RequestException("Could not submit RequestBundle", uE);
+			throw new RequestException("Exception in RequestBundle submission", uE);
 		} finally {
-//FIXME - fire dataevents and if needed exception event			
+			for (int i=0; i<list.size(); i++)
+				getUsbDeviceImp().requestImpCompleted((RequestImp)list.get(i));
 		}
 	}
 
@@ -120,15 +120,6 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 		}
 
 		return requestImp;
-	}
-
-	/**
-	 * Called when a RequestImp submitted asynchronously has completed.
-	 * @param requestImp The RequestImp that completed.
-	 */
-	public void requestImpCompleted(RequestImp requestImp)
-	{
-		getUsbDeviceImp().requestImpCompleted(requestImp);
 	}
 
 	//**************************************************************************
