@@ -77,7 +77,7 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	{
 		synchronized ( interfaces ) {
 			for (int i=0; i<interfaces.size(); i++) {
-				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.get(i);
+				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.getUsbInfo(i);
 
 				if (number == iface.getInterfaceNumber())
 					return iface;
@@ -139,7 +139,7 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	{
 		synchronized ( interfaces ) {
 			for (int i=0; i<interfaces.size(); i++) {
-				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.get(i);
+				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.getUsbInfo(i);
 
 				if (setting.getInterfaceNumber() == iface.getInterfaceNumber()) {
 					interfaces.removeUsbInfo( iface );

@@ -28,10 +28,10 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	public void setRequestType(byte type) { bmRequestType = type; }
 
 	/** @return the Request code byte for this request */
-	public byte getRequest() { return request; }
+	public byte getRequestCode() { return bRequest; }
 
 	/** @param r the Request code byte for this request */
-	public void setRequest(byte r) { request = r; }
+	public void setRequestCode(byte r) { bRequest = r; }
 
 	/** @return the wValue for this request */
 	public short getValue() { return wValue; }
@@ -68,7 +68,7 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 		byte[] requestBytes = new byte[ requestBytesSize ];
 
 		requestBytes[ 0 ] = getRequestType();
-		requestBytes[ 1 ] = getRequest();
+		requestBytes[ 1 ] = getRequestCode();
 
 		requestBytes[ 2 ] = (byte)getValue();
 		requestBytes[ 3 ] = (byte)( getValue() >> 8 );
@@ -92,6 +92,15 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	/** Clean this object */
 	public void clean()
 	{
+		request = null;
+		number = 0;
+		usbException = null;
+		completed = false;
+
+		/* Shouldn't be any waiters.  If so they lose! */
+		waitLock = new Object();
+		waitCount = 0;
+
 		bmRequestType = 0x00;
 		bRequest = 0x00;
 		wValue = 0x0000;
@@ -119,16 +128,88 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	public void setUsbException( UsbException uE ) { usbException = uE; }
 
 	/** @return If in UsbException */
-	public boolean isInUsbException() { return null != usbException; }
+	public boolean isUsbException() { return null != usbException; }
 
 	/** @return If completed */
 	public boolean isCompleted() { return completed; }
 
-	/** @param c If completed */
-	public void setCompleted(boolean c) { completed = c; }
+	/** Wait (block) until this submission is completed */
+	public void waitUntilCompleted() { waitUntilCompleted(0); }
+
+	/** Wait (block) until this submission is completed */
+	public void waitUntilCompleted( long msecs )
+	{
+		synchronized ( waitLock ) {
+			waitCount++;
+			while (!isCompleted()) {
+				try { waitLock.wait( msecs ); }
+				catch ( InterruptedException iE ) { }
+			}
+			waitCount--;
+		}
+	}
+
+	/**
+	 * Get the Request.
+	 * <p>
+	 * If the user passes a Request that is not a RequestImp, this will
+	 * 'wrap' that object so that lower (platform) layers can handle
+	 * a standardized object (the RequestImp) with setters instead of
+	 * a user-supplied object without setters.  The platform layers always use a
+	 * RequestImp, not Request.
+	 * @return The Request.
+	 */
+	public Request getRequest() { return request; }
+
+	/**
+	 * Set this as completed.
+	 * <p>
+	 * Setting this to true performs all required completion activities, such as waking up
+	 * {@link #waitUntilCompleted(long,int) waiting Threads} and (if needed) setting the
+	 * {@link #getRealRequest() "real" Request}'s params.
+	 * @param c If completed
+	 */
+	public void setCompleted(boolean c)
+	{
+		completed = c;
+
+		if (!isCompleted())
+			return;
+
+		notifyCompleted();
+
+		Request request = getRequest();
+
+		if (null != request) {
+			request.setDataLength(getDataLength());
+			request.setUsbException(getUsbException());
+			request.setCompleted(true);
+		}
+	}
+
+	//**************************************************************************
+	// Protected methods
+
+	/** Notify all Threads waiting for completion */
+	protected void notifyCompleted()
+	{
+		if (0 < waitCount) {
+			synchronized ( waitLock ) {
+				waitLock.notifyAll();
+			}
+		}
+	}
+
+	/**
+	 * Set the Request.
+	 * @param r The Request.
+	 */
+	protected void setRequest(Request r) { request = r; }
 
 	//**************************************************************************
 	// Instance variables
+
+	private Request request = null;
 
 	private byte bmRequestType = 0x00;
 	private byte bRequest = 0x00;
@@ -142,6 +223,9 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	private long number = 0;
 	private UsbException usbException = null;
 	private boolean completed = false;
+
+	private Object waitLock = new Object();
+	private int waitCount = 0;
 
 	//**************************************************************************
 	// Class constants

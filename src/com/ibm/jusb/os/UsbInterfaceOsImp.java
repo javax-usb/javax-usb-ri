@@ -9,10 +9,12 @@ package com.ibm.jusb.os;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.UsbException;
+import javax.usb.*;
+
+import com.ibm.jusb.*;
 
 /**
- * Interface for os implementation of UsbInterface.
+ * UsbInterface platform implementation.
  * @author Dan Streetman
  */
 public interface UsbInterfaceOsImp

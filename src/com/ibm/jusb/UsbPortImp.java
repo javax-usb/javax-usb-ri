@@ -48,7 +48,7 @@ public class UsbPortImp extends AbstractUsbInfo implements UsbPort
 	 * in {@link com.ibm.jusb.UsbHubImp#getUsbPortImp(byte) UsbHubImp.getUsbPortImp(number)}.
 	 * @return The number of this port.
 	 */
-    public byte getPortNumber() { return number; }
+    public byte getPortNumber() { return portNumber; }
 
     /** @return The parent UsbHub */
     public UsbHub getUsbHub() { return getUsbHubImp(); }
@@ -68,12 +68,12 @@ public class UsbPortImp extends AbstractUsbInfo implements UsbPort
     /**
      * Attaches the UsbDeviceImp to this port.
      * @param device The UsbDeviceImp to attach.
-	 * @throws javax.usb.UsbException If there is already a device attached.
+	 * @throws javax.usb.UsbRuntimeException If there is already a device attached.
      */
-    public synchronized void attachUsbDeviceImp( UsbDeviceImp device ) throws UsbException
+    public synchronized void attachUsbDeviceImp( UsbDeviceImp device )
     {
 		if (isUsbDeviceAttached())
-			throw new UsbException( USB_PORT_DEVICE_ALREADY_ATTACHED );
+			throw new UsbRuntimeException( USB_PORT_DEVICE_ALREADY_ATTACHED );
 
         usbDeviceImp = device;
     }
@@ -81,15 +81,15 @@ public class UsbPortImp extends AbstractUsbInfo implements UsbPort
     /** 
      * Detaches the attached UsbDeviceImp from this port.
 	 * @param device the UsbDeviceImp to detach.
-	 * @throws javax.usb.UsbException If the UsbDeviceImp is not already attached.
+	 * @throws javax.usb.UsbRuntimeException If the UsbDeviceImp is not already attached.
      */
-    public synchronized void detachUsbDeviceImp( UsbDeviceImp device ) throws UsbException
+    public synchronized void detachUsbDeviceImp( UsbDeviceImp device )
 	{
 		try {
 			if (!getUsbDeviceImp().equals( device ))
-				throw new UsbException( USB_PORT_DEVICE_NOT_ATTACHED );
+				throw new UsbRuntimeException( USB_PORT_DEVICE_NOT_ATTACHED );
 		} catch ( NullPointerException npE ) {
-			throw new UsbException( USB_PORT_DEVICE_NOT_ATTACHED );
+			throw new UsbRuntimeException( USB_PORT_DEVICE_NOT_ATTACHED );
 		}
 
 		usbDeviceImp = null;
@@ -104,7 +104,7 @@ public class UsbPortImp extends AbstractUsbInfo implements UsbPort
 	//**************************************************************************
     // Instance variables
 
-    private byte number = 0;
+    private byte portNumber = 0;
 
     private UsbHubImp usbHubImp = null;
     private UsbDeviceImp usbDeviceImp = null;

@@ -112,7 +112,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	{
 		synchronized ( configs ) {
 			for (int i=0; i<configs.size(); i++) {
-				UsbConfigImp config = (UsbConfigImp)configs.get(i);
+				UsbConfigImp config = (UsbConfigImp)configs.getUsbInfo(i);
 
 				if (number == config.getConfigNumber())
 					return config;
@@ -138,7 +138,10 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	public byte getActiveUsbConfigNumber() { return activeConfigNumber; }
 
 	/** @return the active UsbConfig object */
-	public UsbConfig getActiveUsbConfig() { return getUsbConfig( getActiveUsbConfigNumber() ); }
+	public UsbConfig getActiveUsbConfig() { return getActiveUsbConfigImp(); }
+
+	/** @return the active UsbConfigImp object */
+	public UsbConfigImp getActiveUsbConfigImp() { return getUsbConfigImp( getActiveUsbConfigNumber() ); }
 
 	/** @return the device descriptor for this device */
 	public DeviceDescriptor getDeviceDescriptor() { return (DeviceDescriptor)getDescriptor(); }
@@ -283,7 +286,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 				Runnable detachRunnable = new Runnable() {
 					public void run() {
-						listener.usbDeviceDetached( new UsbDeviceEvent( UsbDeviceAbstraction.this ) );
+						listener.usbDeviceDetached( new UsbDeviceEvent( UsbDeviceImp.this ) );
 					}
 				};
 
@@ -301,14 +304,14 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	void fireDetachEventsSeries()
 	{
 		Runnable detachRunnable = new Runnable() {
-			Vector list = UsbDeviceAbstraction.this.listenerList;
+			Vector list = UsbDeviceImp.this.listenerList;
 
 			public void run() {
 				synchronized ( list ) {
 					for (int i=0; i<list.size(); i++) {
 						UsbDeviceListener listener = (UsbDeviceListener)list.elementAt(i);
 
-						listener.usbDeviceDetached( new UsbDeviceEvent( UsbDeviceAbstraction.this ) );
+						listener.usbDeviceDetached( new UsbDeviceEvent( UsbDeviceImp.this ) );
 					}
 				}
 			}
@@ -339,7 +342,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 	private UsbPortImp usbPortImp = null;
 
-	private UsbOperationsImp usbOperationsImp = new UsbOperationsImp();
+	private UsbOperationsImp usbOperationsImp = new UsbOperationsImp(this);
 
 	//-------------------------------------------------------------------------
 	// Class constants

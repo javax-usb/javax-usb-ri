@@ -138,9 +138,11 @@ public class UsbPipeImp extends Object implements UsbPipe
 		submissionCount++;
 		sequenceNumber++;
 
-		return getUsbPipeOsImp().syncSubmit(data);
+		int result = getUsbPipeOsImp().syncSubmit(data);
 
 		submissionCount--;
+
+		return result;
 	}
 
 	/**
@@ -283,7 +285,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	 * Check if this pipe is active.
 	 * @throws UsbException If the pipe is not active.
 	 */
-	protected void checkActive()
+	protected void checkActive() throws UsbException
 	{
 		if (!isActive())
 			throw new UsbException("UsbPipe not active");
@@ -295,7 +297,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	 * A pipe must be active to be open.
 	 * @throws UsbException If the pipe is not open.
 	 */
-	protected void checkOpen()
+	protected void checkOpen() throws UsbException
 	{
 		if (!isOpen())
 			throw new UsbException("UsbPipe not open");
@@ -304,7 +306,9 @@ public class UsbPipeImp extends Object implements UsbPipe
 	/** Get a uniquely-numbered SubmitResult */
 	protected UsbIrpImp createSubmitResult()
 	{
-		UsbIrpImp irp = (UsbIrpImp)AbstractUsbServices.getInstance().getHelper().getUsbIrpImpFactory().take();
+		UsbIrpImp irp = 
+//FIXME!!!!!!!!!!!!!!!!!!!!
+/*create!!!!!!!!!!!*/ null;
 
 		irp.setNumber( ++submitResultCount );
 
@@ -331,7 +335,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	private UsbException usbException = null;
 	private int errorCode = 0;
 
-    private UsbPipeImp usbPipeImp = null;
+    private UsbPipeOsImp usbPipeOsImp = null;
 
 	private UsbPipeEventHelper usbPipeEventHelper = new UsbPipeEventHelper( this, new FifoScheduler() );
 
@@ -339,7 +343,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	private int submissionCount = 0;
 	private int submitResultCount = 0;
 
-	private UsbEndpoint usbEndpoint = null;
+	private UsbEndpointImp usbEndpointImp = null;
 
 	//**************************************************************************
 	// Inner classes

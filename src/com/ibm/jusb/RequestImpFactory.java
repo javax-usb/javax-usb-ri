@@ -16,14 +16,13 @@ import javax.usb.util.DefaultRequestBundle;
 
 /**
  * RequestFactory implementation.
- * @author E. Michael Maximilien
  * @author Dan Streetman
+ * @author E. Michael Maximilien
  */
 public class RequestImpFactory implements RequestFactory
 {
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Public methods
-	//
 
 	/**
 	 * Indicates to the RequestFactory object that the Request object can be recycled
@@ -109,7 +108,7 @@ public class RequestImpFactory implements RequestFactory
 
 	/** @return A SynchFrameRequest */
 	public Request createSynchFrameRequest( short wIndex, byte[] data ) throws RequestException
-	{ return createRequest( REQUESTTYPE_SYNC_FRAME, RequestConst.REQUEST_SYNC_FRAME, (short)0x0000, wIndex, data ); }
+	{ return createRequest( REQUESTTYPE_SYNCH_FRAME, RequestConst.REQUEST_SYNCH_FRAME, (short)0x0000, wIndex, data ); }
 
 	/** @return A GetStateRequest */
 	public Request createGetStateRequest( short wIndex, byte[] data ) throws RequestException
@@ -117,11 +116,25 @@ public class RequestImpFactory implements RequestFactory
 
 	/** @return A Request */
 	public Request createRequest( byte bmRequestType, byte requestType, short wValue, short wIndex, byte[] data ) throws RequestException
+	{ return createRequestImp( bmRequestType, requestType, wValue, wIndex, data ); }
+
+	/** @return A RequestImp */
+	public RequestImp createRequestImp( Request request ) throws RequestException
 	{
-		Request request = new RequestImp( this );
+		RequestImp requestImp = createRequestImp( request.getRequestType(), request.getRequestCode(), request.getValue(), request.getIndex(), request.getData() );
+
+		requestImp.setRequest( request );
+
+		return requestImp;
+	}
+
+	/** @return A RequestImp */
+	public RequestImp createRequestImp( byte bmRequestType, byte requestType, short wValue, short wIndex, byte[] data ) throws RequestException
+	{
+		RequestImp request = new RequestImp( this );
 
 		request.setRequestType( bmRequestType );
-		request.setRequest( requestType );
+		request.setRequestCode( requestType );
 		request.setValue( wValue );
 		request.setIndex( wIndex );
 		request.setData( data );
@@ -166,7 +179,7 @@ public class RequestImpFactory implements RequestFactory
 		RequestConst.REQUESTTYPE_DIRECTION_OUT |
 		RequestConst.REQUESTTYPE_TYPE_STANDARD |
 		RequestConst.REQUESTTYPE_RECIPIENT_INTERFACE;
-	private static final byte REQUESTTYPE_SYNC_FRAME =
+	private static final byte REQUESTTYPE_SYNCH_FRAME =
 		RequestConst.REQUESTTYPE_DIRECTION_IN |
 		RequestConst.REQUESTTYPE_TYPE_STANDARD |
 		RequestConst.REQUESTTYPE_RECIPIENT_ENDPOINT;

@@ -65,7 +65,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 		} else {
 			/* Add ports */
 			for (int i = oldports; i < ports; i++)
-				portList.addUsbInfo( new UsbPortImp( this, i+1 ) );
+				portList.addUsbInfo( new UsbPortImp( this, (byte)(i+1) ) );
 		}
 
 	}
@@ -83,7 +83,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 
 		UsbPortImp usbPortImp = getUsbPortImp( portNumber );
 
-		usbPortImp.attachUsbDevice( usbDevice );
+		usbPortImp.attachUsbDeviceImp( usbDeviceImp );
 	}
 
 	/**
@@ -144,9 +144,9 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 
 		for (int i=0; i<portList.size(); i++) {
 			UsbPortImp portImp = (UsbPortImp)portList.getUsbInfo(i);
-			UsbDevice device = portImp.getUsbDevice();
+			UsbDeviceImp device = portImp.getUsbDeviceImp();
 			if (null != device)
-				attachedDevices.add(device);
+				attachedDevices.addUsbInfo(device);
 		}
 
 		return attachedDevices.usbInfoListIterator();

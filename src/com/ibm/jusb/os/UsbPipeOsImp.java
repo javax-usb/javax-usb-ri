@@ -13,6 +13,8 @@ import java.util.*;
 
 import javax.usb.*;
 
+import com.ibm.jusb.*;
+
 /**
  * The implementation interface of a UsbPipe.
  * <p>

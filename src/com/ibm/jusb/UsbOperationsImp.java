@@ -9,6 +9,8 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.util.*;
+
 import javax.usb.*;
 import javax.usb.util.*;
 import javax.usb.os.*;
@@ -18,7 +20,7 @@ import javax.usb.os.*;
  * @author E. Michael Maximilien
  * @author Dan Streetman
  */
-public class UsbOperationsImp implements StandardOperations,VendorOperations,ClassOperations
+public class UsbOperationsImp implements StandardOperations,VendorOperations,ClassOperations,HubClassOperations
 {
 	public UsbOperationsImp( UsbDeviceImp devImp )
 	{ 
@@ -28,6 +30,9 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
     //-------------------------------------------------------------------------
     // Public methods
     //
+
+	/** @return the UsbHub */
+	public UsbHub getUsbHub() { return (UsbHub)getUsbDeviceImp(); }
 
 	/** @return the UsbDevice */
 	public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
@@ -42,7 +47,19 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public synchronized void syncSubmit( Request request ) throws RequestException
 	{
-		getUsbDeviceImp().syncSubmit( request );
+		RequestImp requestImp = null;
+
+		try {
+			requestImp = (RequestImp)request;
+		} catch ( ClassCastException ccE ) {
+			requestImp = requestImpFactory.createRequestImp(request);
+		}
+
+		try {
+			getUsbDeviceImp().getUsbDeviceOsImp().syncSubmit( requestImp );
+		} catch ( UsbException uE ) {
+			throw new RequestException("Could not submit Request", uE);
+		}
 	}
 
 	/**
@@ -54,7 +71,24 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public synchronized void syncSubmit( RequestBundle requestBundle ) throws RequestException
 	{
-		getUsbDeviceImp().syncSubmit( requestBundle );
+		List list = new ArrayList();
+
+		RequestIterator iterator = requestBundle.requestIterator();
+
+		while (iterator.hasNext()) {
+			Request request = iterator.nextRequest();
+
+			if (request instanceof RequestImp)
+				list.add(request);
+			else
+				list.add(requestImpFactory.createRequestImp(request));
+		}
+
+		try {
+			getUsbDeviceImp().getUsbDeviceOsImp().syncSubmit( list );
+		} catch ( UsbException uE ) {
+			throw new RequestException("Could not submit RequestBundle", uE);
+		}
 	}
 
 	/**
@@ -64,7 +98,21 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public UsbOperations.SubmitResult asyncSubmit( Request request ) throws RequestException
 	{
-		return getUsbDeviceImp().asyncSubmit( request );
+		RequestImp requestImp = null;
+
+		try {
+			requestImp = (RequestImp)request;
+		} catch ( ClassCastException ccE ) {
+			requestImp = requestImpFactory.createRequestImp(request);
+		}
+
+		try {
+			getUsbDeviceImp().getUsbDeviceOsImp().asyncSubmit( requestImp );
+		} catch ( UsbException uE ) {
+			throw new RequestException("Could not submit Request", uE);
+		}
+
+		return requestImp;
 	}
 
 	//**************************************************************************
@@ -81,7 +129,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request clearFeature( byte bmRequestType, short wValue, short wIndex ) throws RequestException
 	{
-		Request request = getRequestFactory().createClearFeatureRequest( bmRequestType, wValue, wIndex );
+		Request request = getRequestImpFactory().createClearFeatureRequest( bmRequestType, wValue, wIndex );
 
 		syncSubmit( request );
 
@@ -97,7 +145,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request getConfiguration( byte[] data ) throws RequestException
 	{
-		Request request = getRequestFactory().createGetConfigurationRequest( data );
+		Request request = getRequestImpFactory().createGetConfigurationRequest( data );
 
 		syncSubmit( request );
 
@@ -114,7 +162,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request getDescriptor( short wValue, short wIndex, byte[] data ) throws RequestException
 	{
-		Request request = getRequestFactory().createGetDescriptorRequest( wValue, wIndex, data );
+		Request request = getRequestImpFactory().createGetDescriptorRequest( wValue, wIndex, data );
 
 		syncSubmit( request );
 
@@ -131,7 +179,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request getInterface( short wIndex, byte[] data ) throws RequestException
 	{
-		Request request = getRequestFactory().createGetInterfaceRequest( wIndex, data );
+		Request request = getRequestImpFactory().createGetInterfaceRequest( wIndex, data );
 
 		syncSubmit( request );
 
@@ -149,7 +197,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request getStatus( byte bmRequestType, short wIndex, byte[] data ) throws RequestException
 	{
-		Request request = getRequestFactory().createGetStatusRequest( bmRequestType, wIndex, data ); 
+		Request request = getRequestImpFactory().createGetStatusRequest( bmRequestType, wIndex, data ); 
 
 		syncSubmit( request );
 
@@ -165,7 +213,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request setAddress( short wValue ) throws RequestException
 	{
-		Request request = getRequestFactory().createSetAddressRequest( wValue );
+		Request request = getRequestImpFactory().createSetAddressRequest( wValue );
 
 		syncSubmit( request );
 
@@ -181,7 +229,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request setConfiguration( short wValue ) throws RequestException
 	{
-		Request request = getRequestFactory().createSetConfigurationRequest( wValue );
+		Request request = getRequestImpFactory().createSetConfigurationRequest( wValue );
 
 		syncSubmit( request );
 
@@ -200,7 +248,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request setDescriptor( short wValue, short wIndex, byte[] data ) throws RequestException
 	{
-		Request request = getRequestFactory().createSetDescriptorRequest( wValue, wIndex, data ); 
+		Request request = getRequestImpFactory().createSetDescriptorRequest( wValue, wIndex, data ); 
 
 		syncSubmit( request );
 
@@ -218,7 +266,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request setFeature( byte bmRequestType, short wValue, short wIndex ) throws RequestException
 	{
-		Request request = getRequestFactory().createSetFeatureRequest( bmRequestType, wValue, wIndex );
+		Request request = getRequestImpFactory().createSetFeatureRequest( bmRequestType, wValue, wIndex );
 
 		syncSubmit( request );
 
@@ -235,7 +283,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request setInterface( short wIndex, short wValue ) throws RequestException
 	{
-		Request request = getRequestFactory().createSetInterfaceRequest( wIndex, wValue );
+		Request request = getRequestImpFactory().createSetInterfaceRequest( wIndex, wValue );
 
 		syncSubmit( request );
 
@@ -254,7 +302,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request synchFrame( short wIndex, byte[] data ) throws RequestException
 	{
-		Request request = getRequestFactory().createSynchFrameRequest( wIndex, data );
+		Request request = getRequestImpFactory().createSynchFrameRequest( wIndex, data );
 
 		syncSubmit( request );
 
@@ -277,7 +325,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request vendorRequest( byte bmRequestType, byte requestType, short wValue, short wIndex, byte[] data ) throws RequestException
 	{
-		Request vendorRequest = getRequestFactory().createVendorRequest( bmRequestType, requestType, wValue, wIndex, data );
+		Request vendorRequest = getRequestImpFactory().createVendorRequest( bmRequestType, requestType, wValue, wIndex, data );
 
 		syncSubmit( vendorRequest );
 
@@ -300,7 +348,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request classRequest( byte bmRequestType, byte requestType, short wValue, short wIndex, byte[] data ) throws RequestException
 	{
-		Request classRequest = getRequestFactory().createClassRequest( bmRequestType, requestType, wValue, wIndex, data );
+		Request classRequest = getRequestImpFactory().createClassRequest( bmRequestType, requestType, wValue, wIndex, data );
 
 		syncSubmit( classRequest );
 
@@ -319,7 +367,7 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	 */
 	public Request getState( short wIndex, byte[] data ) throws RequestException
 	{
-		Request request = getRequestFactory().createGetStateRequest( wIndex, data );
+		Request request = getRequestImpFactory().createGetStateRequest( wIndex, data );
 
 		syncSubmit( request );
 
@@ -330,12 +378,12 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	// Protected methods
 
 	/** @return A RequestFactory */
-	protected RequestFactory getRequestFactory() { return requestFactory; }
+	protected RequestImpFactory getRequestImpFactory() { return requestImpFactory; }
 
 	//**************************************************************************
 	// Instance variables
 
 	protected UsbDeviceImp usbDeviceImp = null;
-	protected RequestFactory requestFactory = new DefaultRequestFactory();
+	protected RequestImpFactory requestImpFactory = new RequestImpFactory();
 
 }

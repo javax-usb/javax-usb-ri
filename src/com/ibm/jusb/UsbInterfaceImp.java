@@ -158,7 +158,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	{
 		synchronized ( endpoints ) {
 			for (int i=0; i<endpoints.size(); i++) {
-				UsbEndpointImp ep = (UsbEndpointImp)endpoints.get(i);
+				UsbEndpointImp ep = (UsbEndpointImp)endpoints.getUsbInfo(i);
 
 				if (address == ep.getEndpointAddress())
 					return ep;
@@ -221,22 +221,35 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 * @return the active setting UsbInterface object for this interface
 	 * @throws javax.usb.NotActiveException if the interface (not setting) is inactive.
 	 */
-	public UsbInterface getActiveAlternateSetting()
+	public UsbInterface getActiveAlternateSetting() { return getActiveAlternateSettingImp(); }
+
+	/**
+	 * Get the active alternate setting.
+	 * @return the active setting UsbInterface object for this interface
+	 * @throws javax.usb.NotActiveException if the interface (not setting) is inactive.
+	 */
+	public UsbInterfaceImp getActiveAlternateSettingImp()
 	{
 		/* Active check done in getActiveAlternateSettingNumber() */
 
-		return getAlternateSetting( getActiveAlternateSettingNumber() );
+		return getAlternateSettingImp( getActiveAlternateSettingNumber() );
 	}
 
 	/**
 	 * Get the alternate setting with the specified number.
 	 * @return the alternate setting with the specified number.
 	 */
-	public UsbInterface getAlternateSetting( byte number )
+	public UsbInterface getAlternateSetting( byte number ) { return getAlternateSettingImp(number); }
+
+	/**
+	 * Get the alternate setting with the specified number.
+	 * @return the alternate setting with the specified number.
+	 */
+	public UsbInterfaceImp getAlternateSettingImp( byte number )
 	{
 		synchronized ( alternateSettings ) {
 			for (int i=0; i<alternateSettings.size(); i++) {
-				UsbInterfaceImp iface = (UsbInterfaceImp)alternateSettings.get(i);
+				UsbInterfaceImp iface = (UsbInterfaceImp)alternateSettings.getUsbInfo(i);
 
 				if (number == iface.getAlternateSettingNumber())
 					return iface;
@@ -302,7 +315,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 */
 	public void setActiveAlternateSettingNumber( byte number )
 	{
-		getUsbConfigImp().setActiveAlternateSetting( getAlternateSetting( number ) );
+		getUsbConfigImp().setActiveAlternateSetting( getAlternateSettingImp( number ) );
 
 		synchronized ( alternateSettings ) {
 			for (int i=0; i<alternateSettings.size(); i++) {
@@ -362,7 +375,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	//
 
 	private UsbConfigImp usbConfigImp = null;
-	private UsbInterfaceImp usbInterfaceImp = null;
+	private UsbInterfaceOsImp usbInterfaceOsImp = null;
 
 	private UsbInfoList endpoints = new DefaultUsbInfoList();
 
