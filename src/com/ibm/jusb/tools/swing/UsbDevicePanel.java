@@ -34,6 +34,7 @@ public class UsbDevicePanel extends UsbPanel
 		super();
 		usbDevice = device;
 		string = "UsbDevice";
+		try { string += ":" + usbDevice.getProductString(); } catch ( Exception e ) { }
 		initPanels();
 		refresh();
 	}
@@ -95,26 +96,30 @@ public class UsbDevicePanel extends UsbPanel
 
 		requestPanel.setLayout(requestLayout);
 
-		packetPanel.add(packetJList);
-
-		buttonsPanel.add(upButton);
-		buttonsPanel.add(newPacketButton);
-		buttonsPanel.add(downButton);
-		buttonsPanel.add(copyPacketButton);
-		buttonsPanel.add(submitButton);
-		buttonsPanel.add(removeButton);
-
-		submitPanel.add(packetListScroll, BorderLayout.CENTER);
-		panel = new JPanel();
-		panel.add(buttonsPanel);
-		submitPanel.add(panel, BorderLayout.EAST);
-		submitPanel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+		//packetPanel.add(packetJList);
 		
+		JPanel buttonsPanel = new JPanel( new FlowLayout( FlowLayout.LEFT ) );
+		JPanel insidePanel = new JPanel(new GridLayout(3, 2, 5, 5));
+		insidePanel.add(upButton);
+		insidePanel.add(newPacketButton);
+		insidePanel.add(downButton);
+		insidePanel.add(copyPacketButton);
+		insidePanel.add(submitButton);
+		insidePanel.add(removeButton);
+		buttonsPanel.add(insidePanel);
+
+		JPanel submitPanel = new JPanel(new BorderLayout());
+		submitPanel.add(packetListScroll, BorderLayout.CENTER);
+		submitPanel.add(buttonsPanel, BorderLayout.EAST);
+		submitPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+
 		add(clearPanel);
 		add(Box.createRigidArea(new Dimension(0, 5)));
 		add(submitPanel);
+
+		requestPanel.add(emptyPanel, EMPTY_PANEL);
 		add(requestPanel);
-		
+
 		refreshButtons();
 	}
 
@@ -139,6 +144,8 @@ public class UsbDevicePanel extends UsbPanel
 	{
 		if (!packetList.isEmpty())
 			requestLayout.show(requestPanel, packetList.get(getSelectedIndex()).toString());
+		else
+			requestLayout.show(requestPanel, EMPTY_PANEL);
 		validate();
 		refreshButtons();
 	}
@@ -186,9 +193,9 @@ public class UsbDevicePanel extends UsbPanel
 			packetList.remove(index);
 			packetJList.setListData(packetList);
 			if (packetList.size() <= index)
-					index--;
+				index--;
 			if (0 <= index)
-					packetJList.setSelectedIndex(index);
+				packetJList.setSelectedIndex(index);
 			updateSelection();
 		}
 		refreshButtons();
@@ -239,19 +246,20 @@ public class UsbDevicePanel extends UsbPanel
 	}
 
 	private JPanel clearPanel = new JPanel(new BorderLayout());
-	private JTextArea outputTextArea = new JTextArea();
-	private JPanel submitPanel = new JPanel( new BorderLayout());
+	private JTextArea outputTextArea = new JTextArea(3, 30);
 	private JScrollPane outputScroll = new JScrollPane(outputTextArea);
 	private Vector packetList = new Vector();
+
 	private JList packetJList = new JList();
 	private JPanel packetPanel = new JPanel();
-	private JScrollPane packetListScroll = new JScrollPane(packetPanel);
-	private Box submitBox = new Box(BoxLayout.X_AXIS);
-	private JPanel buttonsPanel = new JPanel( new GridLayout(3,2,2,2));
-	private JPanel submitButtonLeftPanel = new JPanel();
-	private JPanel submitButtonRightPanel = new JPanel();
+
+	//private JScrollPane packetListScroll = new JScrollPane(packetPanel);
+	private JScrollPane packetListScroll = new JScrollPane(packetJList);
+	
 	private JPanel requestPanel = new JPanel();
 	private CardLayout requestLayout = new CardLayout();
+	private JPanel emptyPanel = new JPanel();
+	private static final String EMPTY_PANEL = "Empty Panel";
 
 	private JButton clearButton = new JButton("Clear");
 	private JButton submitButton = new JButton("Submit");

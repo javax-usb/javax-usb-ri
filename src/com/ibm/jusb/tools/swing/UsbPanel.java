@@ -24,6 +24,7 @@ public abstract class UsbPanel extends JPanel
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
 		textArea.setEditable(false);
+		textArea.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
 		refreshButton.addActionListener(refreshListener);
 
 		refreshPanel.add(refreshButton);
@@ -49,7 +50,7 @@ public abstract class UsbPanel extends JPanel
 			public void actionPerformed(ActionEvent aE) { refresh(); }
 		};
 
-	protected JTextArea textArea = new JTextArea();
+	protected JTextArea textArea = new JTextArea(15, 30);
 	protected JScrollPane textScroll = new JScrollPane(textArea);
 	protected String string;
 }

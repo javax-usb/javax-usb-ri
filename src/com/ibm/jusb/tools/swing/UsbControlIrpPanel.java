@@ -33,6 +33,7 @@ public class UsbControlIrpPanel extends JPanel implements Cloneable
 
 		refreshButton.addActionListener(refreshListener);
 		clearButton.addActionListener(clearListener);
+		resetButton.addActionListener(resetListener);
 
 		lengthCheckBox.addChangeListener(lengthListener);
 
@@ -40,7 +41,7 @@ public class UsbControlIrpPanel extends JPanel implements Cloneable
 		lengthField.setText("0");
 		lengthCheckBox.setSelected(false);
 
-		JPanel setupPacketPanel = new JPanel( new GridLayout(4,2,2,2));
+		JPanel setupPacketPanel = new JPanel( new GridLayout(4,2,6,6));
 		setupPacketPanel.add(bmRequestTypeLabel);
 		setupPacketPanel.add(bmRequestTypeField);
 		setupPacketPanel.add(bRequestLabel);
@@ -62,15 +63,19 @@ public class UsbControlIrpPanel extends JPanel implements Cloneable
 		selectionPanel.add(lengthField);
 		selectionPanel.add(acceptShortCheckBox);
 
-		buttonPanel.add(refreshButton);
-		buttonPanel.add(clearButton);
+		JPanel buttonsPanel = new JPanel();
+		JPanel insidePanel = new JPanel( new GridLayout(1,3,8,2));
+		insidePanel.add(refreshButton);
+		insidePanel.add(clearButton);
+		insidePanel.add(resetButton);
+		buttonsPanel.add(insidePanel);
 
 		JPanel rightPanel = new JPanel(new BorderLayout());
-		
+
 		rightPanel.add(selectionPanel, BorderLayout.NORTH);
 		rightPanel.add(packetDataScroll, BorderLayout.CENTER);
-		rightPanel.add(buttonPanel, BorderLayout.SOUTH);
-		rightPanel.setBorder(BorderFactory.createEmptyBorder(2,2,3,2));
+		rightPanel.add(buttonsPanel, BorderLayout.SOUTH);
+		rightPanel.setBorder(BorderFactory.createEmptyBorder(3,3,3,5));
 
 		add(panel, BorderLayout.WEST);
 		add(rightPanel, BorderLayout.CENTER);
@@ -83,6 +88,12 @@ public class UsbControlIrpPanel extends JPanel implements Cloneable
 		UsbControlIrpPanel newPanel = new UsbControlIrpPanel();
 		newPanel.syncCheckBox.setSelected(syncCheckBox.isSelected());
 		newPanel.packetDataTextArea.setText(packetDataTextArea.getText());
+		newPanel.bmRequestTypeField.setText(bmRequestTypeField.getText());
+		newPanel.bRequestField.setText(bRequestField.getText());
+		newPanel.wIndexField.setText(wIndexField.getText());
+		newPanel.wValueField.setText(wValueField.getText());
+		newPanel.offsetField.setText(offsetField.getText());
+		newPanel.lengthField.setText(lengthField.getText());
 		return newPanel;
 	}
 
@@ -161,9 +172,23 @@ public class UsbControlIrpPanel extends JPanel implements Cloneable
 	{
 		packetDataTextArea.setText("");
 	}
+	
+	protected void reset() {
+		packetDataTextArea.setText("");
+		offsetField.setText("0");
+		lengthField.setText("0");
+		bmRequestTypeField.setText("0x00");
+		bRequestField.setText("0x00");
+		wValueField.setText("0x0000");
+		wIndexField.setText("0x0000");
+		syncCheckBox.setSelected(true);
+		acceptShortCheckBox.setSelected(true);
+		lengthCheckBox.setSelected(false);
+	}
 
 	protected void lengthSelectionChanged()
 	{
+		lengthField.setEnabled(lengthCheckBox.isSelected());
 //FIXME - implement!
 	}
 
@@ -175,33 +200,34 @@ public class UsbControlIrpPanel extends JPanel implements Cloneable
 	protected JTextField lengthField = new JTextField(4);
 	protected JCheckBox acceptShortCheckBox = new JCheckBox("AcceptShort", true);
 	private JPanel selectionPanel = new JPanel();
-	private JPanel buttonPanel = new JPanel();
 	private Vector requestTypeVector = new Vector();
 	private Box bmRequestTypeBox = new Box(BoxLayout.X_AXIS);
 	private JLabel bmRequestTypeLabel = new JLabel("bmReqType");
 	private JPanel bmRequestTypePanel = new JPanel();
-	protected JTextField bmRequestTypeField = new JTextField("00", 4);
+	protected JTextField bmRequestTypeField = new JTextField("0x00", 4);
 	private Box bRequestBox = new Box(BoxLayout.X_AXIS);
 	private JLabel bRequestLabel = new JLabel("bRequest");
 	private JPanel bRequestPanel = new JPanel();
-	protected JTextField bRequestField = new JTextField("00", 4);
+	protected JTextField bRequestField = new JTextField("0x00", 4);
 	private Box wValueBox = new Box(BoxLayout.X_AXIS);
 	private JLabel wValueLabel = new JLabel("wValue");
 	private JPanel wValuePanel = new JPanel();
-	protected JTextField wValueField = new JTextField("0000", 6);
+	protected JTextField wValueField = new JTextField("0x0000", 6);
 	private Box wIndexBox = new Box(BoxLayout.X_AXIS);
 	private JLabel wIndexLabel = new JLabel("wIndex");
 	private JPanel wIndexPanel = new JPanel();
-	protected JTextField wIndexField = new JTextField("0000", 6);
+	protected JTextField wIndexField = new JTextField("0x0000", 6);
 	private JButton refreshButton = new JButton("Refresh");
-	private JButton clearButton = new JButton("Clear");
-	protected JTextArea packetDataTextArea = new JTextArea();
+	private JButton clearButton = new JButton("Clear Data");
+	protected JTextArea packetDataTextArea = new JTextArea(3, 25);
 	private JScrollPane packetDataScroll = new JScrollPane(packetDataTextArea);
+	private JButton resetButton = new JButton( "Reset All" );
 
 	private byte[] lastData = null;
 
 	private ActionListener refreshListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { refresh(); } };
 	private ActionListener clearListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { clear(); } };
+	private ActionListener resetListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { reset(); } };
 
 	private ChangeListener lengthListener =
 		new ChangeListener() { public void stateChanged(ChangeEvent cE) { lengthSelectionChanged(); } };
