@@ -43,7 +43,7 @@ import com.ibm.jusb.event.*;
  * sets up the UsbPortImp.
  * @author Dan Streetman
  */
-public class UsbDeviceImp implements UsbDevice,ControlUsbIrpImp.Completion
+public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 {
 	/**
 	 * Constructor.
@@ -182,12 +182,13 @@ public class UsbDeviceImp implements UsbDevice,ControlUsbIrpImp.Completion
 
 	/**
 	 * Indicate that a specific UsbIrpImp has completed.
-	 * <p>
-	 * No non-Control UsbIrpImps should be used on this; this method
-	 * should never be called.
 	 * @param irp The UsbIrpImp that completed.
 	 */
-	public void usbIrpImpComplete( UsbIrpImp irp ) { /* Ignore */ }
+	public void usbIrpImpComplete( UsbIrpImp irp )
+	{
+		try { usbIrpImpComplete( (ControlUsbIrpImp)irp ); }
+		catch ( ClassCastException ccE ) { /* shouldn't happen */ }
+	}
 
 	/**
 	 * Indicate that a specific ControlUsbIrpImp has completed.
