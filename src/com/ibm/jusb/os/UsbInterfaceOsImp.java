@@ -26,9 +26,24 @@ public interface UsbInterfaceOsImp
 	public void claim() throws UsbException;
 
 	/**
-	 * Release this interface.
+	 * Claim this interface using a UsbInterfacePolicy.
+	 * @param policy The UsbInterfacePolicy.
+	 * @exception UsbException if the interface could not be claimed.
 	 */
-	public void release();
+	public void claim(UsbInterfacePolicy policy) throws UsbException;
+
+	/**
+	 * Release this interface.
+	 * @exception UsbException If the interface could not be released.
+	 */
+	public void release() throws UsbException;
+
+	/**
+	 * Release this interface.
+	 * @param key The key passed.
+	 * @exception UsbException If the interface could not be released.
+	 */
+	public void release(Object key) throws UsbException;
 
 	/**
 	 * Indicate if this interface is claimed.

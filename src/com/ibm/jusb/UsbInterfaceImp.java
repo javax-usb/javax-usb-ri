@@ -71,41 +71,86 @@ public class UsbInterfaceImp implements UsbInterface
 	/**
 	 * Claim this interface.
 	 * <p>
-	 * This can only be called from an
-	 * {@link #isActive() active} alternate setting.
-	 * <p>
-	 * All alternate settings will be claimed.
+	 * This calls the {@link claim(UsbInterfacePolicy) other claim}
+	 * with a {@link com.ibm.jusb.DefaultUsbInterfacePolicy default policy}.
+	 * @exception UsbClaimException If the interface is already claimed.
 	 * @exception UsbException if the interface could not be claimed.
 	 * @exception UsbNotActiveException if the interface setting is not active.
 	 */
-		public void claim() throws UsbException,UsbNotActiveException
+	public void claim() throws UsbClaimException,UsbException,UsbNotActiveException
+	{
+		claim(defaultUsbInterfacePolicy);
+	}
+
+	/**
+	 * Claim this interface using a UsbInterfacePolicy.
+	 * <p>
+	 * This will claim all alternate settings using the provided
+	 * UsbInterfacePolicy.  If the interface is already claimed this
+	 * will fail.
+	 * <p>
+	 * This can only be called from an
+	 * {@link #isActive() active} alternate setting.
+	 * @exception UsbClaimException If the interface is already claimed.
+	 * @exception UsbException if the interface could not be claimed.
+	 * @exception UsbNotActiveException if the interface setting is not active.
+	 */
+	public synchronized void claim(UsbInterfacePolicy policy) throws UsbClaimException,UsbException,UsbNotActiveException
 	{
 		checkSettingActive();
 
-		getUsbInterfaceOsImp().claim();
+		if (hasUsbInterfacePolicy())
+			throw new UsbClaimException("UsbInterface is already claimed");
 
-		setClaimed(true);
+		getUsbInterfaceOsImp().claim(policy);
+
+		setClaimed(policy);
+	}
+
+	/**
+	 * Release this interface using a key.
+	 * <p>
+	 * This calls the {@link release(Object) other release}
+	 * with a null key.
+	 * @exception UsbPolicyDenied If the policy prevented release.
+	 * @exception UsbClaimException If the interface is already claimed.
+	 * @exception UsbException if the interface could not be released.
+	 * @exception UsbNotActiveException if the interface setting is not active.
+	 */
+	public void release() throws UsbPolicyDenied,UsbClaimException,UsbException,UsbNotActiveException
+	{
+		release(null);
 	}
 
 	/**
 	 * Release this interface.
 	 * <p>
+	 * The current UsbInterfacePolicy may prevent this.
 	 * This can only be called from an
 	 * {@link #isActive() active} alternate setting.
+	 * @param key The Object key to pass to the UsbInterfacePolicy.
+	 * @exception UsbPolicyDenied If the policy prevented release.
+	 * @exception UsbClaimException If the interface is already claimed.
 	 * @exception UsbException if the interface could not be released.
 	 * @exception UsbNotActiveException if the interface setting is not active.
 	 */
-	public void release() throws UsbException,UsbNotActiveException
+	public synchronized void release(Object key) throws UsbPolicyDenied,UsbClaimException,UsbException,UsbNotActiveException
 	{
 		checkSettingActive();
+
+		if (!hasUsbInterfacePolicy())
+			throw new UsbClaimException("UsbInterface is not claimed");
 
 		for (int i=0; i<endpoints.size(); i++)
 			if (((UsbEndpoint)endpoints.get(i)).getUsbPipe().isOpen())
 				throw new UsbException("Cannot release UsbInterface with any open UsbPipe");
 
-		getUsbInterfaceOsImp().release();
+		if (!getUsbInterfacePolicy().release(this, key))
+			throw new UsbPolicyDenied("UsbInterfacePolicy prevented UsbInterface release");
 
-		setClaimed(false);
+		getUsbInterfaceOsImp().release(key);
+
+		setClaimed(null);
 	}
 
 	/** @return if this interface is claimed. */
@@ -114,7 +159,7 @@ public class UsbInterfaceImp implements UsbInterface
 		try { checkSettingActive(); }
 		catch ( UsbNotActiveException naE ) { return false; }
 
-		if (claimed)
+		if (hasUsbInterfacePolicy())
 			return true;
 		else
 			return getUsbInterfaceOsImp().isClaimed();
@@ -321,12 +366,16 @@ public class UsbInterfaceImp implements UsbInterface
 	// Protected methods
 
 	/**
-	 * If this UsbInterface is claimed in Java.
-	 * <p>
-	 * This should be used by UsbPipeImps to verify that the open() method can be called.
-	 * @return If this is claimed in Java.
+	 * Get the current UsbInterfacePolicy.
+	 * @return The current UsbInterfacePolicy.
 	 */
-	protected boolean isJavaClaimed() { return claimed; }
+	protected UsbInterfacePolicy getUsbInterfacePolicy() { return usbClaimPolicy; }
+
+	/**
+	 * If this interface currently has a policy.
+	 * @return If this interface currently has a policy.
+	 */
+	protected boolean hasUsbInterfacePolicy() { return null != usbClaimPolicy; }
 
 	//**************************************************************************
 	// Private methods
@@ -349,14 +398,14 @@ public class UsbInterfaceImp implements UsbInterface
 	}
 
 	/**
-	 * Set all alternate settings' claimed state.
-	 * @param c If this interface is claimed or not.
+	 * Set all alternate settings' claimed policy.
+	 * @param policy The claim policy.
 	 */
-	private void setClaimed(boolean c)
+	private void setClaimed(UsbInterfacePolicy policy)
 	{
 		List list = getUsbConfigurationImp().getUsbInterfaceSettingList(getUsbInterfaceDescriptor().bInterfaceNumber());
 		for (int i=0; i<list.size(); i++)
-			((UsbInterfaceImp)list.get(i)).claimed = c;
+			((UsbInterfaceImp)list.get(i)).usbClaimPolicy = policy;
 	}
 
 	//**************************************************************************
@@ -369,6 +418,7 @@ public class UsbInterfaceImp implements UsbInterface
 
 	private List endpoints = new ArrayList();
 
-	protected boolean claimed = false;
+	protected UsbInterfacePolicy usbClaimPolicy = null;
+	protected UsbInterfacePolicy defaultUsbInterfacePolicy = new DefaultUsbInterfacePolicy();
 
 }

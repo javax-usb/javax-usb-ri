@@ -102,14 +102,23 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	}
 
 	/**
-	 * Opens this UsbPipe so its ready for submissions.
+	 * Opens this UsbPipe using a null key.
 	 */
-	public void open() throws UsbException
+	public void open() throws UsbException { open(null); }
+
+	/**
+	 * Opens this UsbPipe using the specified key.
+	 * @param key The key to pass to the UsbInterfacePolicy.
+	 */
+	public void open(Object key) throws UsbException
 	{
 		checkActive();
 
-		if (!getUsbEndpointImp().getUsbInterfaceImp().isJavaClaimed())
+		if (!getUsbEndpointImp().getUsbInterfaceImp().hasUsbInterfacePolicy())
 			throw new UsbException("Cannot open UsbPipe on unclaimed UsbInterface");
+
+		if (!getUsbEndpointImp().getUsbInterfaceImp().getUsbInterfacePolicy().open(this, key))
+			throw new UsbPolicyDenied();
 
 		if (!isOpen()) {
 			getUsbPipeOsImp().open();
@@ -117,9 +126,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 		}
 	}
 
-	/**
-	 * Closes this UsbPipe.
-	 */
+	/** Closes this UsbPipe. */
 	public void close()
 	{
 		if (isActive() && isOpen()) {
