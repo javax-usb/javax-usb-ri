@@ -18,16 +18,42 @@ import javax.usb.*;
 public interface UsbSubmission
 {
 	/**
-	 * Get the length of transferred data.
-	 * @return The length of transferred data.
+	 * Get the data to transfer.
+	 * @return The data to transfer.
+	 */
+	public byte[] getData();
+
+	/**
+	 * Get the offset of the data.
+	 * <p>
+	 * The data to transfer starts at this point in the {@link #getData() buffer}.
+	 * @return The offset of the data.
+	 */
+	public int getOffset();
+
+	/**
+	 * Get the amount of data to transfer.
+	 * <p>
+	 * This will never be more than the length of the buffer.
+	 * @return The amount of data to transfer.
 	 */
 	public int getLength();
 
 	/**
-	 * Set the length of transferred data.
-	 * @param len The length of transferred data.
+	 * Get the amount of data actually transferred.
+	 * <p>
+	 * This will never be more than the {@link #getLength length}.
+	 * @return The amount of data actually transferred.
 	 */
-	public void setLength(int len);
+	public int getActualLength();
+
+	/**
+	 * Set the amount of data actually transferred.
+	 * <p>
+	 * This cannot be more than the {@link #getLength() length}.
+	 * @param len The amount of data actually transferred.
+	 */
+	public void setActualLength(int len);
 
 	/**
 	 * Get the UsbException.
