@@ -297,14 +297,30 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 
 	/**
 	 * Indicate that a specific UsbIrpImp has completed.
+	 * <p>
+	 * This is called after isComplete() is set to true.
 	 * @param irp The UsbIrpImp that completed.
 	 */
-	public void usbIrpImpComplete( UsbIrpImp irp )
+	public synchronized void usbIrpImpComplete( UsbIrpImp irp )
 	{
-		if (irp.isUsbException())
-			listenerImp.errorEventOccurred(new UsbPipeErrorEvent(this,irp.getUsbException()));
-		else
-			listenerImp.dataEventOccurred(new UsbPipeDataEvent(this,irp,irp.getData(),irp.getOffset(),irp.getActualLength()));
+		if (listTable.containsKey(irp)) {
+			List list = (List)listTable.get(irp);
+			/* Starting with the first UsbIrpImp in the list,
+			 * fire all consecutive that are complete.
+			 */
+			while (!list.isEmpty()) {
+				UsbIrpImp usbIrpImp = (UsbIrpImp)list.get(0);
+				if (usbIrpImp.isComplete()) {
+					list.remove(0);
+					listTable.remove(irp);
+					fireEvent(usbIrpImp);
+				} else {
+					break;
+				}
+			}
+		} else {
+			fireEvent(irp);
+		}
 	}
 
 	/**
@@ -326,6 +342,22 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 
 	//**************************************************************************
 	// Protected methods
+
+	/**
+	 * Fire an event for the specified UsbIrpImp.
+	 * @param irp The UsbIrpImp to fire an event for.
+	 */
+	protected void fireEvent(UsbIrpImp usbIrpImp)
+	{
+		UsbIrp irp = usbIrpImp.getUsbIrp();
+		if (null == irp)
+			irp = usbIrpImp;
+
+		if (irp.isUsbException())
+			listenerImp.errorEventOccurred(new UsbPipeErrorEvent(this,irp.getUsbException()));
+		else
+			listenerImp.dataEventOccurred(new UsbPipeDataEvent(this,irp,irp.getData(),irp.getOffset(),irp.getActualLength()));
+	}
 
 	/**
 	 * Convert a UsbIrp to UsbIrpImp.
@@ -351,10 +383,17 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 
 	protected List usbIrpListToUsbIrpImpList(List list) throws UsbException,IllegalArgumentException
 	{
-		List newlist = new ArrayList();
+		ArrayList newlist = new ArrayList();
 
+		/* if any of the UsbIrps are invalid, an exception is thrown */
 		for (int i=0; i<list.size(); i++)
 			newlist.add(usbIrpToUsbIrpImp((UsbIrp)list.get(i)));
+
+		List delayEventList = (ArrayList)newlist.clone();
+
+		/* Use a different list so we can modify it if needed */
+		for (int i=0; i<delayEventList.size(); i++)
+			listTable.put(delayEventList.get(i), delayEventList);
 
 		return newlist;
 	}
@@ -506,6 +545,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	protected boolean queueSubmissions = false;
 	protected Object abortLock = new Object();
 	protected boolean abortInProgress = false;
+
+	protected Hashtable listTable = new Hashtable();
 
 	//**************************************************************************
 	// Class constants
