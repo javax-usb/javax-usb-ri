@@ -58,13 +58,14 @@ JNIEXPORT jint JNICALL Java_com_ibm_jusb_os_linux_JavaxUsb_nativeTopologyUpdater
 		if (chdir(buslist[port]->d_name)) {
 			dbg( MSG_ERROR, "nativeTopologyUpdater : Could not access %s/%s\n", USBDEVFS_PATH, buslist[port]->d_name );
 		} else {
-			struct dirent **devlist;
+			struct dirent **devlist = NULL;
 			int hcAddress, devs;
 
 			devs = scandir(".", &devlist, select_dirent_reg, alphasort);
 
+			errno = 0;
 			if (0 > devs) {
-				dbg( MSG_ERROR, "nativeTopologyUpdater : Could not access device nodes in %s/%s\n", USBDEVFS_PATH, buslist[port]->d_name );
+				dbg( MSG_ERROR, "nativeTopologyUpdater : Could not access device nodes in %s/%s : %s\n", USBDEVFS_PATH, buslist[port]->d_name, strerror(errno) );
 			} else if (!devs) {
 				dbg( MSG_ERROR, "nativeTopologyUpdater : No device nodes found in %s/%s\n", USBDEVFS_PATH, buslist[port]->d_name );
 			} else {
