@@ -44,19 +44,19 @@ import com.ibm.jusb.event.*;
 public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 {
 	/** Constructor. */
-	public UsbDeviceImp() { }
+	public UsbDeviceImp() { this(null,null); }
 
 	/**
 	 * Constructor.
 	 * @param desc This device's Descriptor.
 	 */
-	public UsbDeviceImp(UsbDeviceDescriptor desc) { setUsbDeviceDescriptor(desc); }
+	public UsbDeviceImp(UsbDeviceDescriptor desc) { this(desc, null); }
 
 	/**
 	 * Constructor.
 	 * @param device The UsbDeviceOsImp.
 	 */
-	public UsbDeviceImp(UsbDeviceOsImp device) { setUsbDeviceOsImp(device); }
+	public UsbDeviceImp(UsbDeviceOsImp device) { this(null, device); }
 
 	/**
 	 * Constructor.
@@ -67,6 +67,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	{
 		setUsbDeviceDescriptor(desc);
 		setUsbDeviceOsImp(device);
+		setQueuePolicy();
 	}
 
 	//**************************************************************************
@@ -651,7 +652,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	//**************************************************************************
 	// Instance variables
 
-	private UsbDeviceOsImp usbDeviceOsImp = new DefaultUsbDeviceOsImp();
+	private UsbDeviceOsImp usbDeviceOsImp = null;
 
 	private Object submitLock = new Object();
 
