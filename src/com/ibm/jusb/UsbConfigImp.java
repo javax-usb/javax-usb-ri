@@ -179,7 +179,8 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	{
 		usbDeviceImp = device;
 
-		device.addUsbConfigImp(this);
+		if (null != device)
+			device.addUsbConfigImp(this);
 	}
 
 	/** @return the config descriptor for this config */

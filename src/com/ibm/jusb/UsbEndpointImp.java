@@ -18,7 +18,8 @@ import javax.usb.*;
  * <ul>
  * <li>The UsbInterfaceImp must be set either in the constructor or by its {@link #setUsbInterfaceImp(UsbInterfaceImp) setter}.</li>
  * <li>The EndpointDescriptor must be set either in the constructor or by its {@link #setEndpointDescriptor(EndpointDescriptor) setter}.</li>
- * <li>The UsbPipeImp must be set either in the constructor or by its {@link #setUsbPipeImp(UsbPipeImp) setter}.</li>
+ * <li>The UsbPipeImp must be set by its {@link #setUsbPipeImp(UsbPipeImp) setter}.
+ *     Note the UsbPipeImp will automatically do this inside its {@link com.ibm.jusb.UsbPipeImp#setUsbEndpointImp(UsbEndpointImp) setUsbEndpointImp} method.</li>
  * </ul>
  * @author Dan Streetman
  * @author E. Michael Maximilien
@@ -29,13 +30,11 @@ public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
 	 * Constructor.
 	 * @param iface The parent interface.
 	 * @param desc This endpoint's descriptor.
-	 * @param pipe The UsbPipeImp.
 	 */
-	public UsbEndpointImp( UsbInterfaceImp iface, EndpointDescriptor desc, UsbPipeImp pipe )
+	public UsbEndpointImp( UsbInterfaceImp iface, EndpointDescriptor desc )
 	{
 		setUsbInterfaceImp(iface);
 		setEndpointDescriptor(desc);
-		setUsbPipeImp(pipe);
 	}
 
 	//**************************************************************************
@@ -93,7 +92,8 @@ public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
 	{
 		usbInterfaceImp = iface;
 
-		iface.addUsbEndpointImp(this);
+		if (null != iface)
+			iface.addUsbEndpointImp(this);
 	}
 
 	/** @return The UsbPipe */

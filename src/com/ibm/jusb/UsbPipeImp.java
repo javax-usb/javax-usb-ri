@@ -110,7 +110,8 @@ public class UsbPipeImp extends Object implements UsbPipe
 	{
 		usbEndpointImp = ep;
 
-		ep.setUsbPipeImp(this);
+		if (null != ep)
+			ep.setUsbPipeImp(this);
 	}
 
 	/**

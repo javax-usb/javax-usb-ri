@@ -202,7 +202,8 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	{
 		usbConfigImp = config;
 
-		config.addUsbInterfaceImp(this);
+		if (null != config)
+			config.addUsbInterfaceImp(this);
 	}
 
 	/** @return the UsbDevice that this interface belongs to */
