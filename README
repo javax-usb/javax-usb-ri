@@ -14,6 +14,12 @@ JSR80 API You must have the API classfiles/jar in your CLASSPATH.
 Note that pre-installed versions of these tools may not be right, e.g. some distros have "Kaffe"
 or "gcc-java" or another version of ant.  Those packages should be replaced/removed.
 
+This "common" implementation contains code that implements the javax.usb API but is not platform-specific.
+Therefore, it requires a (usually small) platform-specific implementation as well.  The platform
+implementation should also provide the API-required properties file (see the API README for details).
+This common implementation supports additional properties and a sample template properties file is
+provided in the docs/ directory.
+
 *********
 * Build *
 *********
