@@ -225,10 +225,24 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 			//FIXME - this method should accept a UsbControlIrpImp...!
 		}
 
-		if (irp.isUsbException())
-			listenerImp.errorEventOccurred(new UsbDeviceErrorEvent(this,irp));
-		else
-			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp));
+		if (listTable.containsKey(irp)) {
+			List list = (List)listTable.get(irp);
+			/* Starting with the first UsbControlIrpImp in the list,
+			 * fire all consecutive that are complete.
+			 */
+			while (!list.isEmpty()) {
+				UsbControlIrpImp usbControlIrpImp = (UsbControlIrpImp)list.get(0);
+				if (usbControlIrpImp.isComplete()) {
+					list.remove(0);
+					listTable.remove(irp);
+					fireEvent(usbControlIrpImp);
+				} else {
+					break;
+				}
+			}
+		} else {
+			fireEvent(irp);
+		}
 	}
 
 	/** @param the listener to add */
@@ -427,6 +441,22 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	//**************************************************************************
 	// Protected methods
 
+	/**
+	 * Fire an event for the specified UsbControlIrpImp.
+	 * @param usbControlIrpImp The UsbControlIrpImp to fire an event for.
+	 */
+	protected void fireEvent(UsbControlIrpImp usbControlIrpImp)
+	{
+		UsbControlIrp irp = (UsbControlIrp)usbControlIrpImp.getUsbIrp();
+		if (null == irp)
+			irp = usbControlIrpImp;
+
+		if (irp.isUsbException())
+			listenerImp.errorEventOccurred(new UsbDeviceErrorEvent(this,irp));
+		else
+			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp));
+	}
+
 	/** @return the device's default langID */
 	protected synchronized short getLangId() throws UsbException
 	{
@@ -511,7 +541,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	protected List usbControlIrpListToUsbControlIrpImpList(List list) throws IllegalArgumentException,UsbException
 	{
-		List newList = new ArrayList();
+		ArrayList newList = new ArrayList();
 
 		try {
 			for (int i=0; i<list.size(); i++)
@@ -519,6 +549,12 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		} catch ( ClassCastException ccE ) {
 			throw new IllegalArgumentException("The List contains a non-UsbIrp object.");
 		}
+
+		List delayEventList = (ArrayList)newList.clone();
+
+		/* Use a different list so we can modify it if needed */
+		for (int i=0; i<delayEventList.size(); i++)
+			listTable.put(delayEventList.get(i), delayEventList);
 
 		return newList;
 	}
@@ -638,6 +674,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 *	protected Object abortLock = new Object();
 	 *	protected boolean abortInProgress = false;
 	 */
+
+	protected Hashtable listTable = new Hashtable();
 
 	//**************************************************************************
 	// Class constants
