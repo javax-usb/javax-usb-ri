@@ -55,6 +55,8 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 			requestImp = requestImpFactory.createRequestImp(request);
 		}
 
+		requestImp.setUsbDeviceImp(getUsbDeviceImp());
+
 		try {
 			getUsbDeviceImp().getUsbDeviceOsImp().syncSubmit( requestImp );
 		} catch ( UsbException uE ) {
@@ -80,12 +82,16 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 
 		while (iterator.hasNext()) {
 			Request request = iterator.nextRequest();
+			RequestImp requestImp = null;
 
 			try {
-				list.add((RequestImp)request);
+				requestImp = (RequestImp)request;
 			} catch ( ClassCastException ccE ) {
-				list.add(requestImpFactory.createRequestImp(request));
+				requestImp = requestImpFactory.createRequestImp(request);
 			}
+
+			requestImp.setUsbDeviceImp(getUsbDeviceImp());
+			list.add(requestImp);
 		}
 
 		try {
@@ -112,6 +118,8 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 		} catch ( ClassCastException ccE ) {
 			requestImp = requestImpFactory.createRequestImp(request);
 		}
+
+		requestImp.setUsbDeviceImp(getUsbDeviceImp());
 
 		try {
 			getUsbDeviceImp().getUsbDeviceOsImp().asyncSubmit( requestImp );

@@ -220,8 +220,6 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 			fireErrorEvent(requestImp.getUsbException());
 		else
 			fireDataEvent(requestImp.getData(),requestImp.getDataLength());
-
-		requestImp.setCompleted(true);
 	}
 
 	/** @param the listener to add */
@@ -427,8 +425,12 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		Request request = getStandardOperations().getDescriptor( (short)((DescriptorConst.DESCRIPTOR_TYPE_STRING << 8) | (index)), getLangId(), data );
 
 		/* requested string not present */
-		if (request.getDataLength() < 2)
+		if (2 > request.getDataLength())
 			return;
+
+		/* claimed length must be at least 2; length byte and type byte are mandatory. */
+		if (2 > UsbUtil.unsignedInt(data[0]))
+			throw new UsbException("String Descriptor length byte is an invalid length, minimum length must be 2, claimed length " + UsbUtil.unsignedInt(data[0]));
 
 		/* string length (descriptor len minus 2 for header) */
 		int len = UsbUtil.unsignedInt(data[0]) - 2;
