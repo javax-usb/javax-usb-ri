@@ -291,7 +291,7 @@ public class UsbDevicePanel extends UsbPanel
 	private UsbDeviceListener deviceListener = new UsbDeviceListener() {
 			public void dataEventOccurred(UsbDeviceDataEvent uddE) { gotData(uddE.getData()); }
 			public void errorEventOccurred(UsbDeviceErrorEvent udeE) { gotError(udeE.getUsbException()); }
-			public void usbDeviceDetached(UsbDeviceEvent udE) { }
+			public void usbDeviceDetached(UsbDeviceEvent udE) { udE.getUsbDevice().removeUsbDeviceListener(deviceListener); }
 		};
 
 	protected UsbDevice usbDevice = null;

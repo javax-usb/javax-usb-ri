@@ -358,6 +358,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		listenerImp.usbDeviceDetached(new UsbDeviceEvent(this));
 
 		queueManager.stop();
+
+		listenerImp.clear();
 	}
 
 	/**
@@ -598,6 +600,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	protected void addRunnable(Runnable r)
 	{
 		if (!queueManager.isRunning()) {
+			queueManager.setName(getName() + " RunnableManager");
 			queueManager.setMaxSize(RunnableManager.SIZE_UNLIMITED);
 			queueManager.start();
 		}
@@ -676,6 +679,20 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 
 	//**************************************************************************
 	// Package methods
+
+	/** @return A name describing this */
+	String getName()
+	{
+		String vendor = "", product = "";
+		if (null == getUsbDeviceDescriptor()) {
+			vendor = "????";
+			product = "????";
+		} else {
+			vendor = UsbUtil.toHexString(getUsbDeviceDescriptor().idVendor());
+			product = UsbUtil.toHexString(getUsbDeviceDescriptor().idProduct());
+		}
+		return "UsbDeviceImp <" + vendor + ":" + product + ">";
+	}
 
 	/**
 	 * Check if the device is disconnected.

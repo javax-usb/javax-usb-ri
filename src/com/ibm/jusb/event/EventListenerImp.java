@@ -28,6 +28,7 @@ public class EventListenerImp implements EventListener
 		synchronized (listeners) {
 			if (!listeners.containsKey(listener)) {
 				EventListenerRunnableManager elrM = new EventListenerRunnableManager(listener);
+				elrM.setName(getClass() + " " + hashCode() + " RunnableManager");
 				elrM.setMaxSize(RunnableManager.SIZE_UNLIMITED);
 				listeners.put(listener, elrM);
 			}
@@ -46,6 +47,18 @@ public class EventListenerImp implements EventListener
 				listeners.remove(listener);
 				rM.stop();
 			}
+		}
+	}
+
+	/**
+	 * Clear all listeners.
+	 */
+	public void clear()
+	{
+		synchronized (listeners) {
+			Iterator i = listeners.keySet().iterator();
+			while (i.hasNext())
+				removeEventListener((EventListener)i.next());
 		}
 	}
 

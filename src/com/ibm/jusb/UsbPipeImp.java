@@ -490,6 +490,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	protected void addRunnable(Runnable r)
 	{
 		if (!queueManager.isRunning()) {
+			queueManager.setName(getName() + " RunnableManager");
 			queueManager.setMaxSize(RunnableManager.SIZE_UNLIMITED);
 			queueManager.start();
 		}
@@ -583,11 +584,26 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	//**************************************************************************
 	// Package methods
 
+	/** @return A name describing this */
+	String getName()
+	{
+		String deviceName = getUsbEndpointImp().getUsbInterfaceImp().getUsbConfigurationImp().getUsbDeviceImp().getName();
+		String ep = "";
+		if (null == getUsbEndpoint().getUsbEndpointDescriptor())
+			ep = "??";
+		else
+			ep = UsbUtil.toHexString(getUsbEndpoint().getUsbEndpointDescriptor().bEndpointAddress());
+		return deviceName + " UsbPipeImp 0x" + ep;
+	}
+
 	/** Disconnect this. */
 	void disconnect()
 	{
 		/* Stop the queueManager. */
 		queueManager.stop();
+
+		/* Nothing to see here, move along! */
+		listenerImp.clear();
 
 		/* We could abortAllSubmissions, but we probably don't need to.
 		 * Any pending submissions should either be automatically aborted,

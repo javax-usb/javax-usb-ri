@@ -53,6 +53,25 @@ public class RunnableManager
 	// Public methods
 
 	/**
+	 * Set this RunnableManager's name.
+	 * @param n The new name to use.
+	 */
+	public void setName(String n)
+	{
+		name = n;
+		synchronized (runnable.lock) {
+			if (isRunning())
+				runnable.thread.setName( name + " Thread " + threadCount );
+		}
+	}
+
+	/**
+	 * Get this RunnableManager's name.
+	 * @return The name.
+	 */
+	public String getName() { return name; }
+
+	/**
 	 * Add a Runnable.
 	 * @param newRunnable the Runnable to add.
 	 */
@@ -87,10 +106,10 @@ public class RunnableManager
 			else
 				runnable.running = true;
 
-			Thread thread = new Thread( runnable );
-			thread.setDaemon( true );
-			thread.setName( "RunnableManager " + managerCount + " Thread " + (++threadCount) );
-			thread.start();
+			runnable.thread = new Thread( runnable );
+			runnable.thread.setDaemon( true );
+			runnable.thread.setName( name + " Thread " + (++threadCount) );
+			runnable.thread.start();
 		}
 	}
 
@@ -187,6 +206,8 @@ public class RunnableManager
 	private long managerCount = ++count;
 	private long threadCount = 0;
 
+	private String name = "RunnableManager " + managerCount;
+
 	private long maxSize = 1;
 
 	//*************************************************************************
@@ -258,6 +279,8 @@ public class RunnableManager
 				return list.size() + size;
 			}
 		}
+
+		public Thread thread = null;
 
 		public Object[] array = null;
 		public Object lock = new Object();
