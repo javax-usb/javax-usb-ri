@@ -269,16 +269,16 @@ public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmiss
 	public static final int REQUEST_HEADER_LENGTH = 8;
 
 	private static final byte REQUESTTYPE_SET_CONFIGURATION =
-		RequestConst.REQUESTTYPE_DIRECTION_OUT &
-		RequestConst.REQUESTTYPE_TYPE_STANDARD &
+		RequestConst.REQUESTTYPE_DIRECTION_OUT |
+		RequestConst.REQUESTTYPE_TYPE_STANDARD |
 		RequestConst.REQUESTTYPE_RECIPIENT_DEVICE;
 
 	private static final byte REQUEST_SET_CONFIGURATION =
 		RequestConst.REQUEST_SET_CONFIGURATION;
 
 	private static final byte REQUESTTYPE_SET_INTERFACE =
-		RequestConst.REQUESTTYPE_DIRECTION_OUT &
-		RequestConst.REQUESTTYPE_TYPE_STANDARD &
+		RequestConst.REQUESTTYPE_DIRECTION_OUT |
+		RequestConst.REQUESTTYPE_TYPE_STANDARD |
 		RequestConst.REQUESTTYPE_RECIPIENT_INTERFACE;
 
 	private static final byte REQUEST_SET_INTERFACE =
