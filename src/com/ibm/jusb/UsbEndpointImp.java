@@ -12,44 +12,27 @@ package com.ibm.jusb;
 import javax.usb.*;
 
 /**
- * Concrete class implementing the UsbEndpoint interface
- * @author E. Michael Maximilien
+ * UsbEndpoint implementation.
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
+ * @author E. Michael Maximilien
  */
-class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
+public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
 {
-    //-------------------------------------------------------------------------
-    // Ctor(s)
-    //
+	/**
+	 * Constructor.
+	 * <p>
+	 * The UsbInterfaceImp must be {@link #setUsbInterfaceImp(UsbInterfaceImp) set} before use.
+	 */
+    public UsbEndpointImp( ) { }
 
-    /**
-     * Creates an endpoint associated with the interface passed
-     * @param usbInterface the UsbInterface for this endpoint
-     */
-    UsbEndpointImp( UsbInterface usbInterface ) 
-    {
-        setUsbInterface( usbInterface );
-    }
+	/**
+	 * Constructor.
+	 * @param iface The parent interface.
+	 */
+	public UsbEndpointImp( UsbInterfaceImp iface ) { setUsbInterfaceImp(iface); }
 
-    //-------------------------------------------------------------------------
-    // Private helper methods
-    //
-
-    /**
-     * Sets this endpoint UsbInterface
-     * @param usbInterface the UsbInterface for this endpoint
-     */
-    private void setUsbInterface( UsbInterface iface )
-    {
-        usbInterface = iface;
-
-        ((UsbInterfaceAbstraction)usbInterface).addUsbEndpoint( this );
-    }
-
-    //-------------------------------------------------------------------------
-    // Public overridden interface methods
-    //
+	//**************************************************************************
+    // Public methods
 
     /** @return name of this UsbInfo object */
     public String getName() 
@@ -59,10 +42,6 @@ class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
         
         return super.getName();
     }
-
-    //-------------------------------------------------------------------------
-    // Public interface methods
-    //
 
     /** @return the unique address of this endpoint */
     public byte getEndpointAddress() { return getEndpointDescriptor().getEndpointAddress(); }
@@ -88,30 +67,31 @@ class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
     public byte getInterval() { return getEndpointDescriptor().getInterval(); }
 
     /** @return the UsbDevice associated with this Endpoint */
-    public UsbDevice getUsbDevice()
-	{
-		return usbInterface.getUsbConfig().getUsbDevice();
-	}
+    public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
 
-    /** @return the UsbInterface associated with this Endpoint */
-    public UsbInterface getUsbInterface() { return usbInterface; }
+	/** @return The UsbDeviceImp */
+	public UsbDeviceImp getUsbDeviceImp() { return getUsbInterfaceImp().getUsbDeviceImp(); }
 
-    /**
-	 * @return This UsbEndpoint's UsbPipe
-	 */
-    public UsbPipe getUsbPipe() {
-        if ( null == usbPipe )
-            usbPipe = UsbUtility.getInstance().getUsbPipeFactory().createUsbPipe( this );
+    /** @return The UsbInterface */
+    public UsbInterface getUsbInterface() { return getUsbInterfaceImp(); }
 
-        return usbPipe;
-    }
+	/** @return The UsbInterfaceImp */
+	public UsbInterfaceImp getUsbInterfaceImp() { return usbInterfaceImp; }
+
+	/** @param iface The interface */
+    public void setUsbInterfaceImp( UsbInterfaceImp iface ) { usbInterfaceImp = iface; }
+
+	/** @return The UsbPipe */
+    public UsbPipe getUsbPipe() { return getUsbPipeImp(); }
+
+	/** @return The UsbPipeImp */
+	public UsbPipeImp getUsbPipeImp() { return usbPipeImp; }
+
+	/** @param pipe The pipe */
+	public void setUsbPipeImp(UsbPipeImp pipe) { usbPipeImp = pipe; }
 
 	/** @return the endpoint descriptor for this endpoint */
 	public EndpointDescriptor getEndpointDescriptor() { return (EndpointDescriptor)getDescriptor(); }
-
-    //-------------------------------------------------------------------------
-    // Public accept method for the Visitor pattern
-    //
 
     /**
      * Visitor.accept method
@@ -119,23 +99,17 @@ class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
      */
     public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbEndpoint( this ); }
 
-    //-------------------------------------------------------------------------
-    // Protected and package methods
-    //
-
 	/** @param desc the endpoint descriptor */
-	void setEndpointDescriptor( EndpointDescriptor desc ) { setDescriptor( desc ); }
+	public void setEndpointDescriptor( EndpointDescriptor desc ) { setDescriptor( desc ); }
 
-    //-------------------------------------------------------------------------
+	//**************************************************************************
     // Instance variables
-    //
 
-    private UsbInterface usbInterface = null;
-    private UsbPipe usbPipe = null;
+    private UsbInterfaceImp usbInterfaceImp = null;
+    private UsbPipeImp usbPipeImp = null;
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Class constants
-	//
 
     public static final String USB_ENDPOINT_NAME_STRING = "endpoint";
 
