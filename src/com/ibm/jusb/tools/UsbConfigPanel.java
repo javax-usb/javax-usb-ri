@@ -49,7 +49,7 @@ public class UsbConfigPanel extends UsbPanel
 		appendln("Is Active : " + usbConfig.isActive());
 		appendln("Config String : " + usbConfig.getConfigString());
 		appendln("Attributes : " + UsbUtil.toHexString(usbConfig.getAttributes()));
-		appendln("Max Power : " + UsbUtil.unsignedInt(usbConfig.getMaxPower()));
+		appendln("Max Power (mA) : " + (2 * UsbUtil.unsignedInt(usbConfig.getMaxPower()))); /* units are 2mA */
 		appendln("Number of UsbInterfaces : " + UsbUtil.unsignedInt(usbConfig.getNumInterfaces()));
 	}
 
