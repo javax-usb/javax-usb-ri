@@ -102,7 +102,10 @@ public class DefaultUsbPipeOsImp implements UsbPipeOsImp
 	 */
 	public void asyncSubmit( UsbIrpImp irp ) throws UsbException
 	{
-		throw new UsbException(getSubmitString());
+		UsbException uE = new UsbException(getSubmitString());
+		irp.setUsbException(uE);
+		irp.complete();
+		throw uE;
 	}
 
 	/**

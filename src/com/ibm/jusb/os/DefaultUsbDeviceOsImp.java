@@ -68,7 +68,10 @@ public class DefaultUsbDeviceOsImp implements UsbDeviceOsImp
 	 */
 	public void asyncSubmit(UsbControlIrpImp usbControlIrpImp) throws UsbException
 	{
-		throw new UsbException(getSubmitString());
+		UsbException uE = new UsbException(getSubmitString());
+		usbControlIrpImp.setUsbException(uE);
+		usbControlIrpImp.complete();
+		throw uE;
 	}
 
 	/**
