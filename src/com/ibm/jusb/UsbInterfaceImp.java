@@ -24,20 +24,16 @@ import com.ibm.jusb.util.*;
  * <ul>
  * <li>The UsbConfigImp must be set either in the constructor or by its {@link #setUsbConfigImp(UsbConfigImp) setter}.</li>
  * <li>The InterfaceDescriptor must be set either in the constructor or by its {@link #setInterfaceDescriptor(InterfaceDescriptor) setter}.</li>
- * <li>The UsbInterfaceOsImp must be set either in the constructor or by its {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) setter}.</li>
- * <li>If this is not the active alternate setting, the {@link #getAlternateSettingList() alternate setting list} must be set in the constructor.</li>
- * <li>If the active alternate setting number is not 0 (the default), it must be {@link #setActiveAlternateSettingNumber(byte) set} <i>after</i>
- *     creating all other alternate settings.</li>
+ * <li>The UsbInterfaceOsImp may optionally be set either in the constructor or by its {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) setter}.
+ *     If the platform implementation does not provide any interface claiming ability, it may leave the default setting which manages
+ *     in-Java claims and releases.</li>
+ * <li>If the active alternate setting number is not 0 (the default), it must be {@link #setActiveAlternateSettingNumber(byte) set} after
+ *     creating the active alternate setting.</li>
  * <li>All UsbEndpointImps must be {@link #addUsbEndpointImp(UsbEndpointImp) added}.</li>
  * </ul>
- * Note that all alternate settings must use the same alternate setting list.  Each setting creates its own list, so any inactive settings
- * must have their list replaced with the active setting's list.  To do so, create the first setting using the constructor without a setting list parameter.
- * Then {@link #getAlternateSettingList() get that setting's list} and pass it to the constructor of all other alternate settings; it will replace
- * their lists, and then all settings for this interface will share the same settings list.
  * <p>
- * When changing the active alternate setting, call the {@link #setActiveAlternateSettingNumber(byte) setActiveAlternateSettingNumber} method
- * and {@link com.ibm.jusb.UsbConfigImp#addUsbInterfaceImp(UsbInterfaceImp) add the new alternate setting to the parent config}.  Adding to the
- * parent will update its list of interfaces with the new active setting.
+ * When changing the active alternate setting, call the {@link #setActiveAlternateSettingNumber(byte) setActiveAlternateSettingNumber} method.
+ * This will update the parent config's active interface setting map.
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
@@ -47,33 +43,24 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 * Constructor.
 	 * @param config The parent config.
 	 * @param desc This interface's descriptor.
-	 * @param osImp The UsbInterfaceOsImp.
+	 */
+	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc )
+	{
+		setUsbConfigImp(config);
+		setInterfaceDescriptor(desc);
+	}
+
+	/**
+	 * Constructor.
+	 * @param config The parent config.
+	 * @param desc This interface's descriptor.
+	 * @param osImp The UsbInterfaceOsImp.  Do not set this to null, use the other constructor.
 	 */
 	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc, UsbInterfaceOsImp osImp )
 	{
 		setUsbConfigImp(config);
 		setInterfaceDescriptor(desc);
 		setUsbInterfaceOsImp(osImp);
-		alternateSettings = new DefaultUsbInfoList();
-	}
-
-	/**
-	 * Constructor.
-	 * <p>
-	 * The list of alternate settings will replace this setting's list.  All settings must share the list.
-	 * Do not pass null to the list of alternate settings; use the other constructor if you do not want to replace
-	 * this setting's list.
-	 * @param config The parent config.
-	 * @param desc This interface's descriptor.
-	 * @param osImp The UsbInterfaceOsImp.
-	 * @param list The list of alternate settings to use.
-	 */
-	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc, UsbInterfaceOsImp osImp, UsbInfoList list )
-	{
-		setUsbConfigImp(config);
-		setInterfaceDescriptor(desc);
-		setUsbInterfaceOsImp(osImp);
-		alternateSettings = list;
 	}
 
 	//**************************************************************************
@@ -137,7 +124,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	public boolean isActive()
 	{
 		return getUsbConfig().isActive() &&
-			getAlternateSettingNumber() == activeAlternateSettingNumber;
+			getAlternateSettingNumber() == getActiveAlternateSettingNumber();
 	}
 
 	/** @return this interface's number */
@@ -227,7 +214,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	{
 		checkActive();
 
-		return activeAlternateSettingNumber;
+		return ((UsbInterfaceImp)getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceNumber()).get(0)).getAlternateSettingNumber();
 	}
 
 	/**
@@ -261,12 +248,14 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 */
 	public UsbInterfaceImp getAlternateSettingImp( byte number )
 	{
-		synchronized ( alternateSettings ) {
-			for (int i=0; i<alternateSettings.size(); i++) {
-				UsbInterfaceImp iface = (UsbInterfaceImp)alternateSettings.getUsbInfo(i);
+		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceNumber());
 
-				if (number == iface.getAlternateSettingNumber())
-					return iface;
+		synchronized (list) {
+			for (int i=0; i<list.size(); i++) {
+				UsbInterfaceImp setting = (UsbInterfaceImp)list.get(i);
+
+				if (number == setting.getAlternateSettingNumber())
+					return setting;
 			}
 		}
 
@@ -289,13 +278,18 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 * Get an iteration of all alternate settings for this interface
 	 * @return an iteration of this interface's other alternate settings
 	 */
-	public UsbInfoListIterator getAlternateSettings() { return alternateSettings.usbInfoListIterator(); }
+	public UsbInfoListIterator getAlternateSettings()
+	{
+		UsbInfoList usbInfoList = new DefaultUsbInfoList();
+		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceNumber());
 
-	/**
-	 * Get the real list of alternate settings for this interface.
-	 * @return The real list of settings for this interface.
-	 */
-	public UsbInfoList getAlternateSettingList() { return alternateSettings; }
+		synchronized (list) {
+			for (int i=0; i<list.size(); i++)
+				usbInfoList.addUsbInfo((UsbInfo)list.get(i));
+		}
+
+		return usbInfoList.usbInfoListIterator();
+	}
 
 	/** @return the bundle of UsbPipes contained in this interface setting. */
 	public UsbPipeBundle getUsbPipes()
@@ -340,12 +334,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 */
 	public void setActiveAlternateSettingNumber( byte number )
 	{
-		synchronized ( alternateSettings ) {
-			for (int i=0; i<alternateSettings.size(); i++) {
-				UsbInterfaceImp iface = (UsbInterfaceImp)alternateSettings.getUsbInfo(i);
-				iface.activeAlternateSettingNumber = number;
-			}
-		}
+		getUsbConfigImp().setActiveUsbInterfaceImpSetting(getAlternateSettingImp(number));
 	}
 
 	/** @param ep the endpoint to add */
@@ -377,12 +366,9 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	//
 
 	private UsbConfigImp usbConfigImp = null;
-	private UsbInterfaceOsImp usbInterfaceOsImp = null;
+	private UsbInterfaceOsImp usbInterfaceOsImp = new VirtualUsbInterfaceOsImp();
 
 	private UsbInfoList endpoints = new DefaultUsbInfoList();
-
-	private UsbInfoList alternateSettings = null;
-	private byte activeAlternateSettingNumber = 0;
 
 	//-------------------------------------------------------------------------
 	// Class constants

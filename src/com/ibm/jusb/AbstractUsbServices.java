@@ -26,7 +26,7 @@ import com.ibm.jusb.util.*;
 public abstract class AbstractUsbServices implements UsbServices
 {
 	/** @return The UsbRootHub. */
-	public UsbRootHub getUsbRootHub() { return getUsbRootHubImp(); }
+	public UsbRootHub getUsbRootHub() throws UsbException { return getUsbRootHubImp(); }
 
 	/** @return The UsbRootHubImp. */
 	public UsbRootHubImp getUsbRootHubImp() { return usbRootHubImp; }

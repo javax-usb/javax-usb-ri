@@ -9,6 +9,8 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.util.*;
+
 import javax.usb.*;
 import javax.usb.util.*;
 
@@ -19,7 +21,7 @@ import javax.usb.util.*;
  * <ul>
  * <li>The UsbDeviceImp must be set either in the constructor or by the {@link #setUsbDeviceImp(UsbDeviceImp) setter}.</li>
  * <li>The ConfigDescriptor must be set either in the constructor or by the {@link #setConfigDescriptor(ConfigDescriptor) setter}.</li>
- * <li>All UsbInterfaceImp active settings must be {@link #addUsbInterfaceImp(UsbInterfaceImp) added}.</li>
+ * <li>All UsbInterfaceImp settings (active and inactive) must be {@link #addUsbInterfaceImp(UsbInterfaceImp) added}.</li>
  * </ul>
  * @author Dan Streetman
  * @author E. Michael Maximilien
@@ -65,7 +67,18 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	public boolean isActive() { return getUsbDevice().getActiveUsbConfigNumber() == getConfigNumber(); }
 
 	/** @return an iteration of USB device interfaces for this configuration */
-	public UsbInfoListIterator getUsbInterfaces() { return interfaces.usbInfoListIterator(); }
+	public UsbInfoListIterator getUsbInterfaces()
+	{
+		synchronized ( interfaces ) {
+			UsbInfoList list = new DefaultUsbInfoList();
+			Iterator iterator = interfaces.values().iterator();
+
+			while (iterator.hasNext())
+				list.addUsbInfo((UsbInfo)((List)iterator.next()).get(0));
+
+			return list.usbInfoListIterator();
+		}
+	}
 
 	/**
 	 * @param The number of the interface to get
@@ -80,15 +93,13 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	public UsbInterfaceImp getUsbInterfaceImp( byte number )
 	{
 		synchronized ( interfaces ) {
-			for (int i=0; i<interfaces.size(); i++) {
-				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.getUsbInfo(i);
+			Byte key = new Byte(number);
 
-				if (number == iface.getInterfaceNumber())
-					return iface;
-			}
+			if (!interfaces.containsKey(key))
+				throw new UsbRuntimeException( "No UsbInterface with number " + UsbUtil.unsignedInt( number ) );
+
+			return (UsbInterfaceImp)((List)interfaces.get(new Byte(number))).get(0);
 		}
-
-		throw new UsbRuntimeException( "No UsbInterface with number " + UsbUtil.unsignedInt( number ) );
 	}
 
 	/**
@@ -106,25 +117,49 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	/**
 	 * Add a UsbInterfaceImp.
 	 * <p>
-	 * Only active alternate settings should be added.  If there is an existing interface
-	 * with the same number, it will be replaced by the new interface setting.  When
-	 * the interface's active setting is changed, this <strong>must</strong> be called with
-	 * the new alternate setting, which will replace the old (inactive) alternate setting.
-	 * @param setting The UsbInterfaceImp to add
+	 * The first setting for a particular interface number will default as the active setting.
+	 * If the setting being added has already been added,
+	 * it will be changed to be the active setting for the interface number.
+	 * @param setting The UsbInterfaceImp to add.
 	 */
 	public void addUsbInterfaceImp( UsbInterfaceImp setting )
 	{
 		synchronized ( interfaces ) {
-			for (int i=0; i<interfaces.size(); i++) {
-				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.getUsbInfo(i);
+			Byte key = new Byte(setting.getInterfaceNumber());
 
-				if (setting.getInterfaceNumber() == iface.getInterfaceNumber()) {
-					interfaces.removeUsbInfo( iface );
-					break;
+			if (!interfaces.containsKey(key))
+				interfaces.put(key, new ArrayList());
+
+			List list = (List)interfaces.get(key);
+
+			synchronized (list) {
+				if (list.contains(setting)) {
+					list.remove(setting);
+					list.add(0, setting);
+				} else {
+					list.add(setting);
 				}
 			}
+		}
+	}
 
-			interfaces.addUsbInfo( setting );
+	/**
+	 * Change an interface setting to be the active alternate setting.
+	 * <p>
+	 * This behaves identical to {@link #addUsbInterfaceImp(UsbInterfaceImp) addUsbInterfaceImp}.
+	 * @param setting The UsbInterfaceImp setting to change.
+	 */
+	public void setActiveUsbInterfaceImpSetting(UsbInterfaceImp setting) { addUsbInterfaceImp(setting); }
+
+	/**
+	 * Get the List of settings for the specified interface numer.
+	 * @param number The interface number.
+	 * @return The List of settings, or null if no such interface number exists.
+	 */
+	public List getUsbInterfaceSettingList(byte number)
+	{
+		synchronized (interfaces) {
+			return (List)interfaces.get(new Byte(number));
 		}
 	}
 
@@ -165,7 +200,7 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 
 	private UsbDeviceImp usbDeviceImp = null;
 
-	private UsbInfoList interfaces = new DefaultUsbInfoList();
+	private HashMap interfaces = new HashMap();
 
 	//**************************************************************************
 	// Class constants
