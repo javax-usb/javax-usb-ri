@@ -283,7 +283,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	/**
 	 * Indicate that a specific UsbIrpImp has completed.
 	 * <p>
-	 * This should be called (by the platform implementation) to indicate
+	 * This should be called by the UsbIrpImp complete method to indicate
 	 * that the specified UsbIrpImp has completed.
 	 * @param irp the UsbIrpImp that completed.
 	 */

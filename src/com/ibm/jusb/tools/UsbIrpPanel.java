@@ -26,11 +26,11 @@ import javax.usb.event.*;
  * Class to display UsbIrp (or raw byte[]) information.
  * @author Dan Streetman
  */
-public class UsbIrpPanel extends Box implements Cloneable
+public class UsbIrpPanel extends JPanel implements Cloneable
 {
 	public UsbIrpPanel()
 	{
-		super(BoxLayout.Y_AXIS);
+		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
 		irpCheckBox.addChangeListener(irpListener);
 		refreshButton.addActionListener(refreshListener);
@@ -39,10 +39,11 @@ public class UsbIrpPanel extends Box implements Cloneable
 		packetOptionsPanel.add(syncCheckBox);
 		packetOptionsPanel.add(irpCheckBox);
 		packetOptionsPanel.add(acceptShortCheckBox);
-		packetOptionsPanel.add(refreshButton);
-		packetOptionsPanel.add(clearButton);
+		buttonPanel.add(refreshButton);
+		buttonPanel.add(clearButton);
 
 		add(packetOptionsPanel);
+		add(buttonPanel);
 		add(packetDataScroll);
 	}
 
@@ -126,6 +127,7 @@ public class UsbIrpPanel extends Box implements Cloneable
 	protected JCheckBox syncCheckBox = new JCheckBox("Sync", true);
 	protected JCheckBox irpCheckBox = new JCheckBox("UsbIrp", true);
 	protected JCheckBox acceptShortCheckBox = new JCheckBox("AcceptShort", true);
+	private JPanel buttonPanel = new JPanel();
 	private JButton refreshButton = new JButton("Refresh");
 	private JButton clearButton = new JButton("Clear");
 	protected JTextArea packetDataTextArea = new JTextArea();

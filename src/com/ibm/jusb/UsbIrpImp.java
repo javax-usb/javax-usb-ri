@@ -204,6 +204,8 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,UsbSubmission
 			irp.setDataLength(getDataLength());
 			irp.setCompleted(true);
 		} catch ( NullPointerException npE ) { }
+
+		getUsbPipeImp().usbIrpImpCompleted(this);
 	}
 
 	/**

@@ -30,7 +30,7 @@ public class SwingUsbView
 	public SwingUsbView(UsbServices services, UsbRootHub hub)
 	{
 		rootHub = hub;
-		rootNode = new DefaultMutableTreeNode(new UsbPanel.UsbHubPanel(rootHub));
+		rootNode = new DefaultMutableTreeNode(new UsbHubPanel(rootHub));
 		treeModel = new DefaultTreeModel(rootNode);
 		tree = new JTree(treeModel);
 		treeScroll = new JScrollPane(tree);
@@ -136,39 +136,39 @@ public class SwingUsbView
 
 	protected void createEndpoint(UsbEndpoint ep, DefaultMutableTreeNode node)
 	{
-		DefaultMutableTreeNode child = new DefaultMutableTreeNode(new UsbPanel.UsbPipePanel(ep.getUsbPipe()));
+		DefaultMutableTreeNode child = new DefaultMutableTreeNode(new UsbPipePanel(ep.getUsbPipe()));
 
 		node.add(child);
 	}
 
 	protected DefaultMutableTreeNode getHubNode(UsbHub hub)
 	{
-		return new DefaultMutableTreeNode(new UsbPanel.UsbHubPanel(hub));
+		return new DefaultMutableTreeNode(new UsbHubPanel(hub));
 	}
 
 	protected DefaultMutableTreeNode getPortNode(UsbPort port)
 	{
-		return new DefaultMutableTreeNode(new UsbPanel.UsbPortPanel(port));
+		return new DefaultMutableTreeNode(new UsbPortPanel(port));
 	}
 
 	protected DefaultMutableTreeNode getDeviceNode(UsbDevice device)
 	{
-		return new DefaultMutableTreeNode(new UsbPanel.UsbDevicePanel(device));
+		return new DefaultMutableTreeNode(new UsbDevicePanel(device));
 	}
 
 	protected DefaultMutableTreeNode getConfigNode(UsbConfig config)
 	{
-		return new DefaultMutableTreeNode(new UsbPanel.UsbConfigPanel(config));
+		return new DefaultMutableTreeNode(new UsbConfigPanel(config));
 	}
 
 	protected DefaultMutableTreeNode getInterfaceNode(UsbInterface iface)
 	{
-		return new DefaultMutableTreeNode(new UsbPanel.UsbInterfacePanel(iface));
+		return new DefaultMutableTreeNode(new UsbInterfacePanel(iface));
 	}
 
 	protected DefaultMutableTreeNode getEndpointNode(UsbEndpoint ep)
 	{
-		return new DefaultMutableTreeNode(new UsbPanel.UsbEndpointPanel(ep));
+		return new DefaultMutableTreeNode(new UsbEndpointPanel(ep));
 	}
 
 	private UsbRootHub rootHub = null;
@@ -195,7 +195,7 @@ public class SwingUsbView
 					if (deviceTable.containsKey(device.getUsbPort().getUsbHub())) {
 						DefaultMutableTreeNode parent = (DefaultMutableTreeNode)deviceTable.get(device.getUsbPort().getUsbHub());
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode)parent.getChildAt(UsbUtil.unsignedInt(device.getUsbPort().getPortNumber()) - 1);
-						node.setUserObject(new UsbPanel.UsbDevicePanel(device));
+						node.setUserObject(new UsbDevicePanel(device));
 						createDevice(device, node);
 						treeModel.reload(node);
 						deviceTable.put(device, node);
@@ -211,7 +211,7 @@ public class SwingUsbView
 
 					if (deviceTable.containsKey(device)) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode)deviceTable.get(device);
-						node.setUserObject(new UsbPanel.UsbPortPanel(device.getUsbPort()));
+						node.setUserObject(new UsbPortPanel(device.getUsbPort()));
 						node.removeAllChildren();
 						treeModel.reload(node);
 						deviceTable.remove(device);
