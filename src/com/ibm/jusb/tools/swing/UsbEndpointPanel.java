@@ -1,4 +1,4 @@
-package com.ibm.jusb.tools;
+package com.ibm.jusb.tools.swing;
 
 /*
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.

@@ -1,4 +1,4 @@
-package com.ibm.jusb.tools;
+package com.ibm.jusb.tools.swing;
 
 /*
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
@@ -23,16 +23,18 @@ import javax.usb.util.*;
 import javax.usb.event.*;
 
 /**
- * Class to display UsbPort info.
+ * Class to display UsbHub info.
  * @author Dan Streetman
  */
-public class UsbPortPanel extends UsbPanel
+public class UsbHubPanel extends UsbDevicePanel
 {
-	public UsbPortPanel(UsbPort port)
+	public UsbHubPanel(UsbHub hub)
 	{
 		super();
-		usbPort = port;
-		string = "UsbPort " + port.getPortNumber();
+		usbDevice = hub;
+		usbHub = hub;
+		string = hub.isUsbRootHub() ? "UsbRootHub" : "UsbHub";
+		initPanels();
 		refresh();
 	}
 
@@ -45,9 +47,9 @@ public class UsbPortPanel extends UsbPanel
 
 	protected void initText()
 	{
-		appendln("Port Number : " + usbPort.getPortNumber());
-		appendln("Is Device Attached : " + usbPort.isUsbDeviceAttached());
+		appendln("Number of Ports : " + usbHub.getNumberOfPorts());
+		super.initText();
 	}
 
-	private UsbPort usbPort = null;
+	private UsbHub usbHub = null;
 }

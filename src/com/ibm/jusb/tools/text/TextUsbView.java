@@ -1,4 +1,4 @@
-package com.ibm.jusb.tools;
+package com.ibm.jusb.tools.text;
 
 /*
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.

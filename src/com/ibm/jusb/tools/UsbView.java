@@ -13,6 +13,9 @@ import javax.usb.*;
 import javax.usb.event.*;
 import javax.usb.util.*;
 
+import com.ibm.jusb.tools.text.*;
+import com.ibm.jusb.tools.swing.*;
+
 /**
  * Class to display the USB device topology tree.
  * @author Dan Streetman
