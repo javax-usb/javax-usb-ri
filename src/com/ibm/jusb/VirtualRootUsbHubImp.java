@@ -1,4 +1,4 @@
-package com.ibm.jusb.util;
+package com.ibm.jusb;
 
 /**
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
@@ -11,7 +11,6 @@ package com.ibm.jusb.util;
 
 import javax.usb.*;
 
-import com.ibm.jusb.*;
 import com.ibm.jusb.os.*;
 
 /**
@@ -22,7 +21,7 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 {
 	public VirtualRootUsbHubImp()
 	{
-		super(virtualDeviceDescriptor, new VirtualUsbDeviceOsImp());
+		super(virtualDeviceDescriptor, new DefaultUsbDeviceOsImp());
 		setSpeed(UsbConst.DEVICE_SPEED_FULL);
 		init();
 	}
@@ -33,7 +32,7 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 	public void init()
 	{
 		UsbConfigImp virtualConfig = new UsbConfigImp(this, virtualConfigDescriptor);
-		UsbInterfaceImp virtualInterface = new UsbInterfaceImp(virtualConfig, virtualInterfaceDescriptor, new AbstractUsbInterfaceOsImp());
+		UsbInterfaceImp virtualInterface = new UsbInterfaceImp(virtualConfig, virtualInterfaceDescriptor, new DefaultUsbInterfaceOsImp());
 
 		virtualConfig.addUsbInterfaceImp(virtualInterface);
 
@@ -58,6 +57,10 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 
 	//**************************************************************************
 	// Class constants
+
+	public static final String VIRTUAL_ROOT_HUB_MANUFACTURER = "JSR80 Reference Implementation (platform-independent section)";
+	public static final String VIRTUAL_ROOT_HUB_PRODUCT = "JSR80 Virtual Root Hub";
+	public static final String VIRTUAL_ROOT_HUB_SERIALNUMBER = "19741113";
 
 	public static final short VENDOR_ID = (short)0xffff;
 	public static final short PRODUCT_ID = (short)0xffff;

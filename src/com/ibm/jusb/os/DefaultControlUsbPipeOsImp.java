@@ -16,17 +16,33 @@ import javax.usb.*;
 import com.ibm.jusb.*;
 
 /**
- * Abstract implementation for ControlUsbPipeOsImp.
+ * Default implementation for ControlUsbPipeOsImp.
  * <p>
- * This is identical to AbstractUsbPipeOsImp except all the methods require
- * ControlUsbIrpImps, not UsbIrpImps.
- * <p>
- * This implementation must be driven by a ControlUsbPipeImp; all methods require ControlUsbIrpImps and
- * cannot accept non-Control UsbIrpImps.
+ * This is identical to DefaultUsbPipeOsImp except all the methods require
+ * ControlUsbIrpImps, not UsbIrpImps.  This should be driven by a {@link com.ibm.jusb.ControlUsbPipeImp ControlUsbPipeImp},
+ * not a normal {@link com.ibm.jusb.UsbPipeImp UsbPipeImp}.
  * @author Dan Streetman
  */
-public abstract class AbstractControlUsbPipeOsImp extends AbstractUsbPipeOsImp implements ControlUsbPipeOsImp
+public class DefaultControlUsbPipeOsImp extends DefaultUsbPipeOsImp implements ControlUsbPipeOsImp
 {
+	/** Constructor. */
+	public DefaultControlUsbPipeOsImp() { super(); }
+
+	/**
+	 * Constructor.
+	 * @param open The String to use in UsbExceptions thrown in {@link #open() open()}.
+	 * @param submit The String to use in UsbExceptions thrown in submit methods.
+	 */
+	public DefaultControlUsbPipeOsImp(String open, String submit) { super(open,submit); }
+
+	/**
+	 * Constructor.
+	 * <p>
+	 * If this is true, opening is allowed.
+	 * @param allowOpen If this should allow opening.
+	 */
+	public DefaultControlUsbPipeOsImp(boolean open) { super(open); }
+
 	/**
 	 * Synchronously submit a ControlUsbIrpImp.
 	 * <p>
@@ -34,11 +50,18 @@ public abstract class AbstractControlUsbPipeOsImp extends AbstractUsbPipeOsImp i
 	 * {@link #syncSubmit(ControlUsbIrpImp) syncSubmit(ControlUsbIrpImp)} method.
 	 * @param irp The ControlUsbIrpImp to submit.
 	 * @exception UsbException If {@link #syncSubmit(ControlUsbIrpImp) syncSubmit(ControlUsbIrpImp)} throws a UsbException.
-	 * @exception ClassCastException If the UsbIrpImp is not a ControlUsbIrpImp.
 	 */
 	public void syncSubmit( UsbIrpImp irp ) throws UsbException,ClassCastException
 	{
-		syncSubmit((ControlUsbIrpImp)irp);
+		try {
+			syncSubmit((ControlUsbIrpImp)irp);
+		} catch ( ClassCastException ccE ) {
+			try {
+				syncSubmit(new ControlUsbIrpImp((ControlUsbIrp)irp));
+			} catch ( ClassCastException ccE2 ) {
+				throw new UsbException("Control pipes can only handle ControlUsbIrps.");
+			}
+		}
 	}
 
 	/**
@@ -48,11 +71,18 @@ public abstract class AbstractControlUsbPipeOsImp extends AbstractUsbPipeOsImp i
 	 * {@link #syncSubmit(ControlUsbIrpImp) asyncSubmit(ControlUsbIrpImp)} method.
 	 * @param irp The ControlUsbIrpImp to submit.
 	 * @exception UsbException If {@link #asyncSubmit(ControlUsbIrpImp) asyncSubmit(ControlUsbIrpImp)} throws a UsbException.
-	 * @exception ClassCastException If the UsbIrpImp is not a ControlUsbIrpImp.
 	 */
 	public void asyncSubmit( UsbIrpImp irp ) throws UsbException,ClassCastException
 	{
-		asyncSubmit((ControlUsbIrpImp)irp);
+		try {
+			asyncSubmit((ControlUsbIrpImp)irp);
+		} catch ( ClassCastException ccE ) {
+			try {
+				asyncSubmit(new ControlUsbIrpImp((ControlUsbIrp)irp));
+			} catch ( ClassCastException ccE2 ) {
+				throw new UsbException("Control pipes can only handle ControlUsbIrps.");
+			}
+		}
 	}
 
 	/**
@@ -75,10 +105,14 @@ public abstract class AbstractControlUsbPipeOsImp extends AbstractUsbPipeOsImp i
 	/**
 	 * Asynchronously submits this ControlUsbIrpImp to the platform implementation.
 	 * <p>
-	 * The OS-implementation must implement this method.
-	 * @param irp the ControlUsbIrpImp to use for this submission
-	 * @exception UsbException If the initial submission was unsuccessful.
+	 * By default, this throws UsbException with the String defined by {@link #getSubmitString() getSubmitString}.
+	 * The implementation should override (at least) this method.
+	 * @param irp the ControlUsbIrpImp to use for this submission.
+	 * @exception javax.usb.UsbException If the initial submission was unsuccessful.
 	 */
-	public abstract void asyncSubmit( ControlUsbIrpImp irp ) throws UsbException;
+	public void asyncSubmit( ControlUsbIrpImp irp ) throws UsbException
+	{
+		throw new UsbException(getSubmitString());
+	}
 
 }

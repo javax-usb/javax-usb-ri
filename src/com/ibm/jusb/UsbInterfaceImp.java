@@ -390,7 +390,7 @@ public class UsbInterfaceImp implements UsbInterface
 	// Instance variables
 
 	private UsbConfigImp usbConfigImp = null;
-	private UsbInterfaceOsImp usbInterfaceOsImp = new AbstractUsbInterfaceOsImp();
+	private UsbInterfaceOsImp usbInterfaceOsImp = new DefaultUsbInterfaceOsImp();
 
 	private InterfaceDescriptor interfaceDescriptor = null;
 
