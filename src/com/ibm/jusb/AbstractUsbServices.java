@@ -152,12 +152,23 @@ public abstract class AbstractUsbServices extends Object implements UsbServices
 		return bfsDevices;
 	}
 
-    //-------------------------------------------------------------------------
+    //**************************************************************************
     // Instance variables
-    //
 
     private UsbTopologyServicesHelper topologyHelper = new UsbTopologyServicesHelper( this, new FifoScheduler() );
 	private RequestFactory requestFactory = new RequestImpFactory();
 	private UsbIrpFactory usbIrpFactory = new UsbIrpImpFactory();
+
+    //**************************************************************************
+    // Inner classes
+
+	/**
+	 * Virtual Root Hub implementation.
+	 * @author Dan Streetman
+	 */
+	public class VirtualRootHubImp extends UsbRootHubImp implements UsbRootHub
+	{
+
+	}
 
 }

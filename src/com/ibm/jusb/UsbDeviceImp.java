@@ -61,18 +61,18 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 	/** @return the manufacturer of this device */
 	public String getManufacturer()
-	{ return getCachedString( getDeviceDescriptor().getManufacturerIndex() ); }
+	{ return getString( getDeviceDescriptor().getManufacturerIndex() ); }
 
 	/** @return the serial number of this device */
 	public String getSerialNumber()
-	{ return getCachedString( getDeviceDescriptor().getSerialNumberIndex() ); }
+	{ return getString( getDeviceDescriptor().getSerialNumberIndex() ); }
 
 	/** @return a String describing the speed of this device */
 	public String getSpeedString() { return speedString; }
 
 	/** @return a String describing this product */
 	public String getProductString()
-	{ return getCachedString( getDeviceDescriptor().getProductIndex() ); }
+	{ return getString( getDeviceDescriptor().getProductIndex() ); }
 
 	/** @return the USB device class */
 	public byte getDeviceClass() { return getDeviceDescriptor().getDeviceClass(); }
@@ -185,6 +185,12 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 	/** @return A VendorOperations object */
 	public VendorOperations getVendorOperations() { return getUsbOperationsImp(); }
+
+	/** @param requestImp The RequestImp that completed. */
+	public void requestImpCompleted(RequestImp requestImp)
+	{
+//FIXME - create a listener helper for deviceimp, fire dataevent here
+	}
 
 	/** @param the listener to add */
 	public void addUsbDeviceListener( UsbDeviceListener listener ) 

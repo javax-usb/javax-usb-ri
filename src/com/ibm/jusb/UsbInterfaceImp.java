@@ -278,7 +278,10 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	public UsbInfoListIterator getAlternateSettings() { return alternateSettings.usbInfoListIterator(); }
 
 	/** @return the bundle of UsbPipes contained in this interface setting. */
-	public UsbPipeBundle getUsbPipes() { return usbPipeBundle; }
+	public UsbPipeBundle getUsbPipes()
+	{
+		/*get from endpoints*/
+	}
 
 	/** @return the interface descriptor for this interface */
 	public InterfaceDescriptor getInterfaceDescriptor() { return (InterfaceDescriptor)getDescriptor(); }

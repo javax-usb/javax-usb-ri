@@ -23,16 +23,18 @@ public class ConfigDescriptorImp extends AbstractDescriptor implements ConfigDes
 	 * Constructor.
 	 * @param len Descriptor length.
 	 * @param type Descriptor type.
+	 * @param totalLen Descriptor Total Length.
 	 * @param numI Number of interfaces.
 	 * @param cVal The ConfigValue.
 	 * @param cInd The ConfigIndex.
 	 * @param attr The attributes.
 	 * @param mPwr The max power.
 	 */
-	public ConfigDescriptorImp( byte len, byte type, byte numI, byte cVal, byte cInd, byte attr, byte mPwr )
+	public ConfigDescriptorImp( byte len, byte type, short totalLen, byte numI, byte cVal, byte cInd, byte attr, byte mPwr )
 	{
 		setLength(len);
 		setType(type);
+		setTotalLength(totalLen);
 		setNumInterfaces(numI);
 		setConfigValue(cVal);
 		setConfigIndex(cInd);

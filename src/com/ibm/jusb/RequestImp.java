@@ -176,8 +176,6 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 		if (!isCompleted())
 			return;
 
-		notifyCompleted();
-
 		Request request = getRequest();
 
 		if (null != request) {
@@ -185,6 +183,8 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 			request.setUsbException(getUsbException());
 			request.setCompleted(true);
 		}
+
+		notifyCompleted();
 	}
 
 	//**************************************************************************
