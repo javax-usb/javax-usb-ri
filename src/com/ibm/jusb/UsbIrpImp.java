@@ -42,7 +42,7 @@ import com.ibm.jusb.util.*;
  * {@link #complete() complete}, this will set the proper fields on the wrapped UsbIrp.
  * @author Dan Streetman
  */
-public class UsbIrpImp implements UsbIrp,UsbSubmission
+public class UsbIrpImp implements UsbIrp
 {
 	/** Constructor. */
 	public UsbIrpImp() { }
@@ -198,94 +198,12 @@ public class UsbIrpImp implements UsbIrp,UsbSubmission
 	private Object waitLock = new Object();
 	private int waitCount = 0;
 
-	private byte[] data = null;
-	private boolean complete = false;
-	private boolean acceptShortPacket = true;
-	private int offset = -1;
-	private int length = -1;
-	private int actualLength = -1;
-	private UsbException usbException = null;
-
-	//*************************************************************************
-	// Inner classes
-
-	public static class ControlUsbIrpImp extends UsbIrpImp implements UsbIrp.ControlUsbIrp
-	{
-		/**
-		 * Get the bmRequestType.
-		 * @return The bmRequestType.
-		 */
-		public byte getRequestType() { return bmRequestType; }
-
-		/**
-		 * Get the bRequest.
-		 * @return The bRequest.
-		 */
-		public byte getRequest() { return bRequest; }
-
-		/**
-		 * Get the wValue.
-		 * @return The wValue.
-		 */
-		public short getValue() { return wValue; }
-
-		/**
-		 * Get the wIndex.
-		 * @return The wIndex.
-		 */
-		public short getIndex() { return wIndex; }
-
-		/**
-		 * Set the bmRequestType.
-		 * @param bmRequestTyp The bmRequestType.
-		 */
-		public void setRequestType(byte bmRequestType) { this.bmRequestType = bmRequestType; }
-
-		/**
-		 * Set the bRequest.
-		 * @param bRequest The bRequest.
-		 */
-		public void setRequest(byte bRequest) { this.bRequest = bRequest; }
-
-		/**
-		 * Set the wValue.
-		 * @param wValue The wValue.
-		 */
-		public void setValue(short wValue) { this.wValue = wValue; }
-
-		/** 
-		 * Set the wIndex.
-		 * @param wIndex The wIndex.
-		 */
-		public void setIndex(short wIndex) { this.wIndex = wIndex; }
-
-		/**
-		 * If this is a SET_CONFIGURATION UsbIrp.
-		 * @return If this is a SET_CONFIGURATION UsbIrp.
-		 */
-		public boolean isSetConfiguration()
-		{
-			return (getRequestType() == REQUESTTYPE_SET_CONFIGURATION) && (getRequest() == UsbConst.REQUEST_SET_CONFIGURATION);
-		}
-
-		/**
-		 * If this is a SET_INTERFACE UsbIrp.
-		 * @return If this is a SET_INTERFACE UsbIrp.
-		 */
-		public boolean isSetInterface()
-		{
-			return (getRequestType() == REQUESTTYPE_SET_INTERFACE) && (getRequest() == UsbConst.REQUEST_SET_INTERFACE);
-		}
-
-		private byte bmRequestType = 0x00;
-		private byte bRequest = 0x00;
-		private short wValue = 0x0000;
-		private short wIndex = 0x0000;
-
-		private static final byte REQUESTTYPE_SET_CONFIGURATION =
-			UsbConst.REQUESTTYPE_DIRECTION_OUT | UsbConst.REQUESTTYPE_TYPE_STANDARD | UsbConst.REQUESTTYPE_RECIPIENT_DEVICE;
-		private static final byte REQUESTTYPE_SET_INTERFACE =
-			UsbConst.REQUESTTYPE_DIRECTION_OUT | UsbConst.REQUESTTYPE_TYPE_STANDARD | UsbConst.REQUESTTYPE_RECIPIENT_INTERFACE;
-	}
+	protected byte[] data = null;
+	protected boolean complete = false;
+	protected boolean acceptShortPacket = true;
+	protected int offset = -1;
+	protected int length = -1;
+	protected int actualLength = -1;
+	protected UsbException usbException = null;
 
 }

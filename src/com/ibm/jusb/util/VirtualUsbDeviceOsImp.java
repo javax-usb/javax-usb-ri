@@ -25,29 +25,21 @@ public class VirtualUsbDeviceOsImp extends AbstractUsbDeviceOsImp implements Usb
 	public VirtualUsbDeviceOsImp() { }
 
 	/**
-	 * Synchronously submit a UsbIrpImp.ControlUsbIrpImp.
-	 * @param controlUsbIrpImp The UsbIrpImp.ControlUsbIrpImp.
+	 * Synchronously submit a ControlUsbIrpImp.
+	 * @param controlUsbIrpImp The ControlUsbIrpImp.
 	 * @return The number of bytes transferred.
 	 * @throws UsbException If the submission is unsuccessful.
 	 */
-	public void syncSubmit(UsbIrpImp.ControlUsbIrpImp controlUsbIrpImp) throws UsbException
+	public void syncSubmit(ControlUsbIrpImp controlUsbIrpImp) throws UsbException
 	{
-		byte[] data = controlUsbIrpImp.getData();
-		byte bmRequestType = data[0];
-		byte bRequest = data[1];
-		short wValue = (short)((data[3] << 8) | data[2]);
-		short wIndex = (short)((data[5] << 8) | data[4]);
-
-		/* handle requests */
-
 		throw new UsbException("Not implemented");
 	}
 
 	/**
-	 * Asynchronously submit a UsbIrpImp.ControlUsbIrpImp.
-	 * @param controlUsbIrpImp The UsbIrpImp.ControlUsbIrpImp.
+	 * Asynchronously submit a ControlUsbIrpImp.
+	 * @param controlUsbIrpImp The ControlUsbIrpImp.
 	 */
-	public void asyncSubmit(UsbIrpImp.ControlUsbIrpImp controlUsbIrpImp) throws UsbException
+	public void asyncSubmit(ControlUsbIrpImp controlUsbIrpImp) throws UsbException
 	{
 		runnableManager.add(new AsyncRunnable(controlUsbIrpImp));
 	}
@@ -69,15 +61,19 @@ public class VirtualUsbDeviceOsImp extends AbstractUsbDeviceOsImp implements Usb
 
 	private class AsyncRunnable implements Runnable
 	{
-		public AsyncRunnable(UsbIrpImp.ControlUsbIrpImp r) { controlUsbIrpImp = r; }
+		public AsyncRunnable(ControlUsbIrpImp r) { controlUsbIrpImp = r; }
 
 		public void run()
 		{
-			try { syncSubmit(controlUsbIrpImp); }
-			catch ( UsbException uE ) { controlUsbIrpImp.setUsbException(uE); }
+			try {
+				syncSubmit(controlUsbIrpImp);
+			} catch ( UsbException uE ) {
+				controlUsbIrpImp.setUsbException(uE);
+				controlUsbIrpImp.complete();
+			}
 		}
 
-		private UsbIrpImp.ControlUsbIrpImp controlUsbIrpImp = null;
+		private ControlUsbIrpImp controlUsbIrpImp = null;
 	}
 
 }

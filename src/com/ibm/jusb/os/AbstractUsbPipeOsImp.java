@@ -93,8 +93,8 @@ public abstract class AbstractUsbPipeOsImp implements UsbPipeOsImp
 				asyncSubmit((UsbIrpImp)list.get(i));
 		} catch ( UsbException uE ) {
 			for (int j=i; j<list.size(); j++) {
-				((UsbSubmission)list.get(j)).setUsbException(uE);
-				((UsbSubmission)list.get(j)).complete();
+				((UsbIrpImp)list.get(j)).setUsbException(uE);
+				((UsbIrpImp)list.get(j)).complete();
 			}
 			throw uE;
 		}

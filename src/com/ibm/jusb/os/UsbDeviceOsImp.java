@@ -25,47 +25,69 @@ import com.ibm.jusb.*;
 public interface UsbDeviceOsImp
 {
 	/**
-	 * Synchronously submit a UsbIrpImp.ControlUsbIrpImp.
+	 * Synchronously submit a ControlUsbIrpImp.
 	 * <p>
-	 * This will block until the UsbIrpImp.ControlUsbIrpImp has completed.
+	 * This will block until the ControlUsbIrpImp has completed.
 	 * The implementation should throw the UsbException if one occurs.
 	 * The implementation must perform all actions as specified in the
-	 * {@link com.ibm.jusb.UsbIrpImp.ControlUsbIrpImp UsbIrpImp.ControlUsbIrpImp documentation}.
-	 * @param requestImp The UsbIrpImp.ControlUsbIrpImp.
+	 * {@link com.ibm.jusb.ControlUsbIrpImp ControlUsbIrpImp documentation}.
+	 * @param controlUsbIrpImp The ControlUsbIrpImp.
 	 * @throws UsbException If the submission is unsuccessful.
 	 */
-	public void syncSubmit(UsbIrpImp.ControlUsbIrpImp requestImp) throws UsbException;
+	public void syncSubmit(ControlUsbIrpImp controlUsbIrpImp) throws UsbException;
 
 	/**
-	 * Synchronously submit a List of UsbIrpImp.ControlUsbIrpImps.
+	 * Asynchronously submit a ControlUsbIrpImp.
 	 * <p>
-	 * All items in the List will be UsbIrpImp.ControlUsbIrpImps.  Every UsbIrpImp.ControlUsbIrpImp
+	 * This should return as soon as possible.  If a UsbException is
+	 * thrown, no other action is required.  Otherwise, the ControlUsbIrpImp is
+	 * accepted for processing.  The ControlUsbIrpImp should then be handled the same as
+	 * {@link #syncSubmit(ControlUsbIrpImp) single ControlUsbIrpImp syncSubmit}.
+	 * @param controlUsbIrpImp The ControlUsbIrpImp.
+	 * @throws UsbException If the submission was not accepted by the implementation.
+	 */
+	public void asyncSubmit(ControlUsbIrpImp controlUsbIrpImp) throws UsbException;
+
+	/**
+	 * Synchronously submit a List of ControlUsbIrpImps.
+	 * <p>
+	 * All items in the List will be ControlUsbIrpImps.  Every ControlUsbIrpImp
 	 * should be handled as if passed via
-	 * {@link #syncSubmit(UsbIrpImp.ControlUsbIrpImp) single UsbIrpImp.ControlUsbIrpImp syncSubmit},
-	 * with the only difference being an error for one of the UsbIrpImp.ControlUsbIrpImps does
+	 * {@link #syncSubmit(ControlUsbIrpImp) single ControlUsbIrpImp syncSubmit},
+	 * with the only difference being an error for one of the ControlUsbIrpImps does
 	 * not require the implementation to throw a UsbException for the entire List.
-	 * The implementation may, at its option, continue processing UsbIrpImp.ControlUsbIrpImps.
+	 * The implementation may, at its option, continue processing ControlUsbIrpImps.
 	 * In either case (return from the method or throw an UsbException),
 	 * all UsbIrpImps must be handled as specified in the
 	 * {@link com.ibm.jusb.UsbIrpImp UsbIrpImp documentation}, even if they are not processed.
 	 * <p>
-	 * Note that the implementation may call each UsbIrpImp.ControlUsbIrpImp's
-	 * {@link com.ibm.jusb.UsbIrpImp.ControlUsbIrpImp#complete() complete} method as the UsbIrpImp.ControlUsbIrpImp
-	 * completes or after processing all UsbIrpImp.ControlUsbIrpImps in the list.
+	 * Note that the implementation may call each ControlUsbIrpImp's
+	 * {@link com.ibm.jusb.ControlUsbIrpImp#complete() complete} method as the ControlUsbIrpImp
+	 * completes or after processing all ControlUsbIrpImps in the list.
 	 * @param list The List.
 	 * @throws UsbException If the one (or more) submissions are unsuccessful (optional).
 	 */
 	public void syncSubmit(List list) throws UsbException;
 
 	/**
-	 * Asynchronously submit a UsbIrpImp.ControlUsbIrpImp.
+	 * Asynchronously submit a List of ControlUsbIrpImps.
 	 * <p>
-	 * This should return as soon as possible.  If a UsbException is
-	 * thrown, no other action is required.  Otherwise, the UsbIrpImp.ControlUsbIrpImp is
-	 * accepted for processing.  The UsbIrpImp.ControlUsbIrpImp should then be handled the same as
-	 * {@link #syncSubmit(UsbIrpImp.ControlUsbIrpImp) single UsbIrpImp.ControlUsbIrpImp syncSubmit}.
-	 * @param controlUsbIrpImp The UsbIrpImp.ControlUsbIrpImp.
-	 * @throws UsbException If the submission was not accepted by the implementation.
+	 * All items in the List will be ControlUsbIrpImps.  Every ControlUsbIrpImp
+	 * should be handled as if passed via
+	 * {@link #asyncSubmit(ControlUsbIrpImp) single ControlUsbIrpImp asyncSubmit},
+	 * with the only difference being an error for one of the ControlUsbIrpImps does
+	 * not require the implementation to throw a UsbException for the entire List.
+	 * The implementation may, at its option, continue processing ControlUsbIrpImps.
+	 * In either case (return from the method or throw an UsbException),
+	 * all UsbIrpImps must be handled as specified in the
+	 * {@link com.ibm.jusb.UsbIrpImp UsbIrpImp documentation}, even if they are not processed.
+	 * <p>
+	 * Note that the implementation may call each ControlUsbIrpImp's
+	 * {@link com.ibm.jusb.ControlUsbIrpImp#complete() complete} method as the ControlUsbIrpImp
+	 * completes or after processing all ControlUsbIrpImps in the list.
+	 * @param list The List.
+	 * @throws UsbException If the one (or more) submissions are unsuccessful (optional).
 	 */
-	public void asyncSubmit(UsbIrpImp.ControlUsbIrpImp controlUsbIrpImp) throws UsbException;
+	public void asyncSubmit(List list) throws UsbException;
+
 }

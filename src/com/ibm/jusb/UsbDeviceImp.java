@@ -308,10 +308,11 @@ public class UsbDeviceImp implements UsbDevice
 	 * @param irp The ControlUsbIrp.
 	 * @exception UsbException If an error occurrs.
 	 */
-	public void syncSubmit( UsbIrp.ControlUsbIrp irp ) throws UsbException
+	public void syncSubmit( ControlUsbIrp irp ) throws UsbException
 	{
-//FIXME - implement
-throw new UsbException("not implemented");
+		ControlUsbIrpImp controlUsbIrpImp = controlUsbIrpToControlUsbIrpImp(irp);
+
+		getUsbDeviceOsImp().syncSubmit(controlUsbIrpImp);
 	}
 
 	/**
@@ -319,9 +320,11 @@ throw new UsbException("not implemented");
 	 * @param irp The ControlUsbIrp.
 	 * @exception UsbException If an error occurrs.
 	 */
-	public void asyncSubmit( UsbIrp.ControlUsbIrp irp ) throws UsbException
+	public void asyncSubmit( ControlUsbIrp irp ) throws UsbException
 	{
-throw new UsbException("not implemented");
+		ControlUsbIrpImp controlUsbIrpImp = controlUsbIrpToControlUsbIrpImp(irp);
+
+		getUsbDeviceOsImp().asyncSubmit(controlUsbIrpImp);
 	}
 
 	/**
@@ -335,7 +338,9 @@ throw new UsbException("not implemented");
 	 */
 	public void syncSubmit( List list ) throws UsbException
 	{
-throw new UsbException("not implemented");
+		List newList = controlUsbIrpListToControlUsbIrpImpList(list);
+
+		getUsbDeviceOsImp().syncSubmit(newList);
 	}
 
 	/**
@@ -349,7 +354,9 @@ throw new UsbException("not implemented");
 	 */
 	public void asyncSubmit( List list ) throws UsbException
 	{
-throw new UsbException("not implemented");
+		List newList = controlUsbIrpListToControlUsbIrpImpList(list);
+
+		getUsbDeviceOsImp().asyncSubmit(newList);
 	}
 
 	//**************************************************************************
@@ -358,20 +365,20 @@ throw new UsbException("not implemented");
 	/** @return the device's default langID */
 	protected synchronized short getLangId() throws UsbException
 	{
-//FIXME - implement
-throw new UsbException("Not implemented");
-//		if (0x0000 == langId) {
-//			byte[] data = new byte[256];
+		if (0x0000 == langId) {
+			byte[] data = new byte[256];
 
+//FIXME - implement using javax.usb.util package standard ops method?
+data[0] = 0;
 //getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
 
-//			if (4 > data[0])
-//				throw new UsbException("Strings not supported by device");
+			if (4 > data[0])
+				throw new UsbException("Strings not supported by device");
 
-//			langId = (short)((data[3] << 8) | data[2]);
-//		}
+			langId = (short)((data[3] << 8) | data[2]);
+		}
 
-//		return langId;
+		return langId;
 	}
 
 	/** Update the StringDescriptor at the specified index. */
@@ -379,14 +386,12 @@ throw new UsbException("Not implemented");
 	{
 		byte[] data = new byte[256];
 
-//FIXME - implement
+//FIXME - implement using javax.usb.util package standard ops method?
 //Request request = getStandardOperations().getDescriptor( (short)((DescriptorConst.DESCRIPTOR_TYPE_STRING << 8) | (index)), getLangId(), data );
 throw new UsbException("Not implemented.");
 
-//FIXME - this need changing!
-
 		/* requested string not present */
-//if (2 > request.getLength())
+//if (2 > request.getActualLength())
 //			return;
 
 		/* claimed length must be at least 2; length byte and type byte are mandatory. */
@@ -401,6 +406,35 @@ throw new UsbException("Not implemented.");
 
 //FIXME - fix this
 //setStringDescriptor( index, new StringDescriptorImp( data[0], data[1], bytesToString(data,len) ) );
+	}
+
+	/**
+	 * Convert a ControlUsbIrp to a ControlUsbIrpImp.
+	 * @param controlUsbIrp The ControlUsbIrp.
+	 * @return A ControlUsbIrpImp that corresponds to the controlUsbIrp.
+	 */
+	protected ControlUsbIrpImp controlUsbIrpToControlUsbIrpImp(ControlUsbIrp controlUsbIrp)
+	{
+		try {
+			return (ControlUsbIrpImp)controlUsbIrp;
+		} catch ( ClassCastException ccE ) {
+			return new ControlUsbIrpImp(controlUsbIrp);
+		}
+	}
+
+	/**
+	 * Convert a List of ControlUsbIrps to a List of ControlUsbIrpImps.
+	 * @param list The List of ControlUsbIrps.
+	 * @return A List of ControlUsbIrpImps that correspond to the ControlUsbIrp List.
+	 */
+	protected List controlUsbIrpListToControlUsbIrpImpList(List list) throws ClassCastException
+	{
+		List newList = new ArrayList();
+
+		for (int i=0; i<list.size(); i++)
+			newList.add(controlUsbIrpToControlUsbIrpImp((ControlUsbIrp)list.get(i)));
+
+		return newList;
 	}
 
 	//**************************************************************************
