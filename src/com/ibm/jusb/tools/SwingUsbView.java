@@ -182,9 +182,7 @@ public class SwingUsbView
 	private JTree tree = null;
 	private JScrollPane treeScroll = null;
 
-	private JScrollPane infoScroll = new JScrollPane();
-
-	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, infoScroll);
+	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, null);
 
 	private UsbServicesListener topologyListener = new UsbServicesListener() {
 			public void usbDeviceAttached(UsbServicesEvent usE)
@@ -232,8 +230,9 @@ public class SwingUsbView
 	private TreeSelectionListener selectionListener = new TreeSelectionListener() {
 			public void valueChanged(TreeSelectionEvent tsE)
 			{
-				if (tsE.isAddedPath())
-					infoScroll.getViewport().setView((UsbPanel)((DefaultMutableTreeNode)tsE.getPath().getLastPathComponent()).getUserObject());
+				if (tsE.isAddedPath()) {
+					splitPane.setRightComponent( (UsbPanel)((DefaultMutableTreeNode)tsE.getPath().getLastPathComponent()).getUserObject() );
+				}
 			}
 		};
 

@@ -26,18 +26,19 @@ import javax.usb.event.*;
  * Class to display Usb info.
  * @author Dan Streetman
  */
-public abstract class UsbPanel extends JPanel
+public abstract class UsbPanel extends Box
 {
 	public UsbPanel()
 	{
-		refreshPanel.add(refreshButton);
-		refreshButton.addActionListener(refreshListener);
+		super(BoxLayout.Y_AXIS);
+
 		textArea.setEditable(false);
-		mainPanel.setLayout(new BorderLayout());
-		mainPanel.add(refreshPanel, BorderLayout.NORTH);
-		mainPanel.add(textArea, BorderLayout.SOUTH);
-		setLayout(new BorderLayout());
-		add(mainPanel, BorderLayout.NORTH);
+		refreshButton.addActionListener(refreshListener);
+
+		refreshPanel.add(refreshButton);
+
+		add(refreshPanel);
+		add(textArea);
 	}
 
 	public String toString() { return string; }
@@ -47,8 +48,6 @@ public abstract class UsbPanel extends JPanel
 	protected void clear() { textArea.replaceRange("", 0, textArea.getText().length()); }
 	protected void append(String s) { textArea.append(s); }
 	protected void appendln(String s) { append(s + "\n"); }
-
-	protected JPanel mainPanel = new JPanel();
 
 	protected JPanel refreshPanel = new JPanel();
 	protected JButton refreshButton = new JButton("Refresh");
@@ -219,10 +218,12 @@ public static class UsbInterfacePanel extends UsbPanel
 	protected void createClaimPanel()
 	{
 		claimButton.addActionListener(claimListener);
-		claimPanel.add(claimButton);
 		releaseButton.addActionListener(releaseListener);
+
+		claimPanel.add(claimButton);
 		claimPanel.add(releaseButton);
-		add(claimPanel, BorderLayout.SOUTH);
+
+		add(claimPanel);
 	}
 
 	private UsbInterface usbInterface = null;
@@ -338,18 +339,13 @@ public static class UsbPipePanel extends UsbPanel
 		submitPanel.add(upButton);
 		submitPanel.add(downButton);
 
-		leftControlPanel.setLayout(new BorderLayout());
-		leftControlPanel.add(submitPanel, BorderLayout.WEST);
-		leftControlPanel.add(packetListScroll, BorderLayout.EAST);
+		irpPanel.setLayout(irpLayout);
 
-		lowerSubPanel.setLayout(new BorderLayout());
-		lowerSubPanel.add(outputScroll, BorderLayout.NORTH);
-		lowerSubPanel.add(controlSplitPane, BorderLayout.SOUTH);
-
-		lowerMainPanel.setLayout(new BorderLayout());
-		lowerMainPanel.add(openClosePanel, BorderLayout.NORTH);
-		lowerMainPanel.add(lowerSubPanel, BorderLayout.SOUTH);
-		add(lowerMainPanel, BorderLayout.SOUTH);
+		add(openClosePanel);
+		add(outputScroll);
+		add(submitPanel);
+		add(packetListScroll);
+		add(irpPanel);
 	}
 
 	protected void submit()
@@ -365,12 +361,12 @@ public static class UsbPipePanel extends UsbPanel
 
 	protected void addPacket()
 	{
-		UsbIrpPanel irpPanel = new UsbIrpPanel();
-		packetList.add(irpPanel);
-		rightControlPanel.add(irpPanel, JLayeredPane.DEFAULT_LAYER);
-		rightControlPanel.moveToFront(irpPanel);
+		UsbIrpPanel newPanel = new UsbIrpPanel();
+		packetList.add(newPanel);
+		irpPanel.add(newPanel, newPanel.toString());
+		irpLayout.show(irpPanel, newPanel.toString());
 		refreshPacketList();
-		controlSplitPane.resetToPreferredSizes();
+		validate();
 	}
 
 	protected void open()
@@ -393,17 +389,14 @@ public static class UsbPipePanel extends UsbPanel
 		}
 	}
 
-	private JPanel lowerMainPanel = new JPanel();
 	private JPanel openClosePanel = new JPanel();
-	private JPanel lowerSubPanel = new JPanel();
 	private JTextArea outputTextArea = new JTextArea();
 	private JScrollPane outputScroll = new JScrollPane(outputTextArea);
-	private JPanel leftControlPanel = new JPanel();
-	private JLayeredPane rightControlPanel = new JLayeredPane();
-	private JSplitPane controlSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftControlPanel, rightControlPanel);
 	private JPanel submitPanel = new JPanel();
 	private JTextArea packetListTextArea = new JTextArea();
 	private JScrollPane packetListScroll = new JScrollPane(packetListTextArea);
+	private JPanel irpPanel = new JPanel();
+	private CardLayout irpLayout = new CardLayout();
 
 	private JButton openButton = new JButton("Open");
 	private JButton closeButton = new JButton("Close");

@@ -39,8 +39,8 @@ public class UsbIrpPanel extends JPanel
 		packetOptionsPanel.add(refreshButton);
 
 		setLayout(new BorderLayout());
-		add(packetOptionsPanel, BorderLayout.WEST);
-		add(packetDataScroll, BorderLayout.EAST);
+		add(packetOptionsPanel, BorderLayout.NORTH);
+		add(packetDataScroll, BorderLayout.SOUTH);
 	}
 
 	public void submit(UsbPipe pipe) throws UsbException,NumberFormatException
