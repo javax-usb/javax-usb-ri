@@ -103,7 +103,7 @@ public class RunnableManager
 	 * run will still be run; the Thread will exit after all have been run.
 	 * <p>
 	 * After calling stop the RunnableManager's state is effectively identical
-	 * to when it was initially created, i.e. Runnables may be added and
+	 * to when it was initially created (but stopped), i.e. Runnables may be added and
 	 * the RunnableManager must be started.
 	 */
 	public void stop()
@@ -193,6 +193,11 @@ public class RunnableManager
 	// Class variables
 
 	private static long count = 0;
+
+	//*************************************************************************
+	// Class constants
+
+	public static final long SIZE_UNLIMITED = Long.MAX_VALUE;
 
 	//*************************************************************************
 	// Inner classes
