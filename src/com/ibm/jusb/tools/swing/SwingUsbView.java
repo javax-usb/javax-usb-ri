@@ -180,20 +180,20 @@ public class SwingUsbView
 		return new DefaultMutableTreeNode(new UsbEndpointPanel(ep));
 	}
 
-	private UsbHub rootHub = null;
+	protected UsbHub rootHub = null;
 
-	private JFrame frame = new JFrame("UsbView");
+	protected JFrame frame = new JFrame("UsbView");
 
-	private Hashtable deviceTable = new Hashtable();
+	protected Hashtable deviceTable = new Hashtable();
 
-	private DefaultMutableTreeNode rootNode = null;
-	private DefaultTreeModel treeModel = null;
-	private JTree tree = null;
-	private JScrollPane treeScroll = null;
+	protected DefaultMutableTreeNode rootNode = null;
+	protected DefaultTreeModel treeModel = null;
+	protected JTree tree = null;
+	protected JScrollPane treeScroll = null;
 
-	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, null);
+	protected JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, null);
 
-	private UsbServicesListener topologyListener = new UsbServicesListener() {
+	protected UsbServicesListener topologyListener = new UsbServicesListener() {
 			public void usbDeviceAttached(UsbServicesEvent usE)
 			{
 				UsbDevice device = usE.getUsbDevice();
@@ -221,14 +221,14 @@ public class SwingUsbView
 			}
 		};
 
-	private TreeExpansionListener expansionListener = new TreeExpansionListener() {
+	protected TreeExpansionListener expansionListener = new TreeExpansionListener() {
 			public void treeCollapsed(TreeExpansionEvent teE)
 			{ /*splitPane.resetToPreferredSizes();*/ }
 			public void treeExpanded(TreeExpansionEvent teE)
 			{ /*splitPane.resetToPreferredSizes();*/ }
 		};
 
-	private TreeSelectionListener selectionListener = new TreeSelectionListener() {
+	protected TreeSelectionListener selectionListener = new TreeSelectionListener() {
 			public void valueChanged(TreeSelectionEvent tsE)
 			{
 				if (tsE.isAddedPath()) {
@@ -240,7 +240,7 @@ public class SwingUsbView
 			}
 		};
 
-	private static final Dimension DEFAULT_SIZE = new Dimension(640,480);
-	private static final Dimension MID_SIZE = new Dimension(800,600);
+	protected static final Dimension DEFAULT_SIZE = new Dimension(640,480);
+	protected static final Dimension MID_SIZE = new Dimension(800,600);
 
 }
