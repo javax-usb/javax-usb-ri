@@ -279,7 +279,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	 * that the specified UsbIrpImp has completed.
 	 * @param irp the UsbIrpImp that completed.
 	 */
-	public void UsbIrpImpCompleted( UsbIrpImp irp )
+	public void usbIrpImpCompleted( UsbIrpImp irp )
 	{
 		submissionCount--;
 
