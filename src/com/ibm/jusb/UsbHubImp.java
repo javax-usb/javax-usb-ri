@@ -95,7 +95,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	 */
 	public synchronized void addUsbDeviceImp( UsbDeviceImp usbDeviceImp, byte portNumber ) throws UsbException
 	{
-		if ( UsbUtil.unsignedInt( portNumber ) > UsbUtil.unsignedInt( getNumberOfPorts() ) )
+		if ( UsbUtil.unsignedInt( portNumber ) >= UsbUtil.unsignedInt( getNumberOfPorts() ) )
 			resize( portNumber );
 
 		UsbPortImp usbPortImp = getUsbPortImp( portNumber );
@@ -148,7 +148,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	{
 		int num = UsbUtil.unsignedInt(number);
 
-		if (0 >= num || num >= UsbUtil.unsignedInt(getNumberOfPorts()))
+		if (0 >= num || num > UsbUtil.unsignedInt(getNumberOfPorts()))
 			throw new UsbRuntimeException( USB_HUB_PORT_OUT_OF_RANGE + num );
 
 		return (UsbPortImp)portList.getUsbInfo(num - 1);
