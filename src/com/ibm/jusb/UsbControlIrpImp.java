@@ -140,6 +140,24 @@ public class UsbControlIrpImp extends UsbIrpImp implements UsbControlIrp
 		return setupPacket;
 	}
 
+	/**
+	 * Check the specified UsbControlIrp.
+	 * <p>
+	 * This may be used to check the validity of an UsbControlIrp.
+	 * This will throw an IllegalArgumentException if the UsbControlIrp
+	 * does not behave as specified in the UsbControlIrp interface documentation.
+	 * This will throw an UsbException if the UsbControlIrp is in a state not
+	 * ready for submission, such as being complete or having a UsbException.
+	 * @exception IllegalArgumentException If the UsbControlIrp is not valid.
+	 * @exception UsbException If the UsbControlIrp is not ready for submission.
+	 */
+	public static void checkUsbControlIrp(UsbControlIrp irp) throws IllegalArgumentException,UsbException
+	{
+		UsbIrpImp.checkUsbIrp(irp);
+
+		/* FIXME - check the setup packet fields here? */
+	}
+
 	protected byte bmRequestType = 0x00;
 	protected byte bRequest = 0x00;
 	protected short wValue = 0x0000;

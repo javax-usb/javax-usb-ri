@@ -134,14 +134,12 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	/**
 	 * Synchonously submits this byte[] array to the UsbPipe.
 	 */
-	public int syncSubmit( byte[] data ) throws UsbException
+	public int syncSubmit( byte[] data ) throws UsbException,IllegalArgumentException
 	{
 		checkOpen();
 
 		UsbIrpImp usbIrpImp = createUsbIrpImp();
 		usbIrpImp.setData(data);
-		usbIrpImp.setOffset(0);
-		usbIrpImp.setLength(data.length);
 		syncSubmit(usbIrpImp);
 
 		return usbIrpImp.getLength();
@@ -150,14 +148,12 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	/**
 	 * Asynchonously submits this byte[] array to the UsbPipe.
 	 */
-	public UsbIrp asyncSubmit( byte[] data ) throws UsbException
+	public UsbIrp asyncSubmit( byte[] data ) throws UsbException,IllegalArgumentException
 	{
 		checkOpen();
 
 		UsbIrpImp usbIrpImp = createUsbIrpImp();
 		usbIrpImp.setData(data);
-		usbIrpImp.setOffset(0);
-		usbIrpImp.setLength(data.length);
 		asyncSubmit(usbIrpImp);
 
 		return usbIrpImp;
@@ -166,7 +162,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	/**
 	 * Synchronous submission using a UsbIrp.
 	 */
-	public void syncSubmit( UsbIrp usbIrp ) throws UsbException
+	public void syncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException
 	{
 		checkOpen();
 
@@ -176,7 +172,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	/**
 	 * Asynchronous submission using a UsbIrp.
 	 */
-	public void asyncSubmit( UsbIrp usbIrp ) throws UsbException
+	public void asyncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException
 	{
 		checkOpen();
 
@@ -186,7 +182,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	/**
 	 * Synchronous submission using a List of UsbIrps.
 	 */
-	public void syncSubmit( List list ) throws UsbException
+	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException
 	{
 		checkOpen();
 
@@ -196,7 +192,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	/**
 	 * Asynchronous submission using a List of UsbIrps.
 	 */
-	public void asyncSubmit( List list ) throws UsbException
+	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException
 	{
 		checkOpen();
 
@@ -255,11 +251,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	 */
 	public void removeUsbPipeListener( UsbPipeListener listener ) { listenerImp.removeEventListener( listener ); }
 
-	public void setupUsbIrpImp(UsbIrpImp irp) throws UsbException
+	public void setupUsbIrpImp(UsbIrpImp irp)
 	{
-		if (irp.getData().length < (irp.getOffset() + irp.getLength()))
-			throw new UsbException("Data buffer is smaller than offset + length");
-
 		irp.setCompletion( this );
 	}
 
@@ -269,9 +262,13 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	/**
 	 * Convert a UsbIrp to UsbIrpImp.
 	 * @param irp The UsbIrp to convert.
+	 * @exception UsbException If the UsbIrp is not ready for submission.
+	 * @exception IllegalArgumentException If the UsbIrp is not valid.
 	 */
-	protected UsbIrpImp usbIrpToUsbIrpImp(UsbIrp irp) throws UsbException
+	protected UsbIrpImp usbIrpToUsbIrpImp(UsbIrp irp) throws UsbException,IllegalArgumentException
 	{
+		UsbIrpImp.checkUsbIrp(irp);
+
 		UsbIrpImp usbIrpImp = null;
 		try {
 			usbIrpImp = (UsbIrpImp)irp;
@@ -284,7 +281,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 		return usbIrpImp;
 	}
 
-	protected List usbIrpListToUsbIrpImpList(List list) throws UsbException
+	protected List usbIrpListToUsbIrpImpList(List list) throws UsbException,IllegalArgumentException
 	{
 		List newlist = new ArrayList();
 

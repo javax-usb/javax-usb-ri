@@ -375,11 +375,12 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 * Submit a UsbControlIrp synchronously to the Default Control Pipe.
 	 * @param irp The UsbControlIrp.
 	 * @exception UsbException If an error occurrs.
+	 * @exception IllegalArgumentException If the UsbControlIrp is invalid.
 	 */
-	public void syncSubmit( UsbControlIrp irp ) throws UsbException
+	public void syncSubmit( UsbControlIrp irp ) throws UsbException,IllegalArgumentException
 	{
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().syncSubmit( controlUsbIrpToUsbControlIrpImp( irp ) );
+			getUsbDeviceOsImp().syncSubmit( usbControlIrpToUsbControlIrpImp( irp ) );
 		}
 	}
 
@@ -387,11 +388,12 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 * Submit a UsbControlIrp asynchronously to the Default Control Pipe.
 	 * @param irp The UsbControlIrp.
 	 * @exception UsbException If an error occurrs.
+	 * @exception IllegalArgumentException If the UsbControlIrp is invalid.
 	 */
-	public void asyncSubmit( UsbControlIrp irp ) throws UsbException
+	public void asyncSubmit( UsbControlIrp irp ) throws UsbException,IllegalArgumentException
 	{
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().asyncSubmit( controlUsbIrpToUsbControlIrpImp( irp ) );
+			getUsbDeviceOsImp().asyncSubmit( usbControlIrpToUsbControlIrpImp( irp ) );
 		}
 	}
 
@@ -403,11 +405,12 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 * is implementation-dependent.
 	 * @param list The List of UsbControlIrps.
 	 * @exception UsbException If an error occurrs.
+	 * @exception IllegalArgumentException If one of the UsbControlIrps is invalid.
 	 */
-	public void syncSubmit( List list ) throws UsbException
+	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException
 	{
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().syncSubmit( controlUsbIrpListToUsbControlIrpImpList( list ) );
+			getUsbDeviceOsImp().syncSubmit( usbControlIrpListToUsbControlIrpImpList( list ) );
 		}
 	}
 
@@ -419,11 +422,12 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 * is implementation-dependent.
 	 * @param list The List of UsbControlIrps.
 	 * @exception UsbException If an error occurrs.
+	 * @exception IllegalArgumentException If one of the UsbControlIrps is invalid.
 	 */
-	public void asyncSubmit( List list ) throws UsbException
+	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException
 	{
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().asyncSubmit( controlUsbIrpListToUsbControlIrpImpList( list ) );
+			getUsbDeviceOsImp().asyncSubmit( usbControlIrpListToUsbControlIrpImpList( list ) );
 		}
 	}
 
@@ -473,44 +477,50 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 
 	/**
 	 * Setup a UsbControlIrpImp.
-	 * @param controlUsbIrpImp The UsbControlIrpImp to setup.
+	 * @param usbControlIrpImp The UsbControlIrpImp to setup.
 	 */
-	protected void setupUsbControlIrpImp( UsbControlIrpImp controlUsbIrpImp )
+	protected void setupUsbControlIrpImp( UsbControlIrpImp usbControlIrpImp )
 	{
-		controlUsbIrpImp.setCompletion( this );
+		usbControlIrpImp.setCompletion( this );
 	}
 
 	/**
 	 * Convert a UsbControlIrp to a UsbControlIrpImp.
-	 * @param controlUsbIrp The UsbControlIrp.
-	 * @return A UsbControlIrpImp that corresponds to the controlUsbIrp.
+	 * @param usbControlIrp The UsbControlIrp.
+	 * @return A UsbControlIrpImp that corresponds to the usbControlIrp.
+	 * @exception IllegalArgumentException If the UsbControlIrp is invalid.
+	 * @exception UsbException If the UsbControlIrp is not ready for submission.
 	 */
-	protected UsbControlIrpImp controlUsbIrpToUsbControlIrpImp(UsbControlIrp controlUsbIrp)
+	protected UsbControlIrpImp usbControlIrpToUsbControlIrpImp(UsbControlIrp usbControlIrp) throws UsbException,IllegalArgumentException
 	{
-		UsbControlIrpImp controlUsbIrpImp = null;
+		UsbControlIrpImp.checkUsbControlIrp(UsbControlIrp);
+
+		UsbControlIrpImp usbControlIrpImp = null;
 
 		try {
-			controlUsbIrpImp = (UsbControlIrpImp)controlUsbIrp;
+			usbControlIrpImp = (UsbControlIrpImp)usbControlIrp;
 		} catch ( ClassCastException ccE ) {
-			controlUsbIrpImp = new UsbControlIrpImp(controlUsbIrp);
+			usbControlIrpImp = new UsbControlIrpImp(usbControlIrp);
 		}
 
-		setupUsbControlIrpImp( controlUsbIrpImp );
+		setupUsbControlIrpImp( usbControlIrpImp );
 
-		return controlUsbIrpImp;
+		return usbControlIrpImp;
 	}
 
 	/**
 	 * Convert a List of UsbControlIrps to a List of UsbControlIrpImps.
 	 * @param list The List of UsbControlIrps.
 	 * @return A List of UsbControlIrpImps that correspond to the UsbControlIrp List.
+	 * @exception IllegalArgumentException If the UsbControlIrp is invalid.
+	 * @exception UsbException If the UsbControlIrp is not ready for submission.
 	 */
-	protected List controlUsbIrpListToUsbControlIrpImpList(List list) throws ClassCastException
+	protected List usbControlIrpListToUsbControlIrpImpList(List list) throws ClassCastException,IllegalArgumentException
 	{
 		List newList = new ArrayList();
 
 		for (int i=0; i<list.size(); i++)
-			newList.add(controlUsbIrpToUsbControlIrpImp((UsbControlIrp)list.get(i)));
+			newList.add(usbControlIrpToUsbControlIrpImp((UsbControlIrp)list.get(i)));
 
 		return newList;
 	}

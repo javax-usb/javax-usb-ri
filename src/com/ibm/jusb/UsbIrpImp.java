@@ -99,10 +99,10 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 	public void setUsbIrp(UsbIrp irp)
 	{
 		usbIrp = irp;
-		setData(irp.getData());
-		setOffset(irp.getOffset());
-		setLength(irp.getLength());
+		setData(irp.getData(),irp.getOffset(),irp.getLength());
 		setAcceptShortPacket(irp.getAcceptShortPacket());
+		setUsbException(irp.getUsbException());
+		setComplete(irp.isComplete());
 	}
 
 	/**
@@ -110,6 +110,44 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 	 * @return The UsbIrp or null.
 	 */
 	public UsbIrp getUsbIrp() { return usbIrp; }
+
+	/**
+	 * Check the specified UsbIrp.
+	 * <p>
+	 * This may be used to check the validity of an UsbIrp.
+	 * This will throw an IllegalArgumentException if the UsbIrp
+	 * does not behave as specified in the UsbIrp interface documentation.
+	 * This will throw an UsbException if the UsbIrp is in a state not
+	 * ready for submission, such as being complete or having a UsbException.
+	 * @exception IllegalArgumentException If the UsbIrp is not valid.
+	 * @exception UsbException If the UsbIrp is not ready for submission.
+	 */
+	public static void checkUsbIrp(UsbIrp irp) throws IllegalArgumentException,UsbException
+	{
+		int datalen, offset, length;
+
+		if (null == irp.getData())
+			throw new IllegalArgumentException("UsbIrp data cannot be null.");
+
+		datalen = irp.getData().length;
+		offset = irp.getOffset();
+		length = irp.getLength();
+
+		if (0 > offset)
+			throw new IllegalArgumentException("UsbIrp offset ("+offset+") cannot be negative.");
+
+		if (0 > length)
+			throw new IllegalArgumentException("UsbIrp length ("+length+") cannot be negative.");
+
+		if (datalen < (offset + length))
+			throw new UsbException("Data buffer (length "+datalen+") is smaller than offset ("+offset+") + length ("+length+") = "+(offset+length));
+
+		if (irp.isComplete())
+			throw new UsbException("UsbIrp cannot be used while isComplete() is true.");
+
+		if (irp.isUsbException())
+			throw new UsbException("UsbIrp cannot be used while isUsbException() is true.");
+	}
 
 	protected UsbIrp usbIrp = null;
 	protected UsbIrpImp.Completion completion = null;
