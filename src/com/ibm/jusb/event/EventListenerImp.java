@@ -19,6 +19,8 @@ import com.ibm.jusb.util.*;
  */
 public class EventListenerImp implements EventListener
 {
+//FIXME - change model to 1 RunnableManager (Thread) per Listener
+
 	/**
 	 * Add a listener.
 	 * @param listener The listener to add.
@@ -46,7 +48,7 @@ public class EventListenerImp implements EventListener
 			return;
 
 		synchronized (listeners) {
-			if (!listeners.contains(listener)) {
+			if (listeners.contains(listener)) {
 				listeners.remove( listener );
 				manager.setMaxSize(listeners.size() + 1);
 			}
