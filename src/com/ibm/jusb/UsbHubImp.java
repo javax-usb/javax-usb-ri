@@ -17,26 +17,33 @@ import com.ibm.jusb.os.*;
 /**
  * UsbHub implementation.
  * <p>
+ * This must be set up before use and/or connection to the topology tree.  To set up,
+ * see {@link com.ibm.jusb.UsbDeviceImp UsbDeviceImp documentation}.  The number of ports may
+ * be set in the constructor, or it will default to 1.  The number of ports can be dynamically
+ * {@link resize(int) resized} if needed.
+ * <p>
  * The port numbering is 1-based, not 0-based.
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
 public class UsbHubImp extends UsbDeviceImp implements UsbHub
 {
-	/** Constructor */
-	public UsbHubImp(UsbDeviceOsImp device) { this( 1, device ); }
+	/**
+	 * Constructor
+	 * @param desc This device's descriptor.
+	 * @param device The platform device implementaiton.
+	 */
+	public UsbHubImp(DeviceDescriptor desc, UsbDeviceOsImp device) { this( 1, desc, device ); }
 
 	/**
 	 * Constructor
-	 * <p>
-	 * The parameters may be passed null,
-	 * but they must be set using their setter before using this.
 	 * @param ports The initial number of ports.
+	 * @param desc This device's descriptor.
 	 * @param device The platform device implementation.
 	 */
-	public UsbHubImp( int ports, UsbDeviceOsImp device )
+	public UsbHubImp( int ports, DeviceDescriptor desc, UsbDeviceOsImp device )
 	{
-		super(device);
+		super(desc, device);
 		resize( ports );
 	}
 

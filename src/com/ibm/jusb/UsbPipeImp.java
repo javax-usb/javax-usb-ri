@@ -21,19 +21,23 @@ import com.ibm.jusb.util.*;
 /**
  * UsbPipe platform-independent implementation.
  * <p>
- * This handles UsbPipe processing as much as possible and passes platform
- * specific responsibilities to its UsbPipeOsImp.
+ * This must be set up before use.
+ * <ul>
+ * <li>The 
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
 public class UsbPipeImp extends Object implements UsbPipe
 {
-	public UsbPipeImp( UsbEndpointImp ep ) { this( ep, null ); }
-
+	/**
+	 * Constructor.
+	 * @param ep The UsbEndpointImp.
+	 * @param pipe The platform-dependent pipe implementation.
+	 */
     public UsbPipeImp( UsbEndpointImp ep, UsbPipeOsImp pipe )
     {
-		usbEndpointImp = ep;
-		setUsbPipeOsImp( pipe );
+		setUsbEndpointImp(ep);
+		setUsbPipeOsImp(pipe);
     }
 
 	//**************************************************************************
@@ -99,6 +103,9 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 	/** @return the UsbEndpointImp associated with this UsbPipeImp */
 	public UsbEndpointImp getUsbEndpointImp() { return usbEndpointImp; }
+
+	/** @param ep The UsbEndpointImp */
+	public void setUsbEndpointImp(UsbEndpointImp ep) { usbEndpointImp = ep; }
 
 	/**
 	 * Opens this UsbPipe so its ready for submissions.
@@ -331,6 +338,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	// Inner classes
 
 	/** Synchronized UsbPipe */
+//FIXME - do this
 
 }
 

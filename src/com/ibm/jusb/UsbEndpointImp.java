@@ -13,6 +13,13 @@ import javax.usb.*;
 
 /**
  * UsbEndpoint implementation.
+ * <p>
+ * This must be set up before use.
+ * <ul>
+ * <li>The UsbInterfaceImp must be set either in the constructor or by its {@link #setUsbInterfaceImp(UsbInterfaceImp) setter}.</li>
+ * <li>The EndpointDescriptor must be set either in the constructor or by its {@link #setEndpointDescriptor(EndpointDescriptor) setter}.</li>
+ * <li>The UsbPipeImp must be set either in the constructor or by its {@link #setUsbPipeImp(UsbPipeImp) setter}.</li>
+ * </ul>
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
@@ -20,11 +27,16 @@ public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
 {
 	/**
 	 * Constructor.
-	 * The parameters can be passed null,
-	 * but they must be set using their setter before using this.
 	 * @param iface The parent interface.
+	 * @param desc This endpoint's descriptor.
+	 * @param pipe The UsbPipeImp.
 	 */
-	public UsbEndpointImp( UsbInterfaceImp iface ) { setUsbInterfaceImp(iface); }
+	public UsbEndpointImp( UsbInterfaceImp iface, EndpointDescriptor desc, UsbPipeImp pipe )
+	{
+		setUsbInterfaceImp(iface);
+		setEndpointDescriptor(desc);
+		setUsbPipeImp(pipe);
+	}
 
 	//**************************************************************************
     // Public methods

@@ -16,6 +16,9 @@ import com.ibm.jusb.os.*;
 
 /**
  * UsbRootHub implementation.
+ * <p>
+ * This must be set up before use and/or connection to the topology tree.  To set up,
+ * see {@link com.ibm.jusb.UsbHubImp UsbHubImp documentation}.
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
@@ -23,13 +26,21 @@ public class UsbRootHubImp extends UsbHubImp implements UsbRootHub
 {
 	/**
 	 * Constructor
-	 * <p>
-	 * The parameters may be passed null,
-	 * but they must be set using their setter before using this.
-	 * @param ports The initial number of ports.
+	 * @param desc This device's descriptor.
 	 * @param device The platform device implementation.
 	 */
-	public UsbRootHubImp( int ports, UsbDeviceOsImp device ) { super(ports,device); }
+	public UsbRootHubImp( DeviceDescriptor desc, UsbDeviceOsImp device ) { super(desc,device); }
+
+	/**
+	 * Constructor
+	 * @param ports The initial number of ports.
+	 * @param desc This device's descriptor.
+	 * @param device The platform device implementation.
+	 */
+	public UsbRootHubImp( int ports, DeviceDescriptor desc, UsbDeviceOsImp device ) { super(ports,desc,device); }
+
+	//**************************************************************************
+	// Public methods
 
     /** @return true if this is the root hub */
     public boolean isUsbRootHub() { return true;  }
@@ -40,9 +51,8 @@ public class UsbRootHubImp extends UsbHubImp implements UsbRootHub
      */
     public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbRootHub( this ); }
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Class constants
-	//
 
 	public static final String USB_ROOT_HUB_NAME = "*hub";
 }

@@ -21,7 +21,24 @@ import com.ibm.jusb.os.*;
 /**
  * UsbDevice platform-independent implementation.
  * <p>
- * To connect this to the topology tree, use the {@link #connect(UsbHubImp,byte) connect()} method.
+ * This must be set up before use and/or connection to the topology tree.
+ * <ul>
+ * <li>The DeviceDescriptor must be set, either in the constructor or by its {@link #setDeviceDescriptor(DeviceDescriptor) setter}.</li>
+ * <li>The UsbDeviceOsImp must be set, either in the constructor or by its {@link #setUsbDeviceOsImp(UsbDeviceOsImp) setter}.</li>
+ * <li>The speed string must be set by its {@link #setSpeedString(String) setter}.</li>
+ * <li>All UsbConfigImps must be {@link #addUsbConfigImp(UsbConfigImp) added}.</li>
+ * <li>The active config number must be {@link #setActiveUsbConfigNumber(byte) set}.</li>
+ * </ul>
+ * After setup, this may be connected to the topology tree by using the {@link #connect(UsbHubImp,byte) connect} method.
+ * If the connect method is not used, there are additional steps:
+ * <ul>
+ * <li>Set the parent UsbPortImp by the {@link #setUsbPortImp(UsbPortImp) setter}.</li>
+ * <li>Set this on the UsbPortImp by its {@link com.ibm.jusb.UsbPortImp#attachUsbDeviceImp(UsbDeviceImp) setter}.</li>
+ * </ul>
+ * If the parent UsbHubImp is not large enough, it can be {@link com.ibm.jusb.UsbHubImp@resize(int) resized}.  This should
+ * only be necessary for root hubs, or more likely the virtual root hub.  Alternately, this may be added using the UsbHubImp's
+ * {@link com.ibm.jusb.UsbHubImp@addUsbDeviceImp(UsbDeviceImp,byte) addUsbDeviceImp} method, which resizes if needed and
+ * sets up the UsbPortImp.
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
@@ -29,15 +46,14 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 {
 	/**
 	 * Constructor.
-	 * <p>
-	 * The parameters may be passed null,
-	 * but they must be set using their setter before using this.
-	 * <p>
-	 * This can be connected to the topology, after all fields are set, by
-	 * using the {@link #connect(UsbHubImp,byte) connect} method.
+	 * @param desc This device's Descriptor.
 	 * @param device The UsbDeviceOsImp.
 	 */
-	public UsbDeviceImp(UsbDeviceOsImp device) { setUsbDeviceOsImp(device); }
+	public UsbDeviceImp(DeviceDescriptor desc, UsbDeviceOsImp device)
+	{
+		setDeviceDescriptor(desc);
+		setUsbDeviceOsImp(device);
+	}
 
 	//**************************************************************************
 	// Public methods
@@ -229,66 +245,6 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		stringDescriptors.put( new Byte( index ), desc );
 	}
 
-	/** @return the device's default langID */
-	short getLangId() throws UsbException
-	{
-		byte[] data = new byte[256];
-
-		getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
-
-		/* strings not supported by device */
-		if (4 > data[0])
-			return (short)0x0000;
-		else
-			return (short)((data[3] << 8) | data[2]);
-	}
-
-	/**
-	 * Convert byte[] to String
-	 * @param data StringDescriptor bytes.
-	 * @param len Length of unicode string.
-	 */
-	String bytesToString(byte[] data, int len)
-	{
-		for (int i=0; i<ENCODING.length; i++) {
-			try { return new String( data, 2, len, ENCODING[i] ); }
-			catch ( UnsupportedEncodingException ueE ) { }
-		}
-
-		/* Fallback to 8BIT encoding - ignore high byte */
-		byte[] s = new byte[len/2];
-
-		for (int i=0; i<s.length; i++)
-			s[i] = data[2 + i*2];
-
-		try {
-			return new String( s, ENCODING_8BIT );
-		} catch ( UnsupportedEncodingException ueE ) {
-			/* No encodings supported!  Fallback to platform, but String will likely be corrupted here */
-			return new String( s );
-		}
-	}
-
-	/** Update the StringDescriptor at the specified index. */
-	void requestStringDescriptor( byte index ) throws UsbException
-	{
-		byte[] data = new byte[256];
-
-		Request request = getStandardOperations().getDescriptor( (short)((DescriptorConst.DESCRIPTOR_TYPE_STRING << 8) | (index)), getLangId(), data );
-
-		/* requested string not present */
-		if (request.getDataLength() < 2)
-			return;
-
-		/* string length (descriptor len minus 2 for header) */
-		int len = UsbUtil.unsignedInt(data[0]) - 2;
-
-		if (request.getDataLength() < (len + 2))
-			throw new UsbException("String Descriptor length byte is longer than Descriptor data");
-
-		setStringDescriptor( index, new StringDescriptorImp( data[0], data[1], bytesToString(data,len) ) );
-	}
-
 	/**
 	 * @return the specified StringDescriptor.
 	 */
@@ -320,7 +276,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	public void setActiveUsbConfigNumber( byte num ) { activeConfigNumber = num; }
 
 	/** @param the configuration to add */
-	public void addUsbConfig( UsbConfig config ) { configs.addUsbInfo( config ); }
+	public void addUsbConfigImp( UsbConfigImp config ) { configs.addUsbInfo( config ); }
 
 	/**
 	 * Connect to the parent UsbHubImp.
@@ -355,8 +311,11 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		fireDetachEventsParallel();
 	}
 
+	//**************************************************************************
+	// Protected methods
+
 	/** Fire detach events on all listeners in parallel */
-	void fireDetachEventsParallel()
+	protected void fireDetachEventsParallel()
 	{
 		synchronized ( listenerList ) {
 			for (int i=0; i<listenerList.size(); i++) {
@@ -379,7 +338,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	}
 
 	/** Fire detach events on all listeners in series */
-	void fireDetachEventsSeries()
+	protected void fireDetachEventsSeries()
 	{
 		Runnable detachRunnable = new Runnable() {
 			Vector list = UsbDeviceImp.this.listenerList;
@@ -401,6 +360,66 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		detachThread.setDaemon( true );
 
 		detachThread.start();
+	}
+
+	/** @return the device's default langID */
+	protected short getLangId() throws UsbException
+	{
+		byte[] data = new byte[256];
+
+		getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
+
+		/* strings not supported by device */
+		if (4 > data[0])
+			return (short)0x0000;
+		else
+			return (short)((data[3] << 8) | data[2]);
+	}
+
+	/**
+	 * Convert byte[] to String
+	 * @param data StringDescriptor bytes.
+	 * @param len Length of unicode string.
+	 */
+	protected String bytesToString(byte[] data, int len)
+	{
+		for (int i=0; i<ENCODING.length; i++) {
+			try { return new String( data, 2, len, ENCODING[i] ); }
+			catch ( UnsupportedEncodingException ueE ) { }
+		}
+
+		/* Fallback to 8BIT encoding - ignore high byte */
+		byte[] s = new byte[len/2];
+
+		for (int i=0; i<s.length; i++)
+			s[i] = data[2 + i*2];
+
+		try {
+			return new String( s, ENCODING_8BIT );
+		} catch ( UnsupportedEncodingException ueE ) {
+			/* No encodings supported!  Fallback to platform, but String will likely be corrupted here */
+			return new String( s );
+		}
+	}
+
+	/** Update the StringDescriptor at the specified index. */
+	protected void requestStringDescriptor( byte index ) throws UsbException
+	{
+		byte[] data = new byte[256];
+
+		Request request = getStandardOperations().getDescriptor( (short)((DescriptorConst.DESCRIPTOR_TYPE_STRING << 8) | (index)), getLangId(), data );
+
+		/* requested string not present */
+		if (request.getDataLength() < 2)
+			return;
+
+		/* string length (descriptor len minus 2 for header) */
+		int len = UsbUtil.unsignedInt(data[0]) - 2;
+
+		if (request.getDataLength() < (len + 2))
+			throw new UsbException("String Descriptor length byte is longer than Descriptor data");
+
+		setStringDescriptor( index, new StringDescriptorImp( data[0], data[1], bytesToString(data,len) ) );
 	}
 
 	//-------------------------------------------------------------------------

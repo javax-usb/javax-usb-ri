@@ -14,6 +14,13 @@ import javax.usb.util.*;
 
 /**
  * UsbConfig implementation.
+ * <p>
+ * This must be set up before use.
+ * <ul>
+ * <li>The UsbDeviceImp must be set either in the constructor or by the {@link #setUsbDeviceImp(UsbDeviceImp) setter}.</li>
+ * <li>The ConfigDescriptor must be set either in the constructor or by the {@link #setConfigDescriptor(ConfigDescriptor) setter}.</li>
+ * <li>All UsbInterfaceImp active settings must be {@link #addUsbInterfaceImp(UsbInterfaceImp) added}.</li>
+ * </ul>
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
@@ -21,12 +28,14 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 {
 	/**
 	 * Constructor.
-	 * <p>
-	 * The parameters can be passed null,
-	 * but they must be set using their setter before using this.
+	 * @param desc This config's descriptor.
 	 * @param device The parent device.
 	 */
-	public UsbConfigImp( UsbDeviceImp device ) { setUsbDeviceImp( device ); }
+	public UsbConfigImp( ConfigDescriptor desc, UsbDeviceImp device )
+	{
+		setConfigDescriptor( desc );
+		setUsbDeviceImp( device );
+	}
 
 	//**************************************************************************
 	// Public methods
@@ -94,6 +103,31 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 		return true;
 	}
 
+	/**
+	 * Add a UsbInterfaceImp.
+	 * <p>
+	 * Only active alternate settings should be added.  If there is an existing interface
+	 * with the same number, it will be replaced by the new interface setting.  When
+	 * the interface's active setting is changed, this <strong>must</strong> be called with
+	 * the new alternate setting, which will replace the old (inactive) alternate setting.
+	 * @param setting The UsbInterfaceImp to add
+	 */
+	public void addUsbInterfaceImp( UsbInterfaceImp setting )
+	{
+		synchronized ( interfaces ) {
+			for (int i=0; i<interfaces.size(); i++) {
+				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.getUsbInfo(i);
+
+				if (setting.getInterfaceNumber() == iface.getInterfaceNumber()) {
+					interfaces.removeUsbInfo( iface );
+					break;
+				}
+			}
+
+			interfaces.addUsbInfo( setting );
+		}
+	}
+
 	/** @return The parent UsbDevice */
 	public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
 
@@ -109,7 +143,12 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	/** @return the String description of this config */
 	public String getConfigString()
 	{
-		return getUsbDeviceImp().getCachedString( getConfigDescriptor().getConfigIndex() );
+		try {
+			return getUsbDeviceImp().getString( getConfigDescriptor().getConfigIndex() );
+		} catch ( UsbException uE ) {
+//FIXME - this method should throw UsbException
+			return null;
+		}
 	}
 
 	/**
@@ -120,31 +159,6 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 
 	/** @param desc the new config descriptor */
 	public void setConfigDescriptor( ConfigDescriptor desc ) { setDescriptor( desc ); }
-
-	/**
-	 * Replace a UsbInterface with a new alternate setting.
-	 * <p>
-	 * When an interface's setting changes, this config's list of interfaces
-	 * must also change - since the {@link #getUsbInterface(byte) getUsbInterface}
-	 * method always should return the active alternate setting of a particular interface.
-	 * This method should be called to keep the alternate setting correct.
-	 * @param setting The new active alternate setting.
-	 */
-	public void setActiveAlternateSetting( UsbInterfaceImp setting )
-	{
-		synchronized ( interfaces ) {
-			for (int i=0; i<interfaces.size(); i++) {
-				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.getUsbInfo(i);
-
-				if (setting.getInterfaceNumber() == iface.getInterfaceNumber()) {
-					interfaces.removeUsbInfo( iface );
-					break;
-				}
-			}
-
-			interfaces.addUsbInfo( setting );
-		}
-	}
 
 	//**************************************************************************
 	// Instance variables
