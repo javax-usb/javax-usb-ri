@@ -93,8 +93,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	public void close()
 	{
 		if (isActive() && isOpen()) {
-//FIXME - should abort all submissions?
-//abortAllSubmissions();
+//FIXME - should this throw UsbException instead?
+			abortAllSubmissions();
 			getUsbPipeOsImp().close();
 
 			open = false;
@@ -213,9 +213,6 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 		if (irp.getData().length < (irp.getOffset() + irp.getLength()))
 			throw new UsbException("Data buffer is smaller than offset + length");
 
-		irp.setUsbException( null );
-		irp.setActualLength( 0 );
-		irp.setComplete( false );
 		irp.setCompletion( this );
 	}
 
@@ -281,7 +278,6 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	//**************************************************************************
 	// Instance variables
 
-	private boolean active = false;
 	private boolean open = false;
 
 	private UsbPipeOsImp usbPipeOsImp = null;
@@ -289,5 +285,4 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	private UsbEndpointImp usbEndpointImp = null;
 
 	protected UsbPipeListenerImp listenerImp = new UsbPipeListenerImp();
-	protected int submissionCount = 0;
 }
