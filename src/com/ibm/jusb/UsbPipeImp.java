@@ -21,10 +21,34 @@ import com.ibm.jusb.event.*;
 
 /**
  * UsbPipe platform-independent implementation.
+ * <p>
+ * This must be set up before use.
+ * <ul>
+ * <li>The {@link #getUsbEndpointImp() UsbEndpointImp} must be set either in the
+ *     constructor or by its {@link #setUsbEndpointImp(UsbEndpointImp) setter}.</li>
+ * <li>The {@link #getUsbPipeOsImp() UsbPipeOsImp} may optionally be set either in the
+ *     constructor or by its {@link #setUsbPipeOsImp(UsbPipeOsImp) setter}.
+ *     If not set, it defaults to a {@link com.ibm.jusb.os.DefaultUsbPipeOsImp DefaultUsbPipeOsImp}.</li>
+ * </ul>
  * @author Dan Streetman
  */
 public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 {
+	/** Constructor. */
+	public UsbPipeImp() { }
+
+	/**
+	 * Constructor.
+	 * @param ep The UsbEndpointImp.
+	 */
+	public UsbPipeImp( UsbEndpointImp ep ) { setUsbEndpointImp(ep); }
+
+	/**
+	 * Constructor.
+	 * @param pipe The platform-dependent pipe implementation.
+	 */
+	public UsbPipeImp( UsbPipeOsImp pipe ) { setUsbPipeOsImp(pipe); }
+
 	/**
 	 * Constructor.
 	 * @param ep The UsbEndpointImp.
@@ -39,11 +63,17 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	//**************************************************************************
 	// Public methods
 
-	/** @param the UsbPipeOsImp to use */
-	public void setUsbPipeOsImp( UsbPipeOsImp pipe ) { usbPipeOsImp = pipe; }
-
 	/** @return the UsbPipeOsImp object */
 	public UsbPipeOsImp getUsbPipeOsImp() { return usbPipeOsImp; }
+
+	/** @param the UsbPipeOsImp to use */
+	public void setUsbPipeOsImp( UsbPipeOsImp pipe )
+	{
+		if (null == pipe)
+			usbPipeOsImp = new DefaultUsbPipeOsImp();
+		else
+			usbPipeOsImp = pipe;
+	}
 
 	/** @return if this UsbPipe is active */
 	public boolean isActive() { return getUsbEndpoint().getUsbInterface().isActive(); }
@@ -297,7 +327,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 
 	private boolean open = false;
 
-	private UsbPipeOsImp usbPipeOsImp = null;
+	private UsbPipeOsImp usbPipeOsImp = new DefaultUsbPipeOsImp();
 
 	private UsbEndpointImp usbEndpointImp = null;
 

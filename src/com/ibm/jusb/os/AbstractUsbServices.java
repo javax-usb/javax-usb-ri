@@ -1,4 +1,4 @@
-package com.ibm.jusb;
+package com.ibm.jusb.os;
 
 /**
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
@@ -12,6 +12,7 @@ package com.ibm.jusb;
 import javax.usb.*;
 import javax.usb.event.*;
 
+import com.ibm.jusb.*;
 import com.ibm.jusb.event.*;
 import com.ibm.jusb.util.*;
 

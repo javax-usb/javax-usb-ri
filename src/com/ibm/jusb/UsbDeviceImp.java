@@ -26,10 +26,12 @@ import com.ibm.jusb.event.*;
  * This must be set up before use and/or connection to the topology tree.
  * <ul>
  * <li>The DeviceDescriptor must be set, either in the constructor or by its {@link #setDeviceDescriptor(DeviceDescriptor) setter}.</li>
- * <li>The UsbDeviceOsImp must be set, either in the constructor or by its {@link #setUsbDeviceOsImp(UsbDeviceOsImp) setter}.</li>
+ * <li>The UsbDeviceOsImp may optionally be set, either in the constructor or
+ *     by its {@link #setUsbDeviceOsImp(UsbDeviceOsImp) setter}.
+ *     If not set, it defaults to a {@link com.ibm.jusb.os.DefaultUsbDeviceOsImp DefaultUsbDeviceOsImp}.</li>
  * <li>The speed must be set by its {@link #setSpeed(Object) setter}.</li>
  * <li>All UsbConfigImps must be {@link #addUsbConfigImp(UsbConfigImp) added}.</li>
- * <li>The active config number must be {@link #setActiveUsbConfigNumber(byte) set}.</li>
+ * <li>The active config number must be {@link #setActiveUsbConfigNumber(byte) set}, if this device {@link #isConfigured() is configured}.</li>
  * </ul>
  * After setup, this may be connected to the topology tree by using the {@link #connect(UsbHubImp,byte) connect} method.
  * If the connect method is not used, there are additional steps:
@@ -37,14 +39,25 @@ import com.ibm.jusb.event.*;
  * <li>Set the parent UsbPortImp by the {@link #setParentUsbPortImp(UsbPortImp) setter}.</li>
  * <li>Set this on the UsbPortImp by its {@link com.ibm.jusb.UsbPortImp#attachUsbDeviceImp(UsbDeviceImp) setter}.</li>
  * </ul>
- * If the parent UsbHubImp is not large enough, it can be {@link com.ibm.jusb.UsbHubImp@resize(int) resized}.  This should
- * only be necessary for root hubs, or more likely the virtual root hub.  Alternately, this may be added using the UsbHubImp's
- * {@link com.ibm.jusb.UsbHubImp@addUsbDeviceImp(UsbDeviceImp,byte) addUsbDeviceImp} method, which resizes if needed and
- * sets up the UsbPortImp.
  * @author Dan Streetman
  */
 public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 {
+	/** Constructor. */
+	public UsbDeviceImp() { }
+
+	/**
+	 * Constructor.
+	 * @param desc This device's Descriptor.
+	 */
+	public UsbDeviceImp(DeviceDescriptor desc) { setDeviceDescriptor(desc); }
+
+	/**
+	 * Constructor.
+	 * @param device The UsbDeviceOsImp.
+	 */
+	public UsbDeviceImp(UsbDeviceOsImp device) { setUsbDeviceOsImp(device); }
+
 	/**
 	 * Constructor.
 	 * @param desc This device's Descriptor.
@@ -63,7 +76,13 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	public UsbDeviceOsImp getUsbDeviceOsImp() { return usbDeviceOsImp; }
 
 	/** @param the UsbDeviceOsImp to use */
-	public void setUsbDeviceOsImp( UsbDeviceOsImp deviceImp ) { usbDeviceOsImp = deviceImp; }
+	public void setUsbDeviceOsImp( UsbDeviceOsImp deviceImp )
+	{
+		if (null == deviceImp)
+			usbDeviceOsImp = new DefaultUsbDeviceOsImp();
+		else
+			usbDeviceOsImp = deviceImp;
+	}
 
 	/** @return The port that this device is attached to */
 	public UsbPort getParentUsbPort() { return getParentUsbPortImp(); }
@@ -499,7 +518,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	//**************************************************************************
 	// Instance variables
 
-	private UsbDeviceOsImp usbDeviceOsImp = null;
+	private UsbDeviceOsImp usbDeviceOsImp = new DefaultUsbDeviceOsImp();
 
 	private Object submitLock = new Object();
 

@@ -27,8 +27,7 @@ import com.ibm.jusb.util.*;
  * <li>The InterfaceDescriptor must be set either in the constructor or by its {@link #setInterfaceDescriptor(InterfaceDescriptor) setter}.</li>
  * <li>The UsbInterfaceOsImp may optionally be set either in the constructor or by its
  *     {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) setter}.
- *     If the platform implementation does not provide any interface claiming ability,
- *     it may leave the default setting which manages in-Java claims and releases.</li>
+ *     If not set, it defaults to a {@link com.ibm.jusb.os.DefaultUsbInterfaceOsImp DefaultUsbInterfaceOsImp}.</li>
  * <li>If the active alternate setting number is not the first added to the parent UsbConfigImp either
  *     {@link com.ibm.jusb.UsbConfigImp#addUsbInterfaceImp(UsbInterfaceImp) directly} or by
  *     {@link #setUsbConfigImp(UsbConfigImp) setUsbConfigImp}, it must be
@@ -44,8 +43,8 @@ public class UsbInterfaceImp implements UsbInterface
 {
 	/**
 	 * Constructor.
-	 * @param config The parent config.  If this is not null, the InterfaceDescriptor <i>cannot</i> be null.
-	 * @param desc This interface's descriptor.
+	 * @param config The parent config.  If this is not null, the InterfaceDescriptor <strong>cannot</strong> be null.
+	 * @param desc This interface's descriptor.  This <strong>cannot</strong> be null if the parent config is not null.
 	 */
 	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc )
 	{
@@ -56,8 +55,8 @@ public class UsbInterfaceImp implements UsbInterface
 	/**
 	 * Constructor.
 	 * @param config The parent config.  If this is not null, the InterfaceDescriptor <i>cannot</i> be null.
-	 * @param desc This interface's descriptor.
-	 * @param osImp The UsbInterfaceOsImp.  Do not set this to null, use the other constructor.
+	 * @param desc This interface's descriptor.  This <strong>cannot</strong> be null if the parent config is not null.
+	 * @param osImp The UsbInterfaceOsImp.
 	 */
 	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc, UsbInterfaceOsImp osImp )
 	{
@@ -289,7 +288,13 @@ public class UsbInterfaceImp implements UsbInterface
 	public UsbInterfaceOsImp getUsbInterfaceOsImp() { return usbInterfaceOsImp; }
 
 	/** @param the UsbInterfaceOsImp to use */
-	public void setUsbInterfaceOsImp( UsbInterfaceOsImp iface ) { usbInterfaceOsImp = iface; }
+	public void setUsbInterfaceOsImp( UsbInterfaceOsImp iface )
+	{
+		if (null == iface)
+			usbInterfaceOsImp = new DefaultUsbInterfaceOsImp();
+		else
+			usbInterfaceOsImp = iface;
+	}
 
 	/** @param desc the new interface descriptor */
 	public void setInterfaceDescriptor( InterfaceDescriptor desc ) { interfaceDescriptor = desc; }
