@@ -76,34 +76,81 @@ public class UsbInterfacePanel extends UsbPanel
 	{
 		claimButton.addActionListener(claimListener);
 		releaseButton.addActionListener(releaseListener);
+		useUsbInterfacePolicyBox.addActionListener(usePolicyListener);
 
+		claimPanel.add(useUsbInterfacePolicyBox);
 		claimPanel.add(claimButton);
 		claimPanel.add(releaseButton);
 
+		boolean b = useUsbInterfacePolicyBox.isSelected();
+		allowReleaseBox.setEnabled(b);
+		allowOpenBox.setEnabled(b);
+		forceClaimBox.setEnabled(b);
+		policyPanel.add(allowReleaseBox);
+		policyPanel.add(allowOpenBox);
+		policyPanel.add(forceClaimBox);
+
 		add(claimPanel);
+		add(policyPanel);
+	}
+
+	protected void claim()
+	{
+		try {
+			if (useUsbInterfacePolicyBox.isSelected()) {
+				final boolean allowRelease = allowReleaseBox.isSelected();
+				final boolean allowOpen = allowOpenBox.isSelected();
+				final boolean forceClaim = forceClaimBox.isSelected();
+				UsbInterfacePolicy policy = new UsbInterfacePolicy() {
+						public boolean release(UsbInterface uI, Object o) { return allowRelease; }
+						public boolean open(UsbPipe uP, Object o) { return allowOpen; }
+						public boolean forceClaim(UsbInterface uI) { return forceClaim; }
+					};
+				usbInterface.claim(policy);
+			} else {
+				usbInterface.claim();
+			}
+		} catch ( UsbException uE ) {
+			JOptionPane.showMessageDialog(null, "Could not claim UsbInterface : " + uE.getMessage());
+		} catch ( UsbNotActiveException unaE ) {
+			JOptionPane.showMessageDialog(null, "Could not claim UsbInterface : " + unaE.getMessage());
+		}
+		refresh();
+	}
+
+	protected void release()
+	{
+		try { usbInterface.release(); }
+		catch ( UsbException uE ) { JOptionPane.showMessageDialog(null, "Could not release UsbInterface : " + uE.getMessage()); }
+		catch ( UsbNotActiveException unaE ) { JOptionPane.showMessageDialog(null, "Could not release UsbInterface : " + unaE.getMessage()); }
+		refresh();
 	}
 
 	private UsbInterface usbInterface = null;
 
 	private JPanel claimPanel = new JPanel();
 	private JButton claimButton = new JButton("Claim");
-	private ActionListener claimListener = new ActionListener() {
-			public void actionPerformed(ActionEvent aE)
-			{
-				try { usbInterface.claim(); }
-				catch ( UsbException uE ) { JOptionPane.showMessageDialog(null, "Could not claim UsbInterface : " + uE.getMessage()); }
-				catch ( UsbNotActiveException unaE ) { JOptionPane.showMessageDialog(null, "Could not claim UsbInterface : " + unaE.getMessage()); }
-				refresh();
-			}
-		};
+	private ActionListener claimListener = new ActionListener()
+	{ public void actionPerformed(ActionEvent aE) { claim(); } };
+
 	private JButton releaseButton = new JButton("Release");
-	private ActionListener releaseListener = new ActionListener() {
+	private ActionListener releaseListener = new ActionListener()
+	{ public void actionPerformed(ActionEvent aE) { release(); } };
+
+	private JPanel policyPanel = new JPanel();
+	private JCheckBox useUsbInterfacePolicyBox = new JCheckBox("Use UsbInterfacePolicy", false);
+	private ActionListener usePolicyListener = new ActionListener() {
 			public void actionPerformed(ActionEvent aE)
 			{
-				try { usbInterface.release(); }
-				catch ( UsbException uE ) { JOptionPane.showMessageDialog(null, "Could not release UsbInterface : " + uE.getMessage()); }
-				catch ( UsbNotActiveException unaE ) { JOptionPane.showMessageDialog(null, "Could not release UsbInterface : " + unaE.getMessage()); }
-				refresh();
+				boolean b = useUsbInterfacePolicyBox.isSelected();
+				allowReleaseBox.setEnabled(b);
+				allowOpenBox.setEnabled(b);
+				forceClaimBox.setEnabled(b);
 			}
 		};
+
+	private JCheckBox allowReleaseBox = new JCheckBox("allow release()", true);
+	private JCheckBox allowOpenBox = new JCheckBox("allow open()", true);
+	private JCheckBox forceClaimBox = new JCheckBox("forceClaim()", false);
+
 }
