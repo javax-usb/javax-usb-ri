@@ -100,7 +100,10 @@ public class UsbInterfaceImp implements UsbInterface
 	{
 		checkSettingActive();
 
-//FIXME - need to check for open pipes
+		for (int i=0; i<endpoints.size(); i++)
+			if (((UsbEndpoint)endpoints.get(i)).getUsbPipe().isOpen())
+				throw new UsbException("Cannot release UsbInterface with any open UsbPipe");
+
 		getUsbInterfaceOsImp().release();
 
 		setClaimed(false);
@@ -307,6 +310,38 @@ public class UsbInterfaceImp implements UsbInterface
 	{
 		if (!endpoints.contains(ep))
 			endpoints.add( ep );
+	}
+
+	/**
+	 * Compare this to an Object.
+	 * @param object The Object to compare to.
+	 * @return If this is equal to the Object.
+	 */
+	public boolean equals(Object object)
+	{
+		if (null == object)
+			return false;
+
+		UsbInterfaceImp iface = null;
+
+		try { iface = (UsbInterfaceImp)object; }
+		catch ( ClassCastException ccE ) { return false; }
+
+		if (!getInterfaceDescriptor().equals(iface.getInterfaceDescriptor()))
+			return false;
+
+		List eps = getUsbEndpoints();
+
+		for (int i=0; i<eps.size(); i++) {
+			UsbEndpointImp usbEndpointImp = (UsbEndpointImp)eps.get(i);
+			byte epAddress = usbEndpointImp.getEndpointDescriptor().bEndpointAddress();
+			if (!iface.containsUsbEndpoint(epAddress))
+				return false;
+			else if (!usbEndpointImp.equals(iface.getUsbEndpoint(epAddress)))
+				return false;
+		}
+
+		return false;
 	}
 
 	//**************************************************************************
