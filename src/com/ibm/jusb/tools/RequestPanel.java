@@ -87,8 +87,8 @@ public class RequestPanel extends JPanel implements Cloneable
 		RequestImp requestImp = new RequestImp(null);
 		requestImp.setRequestType((byte)Integer.decode(bmRequestTypeField.getText()).intValue());
 		requestImp.setRequestCode((byte)Integer.decode(bRequestField.getText()).intValue());
-		requestImp.setValue((byte)Integer.decode(wValueField.getText()).intValue());
-		requestImp.setIndex((byte)Integer.decode(wIndexField.getText()).intValue());
+		requestImp.setValue((short)Integer.decode(wValueField.getText()).intValue());
+		requestImp.setIndex((short)Integer.decode(wIndexField.getText()).intValue());
 		requestImp.setData(getData());
 
 		if (syncCheckBox.isSelected())
