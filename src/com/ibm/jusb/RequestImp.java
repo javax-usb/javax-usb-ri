@@ -62,18 +62,6 @@ public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmiss
 	/** @param device The UsbDeviceImp */
 	public void setUsbDeviceImp(UsbDeviceImp device) { usbDeviceImp = device; }
 
-	/** @return If this request is a SET_CONFIGURATION request */
-	public boolean isSetConfigurationRequest()
-	{
-		return REQUESTTYPE_SET_CONFIGURATION == getRequestType() && REQUEST_SET_CONFIGURATION == getRequestCode();
-	}
-
-	/** @return If this request is a SET_INTERFACE request */
-	public boolean isSetInterfaceRequest()
-	{
-		return REQUESTTYPE_SET_INTERFACE == getRequestType() && REQUEST_SET_INTERFACE == getRequestCode();
-	}
-
 	/** @return the bmRequestType bitmap byte for this Request */
 	public byte getRequestType() { return bmRequestType; }
 
@@ -219,6 +207,35 @@ public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmiss
 	}
 
 	public byte[] getBytes() { return bytes; }
+
+	/** @return If this request is a SET_CONFIGURATION request */
+	public boolean isSetConfigurationRequest()
+	{ return REQUESTTYPE_SET_CONFIGURATION == getRequestType() && REQUEST_SET_CONFIGURATION == getRequestCode(); }
+
+	/** @return If this request is a SET_INTERFACE request */
+	public boolean isSetInterfaceRequest()
+	{ return REQUESTTYPE_SET_INTERFACE == getRequestType() && REQUEST_SET_INTERFACE == getRequestCode(); }
+
+	/**
+	 * If this request is an Interface request.
+	 * <p>
+	 * The USB specification is unclear on this; depending on the Type
+	 * setting of the bmRequestType, the Recipient setting of the bmRequestType
+	 * may not be valid.  This implementation assumes only Standard and Class
+	 * Type requests are applicable, not Vendor or Reserved Type requests.
+	 * @return If this request is an Interface request
+	 */
+	public boolean isInterfaceRequest()
+	{
+		boolean standardRequest =
+			RequestConst.REQUESTTYPE_TYPE_STANDARD == (RequestConst.REQUESTTYPE_TYPE_MASK & getRequestType());
+		boolean classRequest =
+			RequestConst.REQUESTTYPE_TYPE_CLASS == (RequestConst.REQUESTTYPE_TYPE_MASK & getRequestType());
+		boolean ifaceRequest =
+			RequestConst.REQUESTTYPE_RECIPIENT_INTERFACE == (RequestConst.REQUESTTYPE_RECIPIENT_MASK & getRequestType());
+
+		return (standardRequest || classRequest) && ifaceRequest;
+	}
 
 	//**************************************************************************
 	// Protected methods
