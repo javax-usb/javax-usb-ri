@@ -311,23 +311,6 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	// HubClassOperations
 
 	/**
-	 * Used to disable to clear or disable a specific feature
-	 * @param bmRequestType the request type bitmap
-	 * @param wValue the feature value selector
-	 * @param wIndex the port number (1 based)
-	 * @return a Request object that is created for this submission
-	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
-	 */
-	public Request clearFeature( byte bmRequestType, short wValue, short wIndex ) throws RequestException
-	{
-		Request request = getRequestFactory().createClearFeatureRequest( bmRequestType, wValue, wIndex );
-
-		syncSubmit( request );
-
-		return request;
-	}
-
-	/**
 	 * Returns the state of the hub
 	 * @param wIndex the port number (1 based)
 	 * @param data byte array of size 1 for the port bus state
@@ -337,73 +320,6 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	public Request getState( short wIndex, byte[] data ) throws RequestException
 	{
 		Request request = getRequestFactory().createGetStateRequest( wIndex, data );
-
-		syncSubmit( request );
-
-		return request;
-	}
-
-	/**
-	 * Returns the specified descriptor if it exists
-	 * @param wValue the descriptor type and index
-	 * @param wIndex zero or the language ID for String descriptor
-	 * @param data a byte array of the correct length to contain the descriptor data bytes
-	 * @return a Request object that is created for this submission
-	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
-	 */
-	public Request getDescriptor( short wValue, short wIndex, byte[] data ) throws RequestException
-	{
-		Request request = getRequestFactory().createGetDescriptorRequest( wValue, wIndex, data );
-
-		syncSubmit( request );
-
-		return request;
-	}
-
-	/**
-	 * Returns the status for the specified recipient
-	 * @param bmRequestType the request type bitmap
-	 * @param wIndex 0 for GetHubStatus and the port number for GetPortStatus
-	 * @param data a byte[] of size 4 to contain the hub status
-	 * @return a Request object that is created for this submission
-	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
-	 */
-	public Request getStatus( byte bmRequestType, short wIndex, byte[] data ) throws RequestException
-	{
-		Request request = getRequestFactory().createGetStatusRequest( bmRequestType, wIndex, data );
-
-		syncSubmit( request );
-
-		return request;
-	}
-
-	/**
-	 * Update existing descriptor or add new descriptor
-	 * @param wValue the descriptor type and index
-	 * @param wIndex the language ID if the descriptor is a String descriptor or zero
-	 * @return a Request object that is created for this submission
-	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
-	 */
-	public Request setDescriptor( short wValue, short wIndex, byte[] data ) throws RequestException
-	{
-		Request request = getRequestFactory().createSetDescriptorRequest( wValue, wIndex, data );
-
-		syncSubmit( request );
-
-		return request;
-	}
-
-	/**
-	 * Sets or enable a specific feature
-	 * @param bmRequestType the request type bitmap
-	 * @param wValue the feature selector value
-	 * @param wIndex zero or port number (1 based)
-	 * @return a Request object that is created for this submission
-	 * @exception javax.usb.RequestException if something goes wrong submitting the request for this operation
-	 */
-	public Request setFeature( byte bmRequestType, short wValue, short wIndex ) throws RequestException
-	{
-		Request request = getRequestFactory().createSetFeatureRequest( bmRequestType, wValue, wIndex );
 
 		syncSubmit( request );
 
@@ -420,6 +336,6 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 	// Instance variables
 
 	protected UsbDeviceImp usbDeviceImp = null;
-	protected RequestFactory requestFactory = new DefaultRequestFactory.java
+	protected RequestFactory requestFactory = new DefaultRequestFactory();
 
 }

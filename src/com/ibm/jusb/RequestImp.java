@@ -106,17 +106,35 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 		requestFactoryImp.recycle(this);
 	}
 
+	/** @return The number */
+	public long getNumber() { return number; }
+
+	/** @param num The Number */
+	public void setNumber(long num) { number = num; }
+
+	/** @return The UsbException */
+	public UsbException getUsbException() { return usbException; }
+
+	/** @param uE The UsbException */
+	public void setUsbException( UsbException uE ) { usbException = uE; }
+
+	/** @return If in UsbException */
+	public boolean isInUsbException() { return null != usbException; }
+
 	//**************************************************************************
 	// Instance variables
 
-	protected byte bmRequestType = 0x00;
-	protected byte bRequest = 0x00;
-	protected short wValue = 0x0000;
-	protected short wIndex = 0x0000;
-	protected byte[] data = new byte[ 0 ];
-	protected int dataLength = 0;
+	private byte bmRequestType = 0x00;
+	private byte bRequest = 0x00;
+	private short wValue = 0x0000;
+	private short wIndex = 0x0000;
+	private byte[] data = new byte[ 0 ];
+	private int dataLength = 0;
 
-	protected RequestFactoryImp requestFactoryImp = null;
+	private RequestFactoryImp requestFactoryImp = null;
+
+	private long number = 0;
+	private UsbException usbException = null;
 
 	//**************************************************************************
 	// Class constants

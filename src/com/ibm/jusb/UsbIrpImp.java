@@ -22,23 +22,8 @@ import com.ibm.jusb.util.*;
  */
 public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 {
-	/**
-	 * Constructor
-	 * @param factory the factory that created this
-	 */
-	public UsbIrpImp( RecycleFactory recycleFactory )
-	{
-		factory = recycleFactory;
-	}
-
 	//*************************************************************************
 	// Public UsbIrp methods
-
-	/**
-	 * Accept a UsbIrpImpVisitor
-	 * @param the UsbIrpImpVisitor to accept
-	 */
-	public void accept( UsbIrpImpVisitor visitor ) { visitor.visitUsbIrpImp( this ); }
 
 	/**
 	 * @return a unique number for this submission.
@@ -146,13 +131,7 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	 * <p>
 	 * This should be called when the UsbIrpImp is no longer needed
 	 */
-	public void recycle()
-	{
-		if (isActive())
-			throw new UsbRuntimeException( "You can't recycle an active UsbIrp!" );
-
-		factory.recycle( this );
-	}
+	public void recycle() { }
 
 	//*************************************************************************
 	// Public implementation-specific methods
@@ -217,8 +196,6 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	private boolean acceptShortPacket = DEFAULT_ACCEPT_SHORT_PACKET;
 	private int dataLength = DEFAULT_DATA_LENGTH;
 	private UsbException usbException = DEFAULT_USB_EXCEPTION;
-
-	private RecycleFactory factory = null;
 
 	//*************************************************************************
 	// Class constants

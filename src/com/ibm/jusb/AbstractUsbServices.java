@@ -25,121 +25,31 @@ import com.ibm.jusb.util.*;
  */
 public abstract class AbstractUsbServices extends Object implements UsbServices
 {
-    //-------------------------------------------------------------------------
-    // Public ctor
-    //
-
-    /** Creates a default UsbServices with default TaskScheduler */
-    public AbstractUsbServices() { this( new FifoScheduler() ); }
-
-    /** 
-     * Creates a UsbServices using the TaskScheduler passed
-     * @param eventTaskScheduler the TaskScheduler for the TopologyHelper
-     */
-    public AbstractUsbServices( TaskScheduler eventTaskScheduler ) 
-    { 
-		if (null != abstractUsbServices)
-			throw new UsbRuntimeException( "Cannot create multiple instances of UsbServices" );
-
-		abstractUsbServices = this;
-        this.eventTaskScheduler = eventTaskScheduler;
-        topologyHelper = new UsbTopologyServicesHelper( this, eventTaskScheduler  );  
-    }
-
-    //-------------------------------------------------------------------------
-    // Public abstract methods
-    //
-
-	/**
-	 * @return a UsbInfoIterator of UsbDevice in breadth-first search (BFS) order
-	 * @param usbHub the UsbHub object whose children will be queried
-	 * <i>NOTE: since UsbHub are UsbDevice then they are also included in return list</i>
-	 */
-	public UsbInfoIterator bfsUsbDevices( UsbHub usbHub )
-	{
-		return getUsbServicesHelper().bfsUsbDevices( usbHub );
-	}
-
-	/**
-	 * @return a UsbInfoIterator of UsbDevice in depth-first search (DFS) order
-	 * @param usbHub the UsbHub object whose children will be queried
-	 * <i>NOTE: since UsbHub are UsbDevice then they are also included in return list</i>
-	 */
-	public UsbInfoIterator dfsUsbDevices( UsbHub usbHub )
-	{
-		return getUsbServicesHelper().dfsUsbDevices( usbHub );
-	}
-
-    //-------------------------------------------------------------------------
-    // Public abstract methods
-    //
-
     /**
-     * Accepts a DescriptorVisitor objects
-     * @param visitor the OSServicesVisitor object
+     * Adds a new UsbServicesListener object to receive events when the USB host
+     * has changes.  For instance a new device is plugged in or unplugged.
+     * @param l the UsbServicesListener to register     
      */
-    public abstract void accept( UsbServicesVisitor visitor );
-
-	/** @return the UsbServices.Helper object */
-	public abstract AbstractUsbServices.AbstractHelper getHelper();
-
-    //-------------------------------------------------------------------------
-    // Public registration methods
-    //
+    public synchronized void addUsbServicesListener( UsbServicesListener l ) { getTopologyHelper().addUsbServicesListener( l ); }
 
     /**
      * Adds a new UsbServicesListener object to receive events when the USB host
      * has changes.  For instance a new device is plugged in or unplugged.
      * @param l the UsbServicesListener to register     
      */
-    public synchronized void addUsbServicesListener( UsbServicesListener l )
-    {
-        getTopologyHelper().addUsbServicesListener( l );
-    }
+    public synchronized void removeUsbServicesListener( UsbServicesListener l ) { getTopologyHelper().removeUsbServicesListener( l ); }
 
-    /**
-     * Adds a new UsbServicesListener object to receive events when the USB host
-     * has changes.  For instance a new device is plugged in or unplugged.
-     * @param l the UsbServicesListener to register     
-     */
-    public synchronized void removeUsbServicesListener( UsbServicesListener l )
-    {
-        getTopologyHelper().removeUsbServicesListener( l );
-    }
-
-	/**
-	 * @return the RequestFactory used to create Request object for the USB operations
-	 * @see javax.usb.Request
-	 * @see javax.usb.StandardOperations
-	 */ 
-	public RequestFactory getRequestFactory()
-	{
-		if( requestFactory == null )
-			requestFactory = new DefaultRequestFactory();
-
-		return requestFactory;
-	}
+	/** @return the RequestFactory used to create Request object for the USB operations */ 
+	public RequestFactory getRequestFactory() { return requestFactory; }
 
 	/** @return a new instance of a RequestFactory */
-	public RequestFactory getNewRequestFactory()
-	{
-		return new DefaultRequestFactory();
-	}
+	public RequestFactory getNewRequestFactory() { return new RequestImpFactory(); }
 
 	/** @return the current UsbIrpFactory being used */
-	public UsbIrpFactory getUsbIrpFactory()
-	{
-		if ( null == usbIrpFactory )
-			usbIrpFactory = new DefaultUsbIrpFactory();
-
-		return usbIrpFactory;
-	}
+	public UsbIrpFactory getUsbIrpFactory() { return usbIrpFactory; }
 
 	/** @return a new instance of a UsbIrpFactory */
-	public UsbIrpFactory getNewUsbIrpFactory()
-	{
-		return new DefaultUsbIrpFactory();
-	}
+	public UsbIrpFactory getNewUsbIrpFactory() { return new UsbIrpImpFactory(); }
 
     //-------------------------------------------------------------------------
     // Protected methods
@@ -148,79 +58,106 @@ public abstract class AbstractUsbServices extends Object implements UsbServices
     /** @return the UsbTopologyServicesHelper object */
     protected UsbTopologyServicesHelper getTopologyHelper() { return topologyHelper; }
 
-    /** @return the TaskScheduler object */
-    protected TaskScheduler getEventTaskScheduler() { return eventTaskScheduler; }
-
-	/** @return a lazily created UsbServicesHelper used for the BFS/DFS methods */
-	protected UsbServicesHelper getUsbServicesHelper()
-	{
-		if( usbServicesHelper == null )
-			usbServicesHelper = new UsbServicesHelper();
-
-		return usbServicesHelper;
-	}
-
-	//-------------------------------------------------------------------------
-	// Package methods
-	//
-
-	/** @return an instance of this class */
-	static AbstractUsbServices getInstance()
-	{
-		return abstractUsbServices;
-	}
-
     //-------------------------------------------------------------------------
-    // Inner interfaces
+    // Public methods
     //
 
 	/**
-	 * Defines a helper interface for all UsbServices implementation "communication"
-	 * @author E. Michael Maximilien
+	 * Return all UsbDevices under the specificed UsbHub (including itself) in BFS order.
+	 * <p>
+	 * NOTE: <i>since UsbHub are UsbDevice then they are also included in return list.</i>
+	 * @return a UsbInfoListIterator of UsbDevice in breadth-first search (BFS) order.
+	 * @param usbHub the UsbHub object whose children will be queried.
 	 */
-	public abstract class AbstractHelper extends Object
+	public UsbInfoIterator bfsUsbDevices( UsbHub usbHub )
 	{
-		//---------------------------------------------------------------------
-		// Public methods
-		//
+		UsbInfoList usbDevices = new DefaultUsbInfoList();
+		UsbInfoList list;
+		int depth = 0;
 
-		/** @return the current UsbInfoFactory being used */
-		public UsbInfoFactory getUsbInfoFactory() { return UsbUtility.getInstance().getUsbInfoFactory(); }
+		do {
+			list = bfs( usbHub, depth++ );
+			usbDevices.addUsbInfoList( list );
+		} while ( !list.isEmpty() );
 
-		/** @return the current DescriptorFactory being used */
-		public DescriptorFactory getDescriptorFactory() { return UsbUtility.getInstance().getDescriptorFactory(); }
+		return usbDevices.usbInfoListIterator();
+	}
 
-		/** @return the current UsbIrpImpFactory being used */
-		public RecycleFactory getUsbIrpImpFactory() { return UsbUtility.getInstance().getUsbIrpImpFactory(); }
+	/**
+	 * Return all UsbDevices under the specificed UsbHub (including itself) in DFS order.
+	 * <p>
+	 * NOTE: <i>since UsbHub are UsbDevice then they are also included in return list.</i>
+	 * @return a UsbInfoListIterator of UsbDevice in depth-first search (DFS) order.
+	 * @param usbHub the UsbHub object whose children will be queried.
+	 */
+	public UsbInfoIterator dfsUsbDevices( UsbHub usbHub )
+	{
+		return dfs( usbHub ).usbInfoListIterator();
+	}
 
-		/** @return the current UsbCompositeIrpImpFactory being used */
-		public RecycleFactory getUsbCompositeIrpImpFactory() { return UsbUtility.getInstance().getUsbCompositeIrpImpFactory(); }
+	/**
+	 * Recursive DFS method.
+	 * @param usbHub the UsbHub to get UsbDevices from.
+	 * @return a UsbInfoList of all UsbDevices 
+	 */
+	protected UsbInfoList dfs( UsbHub usbHub )
+	{
+		UsbInfoList dfsDevices = new DefaultUsbInfoList();
 
-		//---------------------------------------------------------------------
-		// Abstract public methods
-		//
+		dfsDevices.addUsbInfo( usbHub );
 
-		/** @return the current UsbPipeImpFactory being used */
-		public abstract UsbPipeImpFactory getUsbPipeImpFactory();
+		UsbInfoListIterator usbDevices = usbHub.getAttachedUsbDevices();
 
-		/** @return the current UsbInfoImpFactory being used */
-		public abstract UsbInfoImpFactory getUsbInfoImpFactory();
+		while ( usbDevices.hasNext() ) {
+			UsbDevice device = (UsbDevice)usbDevices.nextUsbInfo();
 
+			if ( device.isUsbHub() )
+				dfsDevices.addUsbInfoList( dfs( (UsbHub)device ) );
+			else
+				dfsDevices.addUsbInfo( device );
+		}
+
+		return dfsDevices;
+	}
+
+	/**
+	 * Recursive BFS method.
+	 * <p>
+	 * This recurses until it reaches the specified depth (the depth is 0)
+	 * or it runs out of UsbHubs.  A BFS list is returned of all UsbDevices
+	 * at the specified depth.
+	 * @param usbHub the UsbHub to get UsbDevices from.
+	 * @param depth the depth to return UsbDevices at.
+	 * @return a UsbInfoList of all devices at the requested depth under the UsbHub.
+	 */
+	protected UsbInfoList bfs( UsbHub usbHub, int depth )
+	{
+		UsbInfoList bfsDevices = new DefaultUsbInfoList();
+
+		if ( 0 == depth ) {
+			bfsDevices.addUsbInfo( usbHub );
+			return bfsDevices;
+		}
+
+		UsbInfoListIterator usbDevices = usbHub.getAttachedUsbDevices();
+
+		while (usbDevices.hasNext())
+		{
+			UsbDevice device = (UsbDevice)usbDevices.nextUsbInfo();
+
+			if ( device.isUsbHub() )
+				bfsDevices.addUsbInfoList( bfs( (UsbHub)device, depth-1 ) );
+		}
+
+		return bfsDevices;
 	}
 
     //-------------------------------------------------------------------------
     // Instance variables
     //
 
-    private TaskScheduler eventTaskScheduler = null;
-    private UsbTopologyServicesHelper topologyHelper = null;
-	private RequestFactory requestFactory = null;
-	private UsbIrpFactory usbIrpFactory = null;
-	private UsbServicesHelper usbServicesHelper = null;
+    private UsbTopologyServicesHelper topologyHelper = new UsbTopologyServicesHelper( this, new FifoScheduler() );
+	private RequestFactory requestFactory = new RequestImpFactory();
+	private UsbIrpFactory usbIrpFactory = new UsbIrpImpFactory();
 
-	//-------------------------------------------------------------------------
-	// Class variables
-	//
-
-	private static AbstractUsbServices abstractUsbServices = null;
 }

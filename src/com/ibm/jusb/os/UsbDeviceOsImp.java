@@ -9,6 +9,10 @@ package com.ibm.jusb.os;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.util.*;
+
+import javax.usb.*;
+
 import com.ibm.jusb.*;
 
 /**

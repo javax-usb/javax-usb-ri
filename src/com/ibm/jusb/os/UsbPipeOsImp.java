@@ -9,6 +9,8 @@ package com.ibm.jusb.os;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.util.*;
+
 import javax.usb.*;
 
 /**
@@ -63,21 +65,6 @@ public interface UsbPipeOsImp
     public void syncSubmit( UsbIrpImp irp ) throws UsbException;
 
 	/**
-	 * Asynchronously submits this UsbIrpImp to the platform implementation.
-	 * <p>
-	 * Since this is an asynchronous call, the platform implementation should
-	 * notify the UsbPipeAbstraction upon completion of the UsbIrpImp by
-	 * calling
-	 * {@link com.ibm.jusb.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()}
-	 * <i>only if</i> the platform 'accepted' the submission by successfully
-	 * returning from this method.  If the platform throws a UsbException from this
-	 * method, it should <i>not</i> also call UsbIrpImpCompleted().
-	 * @param irp the UsbIrpImp to use for this submission
-     * @exception javax.usb.UsbException If the initial submission was unsuccessful.
-	 */
-    public void asyncSubmit( UsbIrpImp irp ) throws UsbException;
-
-	/**
 	 * Synchronously submits a List of UsbIrpImps to the platform implementation.
 	 * <p>
 	 * The platform implementation does not need to notify the UsbPipeAbstraction
@@ -95,6 +82,21 @@ public interface UsbPipeOsImp
     public void syncSubmit( List list ) throws UsbException;
 
 	/**
+	 * Asynchronously submits this UsbIrpImp to the platform implementation.
+	 * <p>
+	 * Since this is an asynchronous call, the platform implementation should
+	 * notify the UsbPipeAbstraction upon completion of the UsbIrpImp by
+	 * calling
+	 * {@link com.ibm.jusb.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()}
+	 * <i>only if</i> the platform 'accepted' the submission by successfully
+	 * returning from this method.  If the platform throws a UsbException from this
+	 * method, it should <i>not</i> also call UsbIrpImpCompleted().
+	 * @param irp the UsbIrpImp to use for this submission
+     * @exception javax.usb.UsbException If the initial submission was unsuccessful.
+	 */
+    public void asyncSubmit( UsbIrpImp irp ) throws UsbException;
+
+	/**
 	 * Asynchronously submits a List of UsbIrpImps to the platform implementation.
 	 * <p>
 	 * Since this is an asynchronous call, the platform implementation should
@@ -110,7 +112,7 @@ public interface UsbPipeOsImp
 	 * @param irp the UsbIrpImp to use for this submission
      * @exception javax.usb.UsbException If there was a problem with one or more UsbIrpImps <i>before platform submission</i>.
 	 */
-    public void asyncSubmit( UsbIrpImp irp ) throws UsbException;
+    public void asyncSubmit( List list ) throws UsbException;
 
 	/**
 	 * Stop all submissions in progress.
