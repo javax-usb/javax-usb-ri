@@ -104,44 +104,46 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Opens this UsbPipe using a null key.
 	 */
-	public void open() throws UsbException { open(null); }
+	public void open() throws UsbPolicyDenied,UsbException,UsbNotActiveException,UsbNotClaimedException { open(null); }
 
 	/**
 	 * Opens this UsbPipe using the specified key.
 	 * @param key The key to pass to the UsbInterfacePolicy.
 	 */
-	public void open(Object key) throws UsbException
+	public void open(Object key) throws UsbPolicyDenied,UsbException,UsbNotActiveException,UsbNotClaimedException
 	{
 		checkActive();
 
-		if (!getUsbEndpointImp().getUsbInterfaceImp().hasUsbInterfacePolicy())
-			throw new UsbException("Cannot open UsbPipe on unclaimed UsbInterface");
+		if (!getUsbEndpointImp().getUsbInterfaceImp().hasUsbInterfacePolicy()) {
+			String i = UsbUtil.toHexString(getUsbEndpointImp().getUsbInterfaceImp().getUsbInterfaceDescriptor().bInterfaceNumber());
+			String a = UsbUtil.toHexString(getUsbEndpointImp().getUsbInterfaceImp().getUsbInterfaceDescriptor().bAlternateSetting());
+			throw new UsbNotClaimedException("UsbInterface 0x" + i + " setting 0x" + a + " is not claimed");
+		}
 
 		if (!getUsbEndpointImp().getUsbInterfaceImp().getUsbInterfacePolicy().open(this, key))
 			throw new UsbPolicyDenied();
 
-		if (!isOpen()) {
-			getUsbPipeOsImp().open();
-			open = true;
-		}
+/* FIXME - create UsbOpenException ? */
+		if (isOpen())
+			throw new UsbException("UsbPipe is already open");
+
+		getUsbPipeOsImp().open();
+		open = true;
 	}
 
 	/** Closes this UsbPipe. */
-	public void close()
+	public void close() throws UsbNotActiveException,UsbNotOpenException
 	{
-		if (isActive() && isOpen()) {
-//FIXME - should this throw UsbException instead?
-			abortAllSubmissions();
-			getUsbPipeOsImp().close();
-
-			open = false;
-		}
+		checkOpen();
+			
+		getUsbPipeOsImp().close();
+		open = false;
 	}
 
 	/**
 	 * Synchonously submits this byte[] array to the UsbPipe.
 	 */
-	public int syncSubmit( byte[] data ) throws UsbException,IllegalArgumentException
+	public int syncSubmit( byte[] data ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
 	{
 		checkOpen();
 
@@ -155,7 +157,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Asynchonously submits this byte[] array to the UsbPipe.
 	 */
-	public UsbIrp asyncSubmit( byte[] data ) throws UsbException,IllegalArgumentException
+	public UsbIrp asyncSubmit( byte[] data ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
 	{
 		checkOpen();
 
@@ -169,7 +171,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Synchronous submission using a UsbIrp.
 	 */
-	public void syncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException
+	public void syncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
 	{
 		checkOpen();
 
@@ -179,7 +181,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Asynchronous submission using a UsbIrp.
 	 */
-	public void asyncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException
+	public void asyncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
 	{
 		checkOpen();
 
@@ -189,7 +191,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Synchronous submission using a List of UsbIrps.
 	 */
-	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException
+	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
 	{
 		checkOpen();
 
@@ -199,7 +201,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Asynchronous submission using a List of UsbIrps.
 	 */
-	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException
+	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
 	{
 		checkOpen();
 
@@ -209,10 +211,11 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Stop all submissions in progress.
 	 */
-	public void abortAllSubmissions()
+	public void abortAllSubmissions() throws UsbNotActiveException,UsbNotOpenException
 	{
-		if (isOpen())
-			getUsbPipeOsImp().abortAllSubmissions();
+		checkOpen();
+
+		getUsbPipeOsImp().abortAllSubmissions();
 	}
 
 	/**
@@ -298,24 +301,27 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 
 	/**
 	 * Check if this pipe is active.
-	 * @throws UsbException If the pipe is not active.
+	 * @throws UsbNotActiveException If the pipe is not active.
 	 */
-	protected void checkActive() throws UsbException
+	protected void checkActive() throws UsbNotActiveException
 	{
 		if (!isActive())
-			throw new UsbException("UsbPipe not active");
+			throw new UsbNotActiveException("UsbPipe not active");
 	}
 
 	/**
 	 * Check if this pipe is open.
 	 * <p>
 	 * A pipe must be active to be open.
-	 * @throws UsbException If the pipe is not open.
+	 * @throws UsbNotActiveException If the pipe is not active.
+	 * @throws UsbNotOpenException If the pipe is not open.
 	 */
-	protected void checkOpen() throws UsbException
+	protected void checkOpen() throws UsbNotActiveException,UsbNotOpenException
 	{
+		checkActive();
+
 		if (!isOpen())
-			throw new UsbException("UsbPipe not open");
+			throw new UsbNotOpenException("UsbPipe not open");
 	}
 
 	/** Get a uniquely-numbered UsbIrpImp */
