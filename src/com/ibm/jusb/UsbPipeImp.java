@@ -288,22 +288,22 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 				synchronized (abortLock) {
 					abortInProgress = true;
 
-					/* There is a difficult-to-prevent race condition after the queueManager
-					 * checks for abortInProgress and releases the abortLock, to until the
-					 * syncSumbit actually gets to the OS implementation, where this may
-					 * complete the OS imp level abort before the syncSubmit gets there,
-					 * and then that submission is stuck.  That cannot be worked around
-					 * without significant design change and help from the OS imp, which
-					 * isn't worth it - this sleep should be enough to prevent that (very rare)
-					 * race condition from happening.
-					 * FIXME - this could be fixed in the future, but may require an OS imp change.
+					/* FIXME (maybe) - note, I believe there should be no race here...
+					 * the XXXsubmit methods are sync'ed by the submitLock, and
+					 * if using queueing, the queue submission is sync'ed using the
+					 * abortLock, all the way through the asyncSubmit.  So this should
+					 * never allow a queued up IRP to slip through after the OS-level
+					 * abort call...
 					 */
-					try { Thread.sleep(500); } catch ( InterruptedException iE ) { }
 
 					getUsbPipeOsImp().abortAllSubmissions();
 
-					/* It's hard to coordinate safely/correctly with the queueManager
-					 * so (slow) spinning is easiest.
+					/* How can the queueManager's Runnable task notify us that
+					 * all the Runnable tasks have been completed?  Not possible.
+					 * The last one could wake us up, but we would still have to wait for
+					 * it to complete so it's easier to just slowly poll the size.
+					 * The RunnableManager class could use a method like waitUntilEmpty()
+					 * or something similar.
 					 */
 					while (0 < queueManager.getSize()) {
 						try { abortLock.wait(500); } catch ( InterruptedException iE ) { }
@@ -541,13 +541,15 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 				usbIrpImp.complete();
 				return;
 			}
+			try {
+				getUsbPipeOsImp().asyncSubmit(usbIrpImp);
+			} catch ( UsbException uE ) {
+				submissionList.remove(usbIrpImp);
+				/* ignore this, as the UsbIrp's UsbException will be set and this is handled elsewhere. */
+			}
 		}
-		try {
-			getUsbPipeOsImp().syncSubmit(usbIrpImp);
-		} catch ( UsbException uE ) {
-			submissionList.remove(usbIrpImp);
-			/* ignore this, as the UsbIrp's UsbException will be set and this is handled elsewhere. */
-		}
+
+		usbIrpImp.waitUntilComplete();
 	}
 
 	/**
