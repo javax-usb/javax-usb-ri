@@ -149,30 +149,20 @@ public class UsbPipeImp extends Object implements UsbPipe
 	{
 		checkOpen();
 
-		if (getUsbPipeOsImp().passBytes()) {
-			submissionCount++;
-			long sn = sequenceNumber++;
+		submissionCount++;
+		long sn = sequenceNumber++;
 
-			try {
-				int result = getUsbPipeOsImp().syncSubmit(data);
+		try {
+			int result = getUsbPipeOsImp().syncSubmit(this,data);
 
-				fireDataEvent(sn,data,result);
+			fireDataEvent(sn,data,result);
 
-				return result;
-			} catch ( UsbException uE ) {
-				fireErrorEvent(sn,uE.getErrorCode(),uE);
-				throw uE;
-			} finally {
-				submissionCount--;
-			}
-		} else {
-			UsbIrpImp usbIrpImp = usbIrpImpFactory.createUsbIrpImp();
-
-			usbIrpImp.setData(data);
-
-			syncSubmit(usbIrpImp);
-
-			return usbIrpImp.getDataLength();
+			return result;
+		} catch ( UsbException uE ) {
+			fireErrorEvent(sn,uE.getErrorCode(),uE);
+			throw uE;
+		} finally {
+			submissionCount--;
 		}
 	}
 
@@ -247,24 +237,14 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 		List newList = preProcessList(list);
 
-		if (getUsbPipeOsImp().passLists()) {
-			submissionCount += newList.size();
+		submissionCount += newList.size();
 
-			try {
-				getUsbPipeOsImp().syncSubmit( newList );
-			} catch ( UsbException uE ) {
-				throw uE;
-			} finally {
-				postProcessList(newList);
-			}
-		} else {
-			for (int i=0; i<newList.size(); i++) {
-				try {
-					syncSubmit((UsbIrpImp)newList.get(i));
-				} catch ( UsbException uE ) {
-					/* no action, continue submitting */
-				}
-			}
+		try {
+			getUsbPipeOsImp().syncSubmit( newList );
+		} catch ( UsbException uE ) {
+			throw uE;
+		} finally {
+			postProcessList(newList);
 		}
 	}
 
@@ -277,23 +257,13 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 		List newList = preProcessList(list);
 
-		if (getUsbPipeOsImp().passLists()) {
-			submissionCount += newList.size();
+		submissionCount += newList.size();
 
-			try {
-				getUsbPipeOsImp().asyncSubmit( newList );
-			} catch ( UsbException uE ) {
-				submissionCount -= newList.size();
-				throw uE;
-			}
-		} else {
-			for (int i=0; i<newList.size(); i++) {
-				try {
-					asyncSubmit((UsbIrpImp)newList.get(i));
-				} catch ( UsbException uE ) {
-					/* ignore, continue submission */
-				}
-			}			
+		try {
+			getUsbPipeOsImp().asyncSubmit( newList );
+		} catch ( UsbException uE ) {
+			submissionCount -= newList.size();
+			throw uE;
 		}
 	}
 
@@ -337,6 +307,15 @@ public class UsbPipeImp extends Object implements UsbPipe
 	 */
 	public void removeUsbPipeListener( UsbPipeListener listener ) { usbPipeEventHelper.removeEventListener( listener ); }
 
+	public void setupUsbIrpImp(UsbIrpImp irp)
+	{
+		irp.setSequenceNumber( sequenceNumber++ );
+		irp.setUsbPipeImp( this );
+		irp.setUsbException( null );
+		irp.setActive( true );
+		irp.setCompleted( false );
+	}
+
 	//**************************************************************************
 	// Protected methods
 
@@ -377,15 +356,6 @@ public class UsbPipeImp extends Object implements UsbPipe
 		} catch ( ClassCastException ccE ) {
 			return new UsbIrpImp(irp);
 		}
-	}
-
-	protected void setupUsbIrpImp(UsbIrpImp irp)
-	{
-		irp.setSequenceNumber( sequenceNumber++ );
-		irp.setUsbPipe( this );
-		irp.setUsbException( null );
-		irp.setActive( true );
-		irp.setCompleted( false );
 	}
 
 	protected List preProcessList(List list) throws UsbException

@@ -29,7 +29,7 @@ import com.ibm.jusb.util.*;
  * <ul>
  * <li>The {@link #getNumber() number} via its {@link #setNumber(long) setter}.</li>
  * <li>The {@link #getSequenceNumber() sequence number} via its {@link #setSequenceNumber(long) setter}.</li>
- * <li>{@link #getUsbPipe() UsbPipe} via its {@link #setUsbPipe(UsbPipe) setter}.</li>
+ * <li>{@link #getUsbPipeImp() UsbPipeImp} via its {@link #setUsbPipeImp(UsbPipeImp) setter}.</li>
  * </ul>
  * If processing is successful, the implementation will set the
  * {@link #getDataLength() data length} via its {@link #setDataLength(int) setter};
@@ -44,7 +44,7 @@ import com.ibm.jusb.util.*;
  * {@link #setCompleted(boolean) completed}, this will set the proper fields on the wrapped UsbIrp.
  * @author Dan Streetman
  */
-public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
+public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult
 {
 	/** Constructor. */
 	public UsbIrpImp() { }
@@ -67,16 +67,16 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	public long getSequenceNumber() { return sequenceNumber; }
 
 	/** @return the UsbPipe associated with this submission */
-	public UsbPipe getUsbPipe() { return usbPipe; }
+	public UsbPipe getUsbPipe() { return getUsbPipeImp(); }
+
+	/** @return the UsbPipeImp */
+	public UsbPipeImp getUsbPipeImp() { return usbPipeImp; }
 
 	/** @return the data associated with this submission */
 	public byte[] getData() { return data; }
 
 	/** @param data the data associated with the submission */
-	public void setData( byte[] newData )
-	{
-		data = null == newData ? DEFAULT_DATA : newData;
-	}
+	public void setData( byte[] newData ) { data = newData; }
 
 	/**
 	 * If this UsbIrp is in progress on a UsbPipe.
@@ -125,22 +125,6 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	 */
 	public void setAcceptShortPacket( boolean accept ) { acceptShortPacket = accept; }
 
-	/** Clean this object */
-	public void clean()
-	{
-		/* assume the waitCount is accurate */
-
-		setNumber( DEFAULT_NUMBER );
-		setSequenceNumber( DEFAULT_SEQUENCE_NUMBER );
-		setUsbPipe( DEFAULT_USB_PIPE );
-		setData( DEFAULT_DATA );
-		setActive( DEFAULT_ACTIVE );
-		setCompleted( DEFAULT_COMPLETED );
-		setUsbException( DEFAULT_USB_EXCEPTION );
-		setDataLength( DEFAULT_DATA_LENGTH );
-		setAcceptShortPacket( DEFAULT_ACCEPT_SHORT_PACKET );
-	}
-
 	/**
 	 * Recycle this UsbIrpImp
 	 * <p>
@@ -173,7 +157,13 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	 * Sets the pipe for this submission
 	 * @param pipe the pipe to use
 	 */
-	public void setUsbPipe( UsbPipe pipe ) { usbPipe = pipe; }
+	public void setUsbPipe( UsbPipe pipe ) { setUsbPipeImp((UsbPipeImp)pipe); }
+
+	/**
+	 * Sets the pipe for this submission
+	 * @param pipe the pipe to use
+	 */
+	public void setUsbPipeImp( UsbPipeImp pipe ) { usbPipeImp = pipe; }
 
 	/**
 	 * Set isActive.
@@ -253,27 +243,14 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	private Object waitLock = new Object();
 	private int waitCount = 0;
 
-	private long number = DEFAULT_NUMBER;
-	private long sequenceNumber = DEFAULT_SEQUENCE_NUMBER;
-	private UsbPipe usbPipe = DEFAULT_USB_PIPE;
-	private byte[] data = DEFAULT_DATA;
-	private boolean active = DEFAULT_ACTIVE;
-	private boolean completed = DEFAULT_COMPLETED;
-	private boolean acceptShortPacket = DEFAULT_ACCEPT_SHORT_PACKET;
-	private int dataLength = DEFAULT_DATA_LENGTH;
-	private UsbException usbException = DEFAULT_USB_EXCEPTION;
-
-	//*************************************************************************
-	// Class constants
-
-	private static final long DEFAULT_NUMBER = -1;
-	private static final long DEFAULT_SEQUENCE_NUMBER = -1;
-	private static final UsbPipe DEFAULT_USB_PIPE = null;
-	private static final byte[] DEFAULT_DATA = new byte[0];
-	private static final boolean DEFAULT_ACTIVE = false;
-	private static final boolean DEFAULT_COMPLETED = false;
-	private static final boolean DEFAULT_ACCEPT_SHORT_PACKET = true;
-	private static final int DEFAULT_DATA_LENGTH = -1;
-	private static final UsbException DEFAULT_USB_EXCEPTION = null;
+	private long number = -1;
+	private long sequenceNumber = -1;
+	private UsbPipeImp usbPipeImp = null;
+	private byte[] data = null;
+	private boolean active = false;
+	private boolean completed = false;
+	private boolean acceptShortPacket = true;
+	private int dataLength = -1;
+	private UsbException usbException = null;
 
 }

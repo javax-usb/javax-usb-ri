@@ -23,7 +23,8 @@ import javax.usb.*;
  * <li>{@link #getData() actual data} via its {@link #setData(byte[]) setter}.</li>
  * </ul>
  * The implementation will first set the
- * {@link #getNumber() number} via its {@link #setNumber(int) setter},
+ * {@link #getNumber() number} via its {@link #setNumber(int) setter} and
+ * {@link #getUsbDeviceImp() UsbDeviceImp} via its {@link #setUsbDeviceImp(UsbDeviceImp) setter},
  * then process this and set fields depending on the result.
  * If the processing is sucessful, the {@link #getDataLength() data length}
  * is set via its {@link #setDataLength(int) setter}.
@@ -55,6 +56,15 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 {
 	/** Constructor */
 	public RequestImp( RequestImpFactory factory ) { requestImpFactory = factory; }
+
+	/** @return The UsbDevice */
+	public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
+
+	/** @return The UsbDeviceImp */
+	public UsbDeviceImp getUsbDeviceImp() { return usbDeviceImp; }
+
+	/** @param device The UsbDeviceImp */
+	public void setUsbDeviceImp(UsbDeviceImp device) { usbDeviceImp = device; }
 
 	/** @return the bmRequestType bitmap byte for this Request */
 	public byte getRequestType() { return bmRequestType; }
@@ -245,6 +255,8 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	// Instance variables
 
 	private Request request = null;
+
+	private UsbDeviceImp usbDeviceImp = null;
 
 	private byte bmRequestType = 0x00;
 	private byte bRequest = 0x00;

@@ -34,39 +34,6 @@ public interface UsbPipeOsImp
      */
     public void open() throws UsbException;
 
-	/**
-	 * If this accepts byte[] submissions.
-	 * <p>
-	 * If this is true, calls to the UsbPipeImp's
-	 * {@link com.ibm.jusb.UsbPipeImp#syncSubmit(byte[]) syncSubmit(byte[] data)} method
-	 * will be passed to
-	 * {@link #syncSubmit(byte[]) syncSubmit(byte[] data)}.
-	 * If this is false, the UsbPipeImp will convert the byte[] to a UsbIrpImp and pass it to
-	 * {@link #syncSubmit(UsbIrpImp) syncSubmit(UsbIrpImp usbIrpImp)}.
-	 * <p>
-	 * As long as this returns false, {@link #syncSubmit(byte[]) syncSubmit(byte[] data)} will never be called.
-	 */
-	public boolean passBytes();
-
-	/**
-	 * If this accepts List submissions.
-	 * <p>
-	 * If this is true, calls to the UsbPipeImp's
-	 * {@link com.ibm.jusb.UsbPipeImp#syncSubmit(List) syncSubmit(List list)} and
-	 * {@link com.ibm.jusb.UsbPipeImp#asyncSubmit(List) asyncSubmit(List list)} methods
-	 * will be passed to
-	 * {@link #syncSubmit(List) syncSubmit(List list)} or
-	 * {@link #asyncSubmit(List) asyncSubmit(List list)}.
-	 * If this is false, the UsbPipeImp will break a List into each individual
-	 * UsbIrpImp and pass those to
-	 * {@link syncSubmit(UsbIrpImp) syncSubmit(UsbIrpImp usbIrpImp)} or
-	 * {@link asyncSubmit(UsbIrpImp) asyncSubmit(UsbIrpImp usbIrpImp)}.
-	 * <p>
-	 * As long as this returns false, {@link #syncSubmit(List) syncSubmit(List list)} and
-	 * {@link #asyncSubmit(List) asyncSubmit(List list)} will never be called.
-	 */
-	public boolean passLists();
-
     /**
      * Synchonously submits this byte[] array to the platform implementation.
 	 * <p>
@@ -84,7 +51,7 @@ public interface UsbPipeOsImp
 	 * @return the status of the submission.
      * @exception javax.usb.UsbException If the data transfer was unsuccessful.
      */
-    public int syncSubmit( byte[] data ) throws UsbException;
+    public int syncSubmit( UsbPipeImp pipe, byte[] data ) throws UsbException;
 
 	/**
 	 * Synchronously submits this UsbIrpImp to the platform implementation.
