@@ -201,8 +201,13 @@ public class SwingUsbView
 				if (deviceTable.containsKey(device.getParentUsbPort().getUsbHub())) {
 					DefaultMutableTreeNode parent = (DefaultMutableTreeNode)deviceTable.get(device.getParentUsbPort().getUsbHub());
 					DefaultMutableTreeNode node = (DefaultMutableTreeNode)parent.getChildAt(UsbUtil.unsignedInt(device.getParentUsbPort().getPortNumber()) - 1);
-					node.setUserObject(new UsbDevicePanel(device));
-					createDevice(device, node);
+					if (device.isUsbHub()) {
+						node.setUserObject(new UsbHubPanel((UsbHub)device));
+						createTree((UsbHub)device, node);
+					} else {
+						node.setUserObject(new UsbDevicePanel(device));
+						createDevice(device, node);
+					}
 					treeModel.reload(node);
 					deviceTable.put(device, node);
 				}
