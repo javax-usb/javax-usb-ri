@@ -107,7 +107,7 @@ public interface UsbPipeOsImp
 	 * {@link com.ibm.jusb.UsbPipeImp#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()},
 	 * for each UsbIrpImp in order, <i>only if</i> the platform 'accepted' the submission by successfully
 	 * returning from this method.  If the platform throws a UsbException from this
-	 * method, it should <i>not</i> also call UsbIrpImpCompleted().
+	 * method, it should <i>not</i> also call UsbIrpImpCompleted(); and it does not have to set the UsbException field of each UsbIrpImp.
 	 * <p>
 	 * This method must return before the first UsbIrpImp completes (and should return before the first
 	 * UsbIrpImp is submitted natively).  Any problems in platform submission should be reported on a per-UsbIrpImp basis (asynchronously).

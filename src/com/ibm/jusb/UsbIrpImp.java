@@ -152,10 +152,22 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	 * Sets the number for this submission
 	 * @param i the new number
 	 */
-	public void setNumber( long l ) { number = l; }
+	public void setNumber( long l )
+	{
+		number = l;
+
+		try { getUsbIrp().setNumber(l); }
+		catch ( NullPointerException npE ) { }
+	}
 
 	/** @param the seqeunce number of this submision */
-	public void setSequenceNumber( long sn ) { sequenceNumber = sn; }
+	public void setSequenceNumber( long sn )
+	{
+		sequenceNumber = sn;
+
+		try { getUsbIrp().setSequenceNumber(sn); }
+		catch ( NullPointerException npE ) { }
+	}
 
 	/**
 	 * Sets the pipe for this submission
@@ -186,12 +198,12 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 		if (!b)
 			return;
 
-		UsbIrp irp = getUsbIrp();
-
-		if (null != irp) {
+		try {
+			UsbIrp irp = getUsbIrp();
 			irp.setUsbException(getUsbException());
 			irp.setDataLength(getDataLength());
 			irp.setCompleted(true);
+		} catch ( NullPointerException npE ) {
 		}
 
 		notifyCompleted();
