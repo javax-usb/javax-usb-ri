@@ -333,7 +333,11 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 */
 	public void disconnect()
 	{
-		getParentUsbPortImp().detachUsbDeviceImp( this );
+		try {
+			getParentUsbPortImp().detachUsbDeviceImp( this );
+		} catch ( IllegalArgumentException iaE ) {
+			/* log, handle? */
+		}
 
 		listenerImp.usbDeviceDetached(new UsbDeviceEvent(this));
 
