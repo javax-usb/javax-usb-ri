@@ -21,13 +21,15 @@ import javax.usb.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
+import com.ibm.jusb.*;
+
 /**
- * Class to display Request information.
+ * Class to display ControlUsbIrp information.
  * @author Dan Streetman
  */
-public class RequestPanel extends JPanel implements Cloneable
+public class ControlUsbIrpPanel extends JPanel implements Cloneable
 {
-	public RequestPanel()
+	public ControlUsbIrpPanel()
 	{
 		setLayout( new BorderLayout());
 
@@ -66,7 +68,7 @@ public class RequestPanel extends JPanel implements Cloneable
 
 	public Object clone()
 	{
-		RequestPanel newPanel = new RequestPanel();
+		ControlUsbIrpPanel newPanel = new ControlUsbIrpPanel();
 		newPanel.syncCheckBox.setSelected(syncCheckBox.isSelected());
 		newPanel.packetDataTextArea.setText(packetDataTextArea.getText());
 		return newPanel;
@@ -74,24 +76,19 @@ public class RequestPanel extends JPanel implements Cloneable
 
 	public void submit(UsbDevice device) throws UsbException,NumberFormatException
 	{
-//FIXME - implement
-throw new RuntimeException("not implemented");
-/*
 		lastData = getData();
-		RequestFactory factory = UsbHostManager.getInstance().getUsbServices().getRequestFactory();
 
-		RequestImp requestImp = new RequestImp(null);
-		requestImp.setRequestType((byte)Integer.decode(bmRequestTypeField.getText()).intValue());
-		requestImp.setRequestCode((byte)Integer.decode(bRequestField.getText()).intValue());
-		requestImp.setValue((short)Integer.decode(wValueField.getText()).intValue());
-		requestImp.setIndex((short)Integer.decode(wIndexField.getText()).intValue());
-		requestImp.setData(getData());
+		byte bmRequestType = (byte)Integer.decode(bmRequestTypeField.getText()).intValue();
+		byte bRequest = (byte)Integer.decode(bRequestField.getText()).intValue();
+		short wValue = (short)Integer.decode(wValueField.getText()).intValue();
+		short wIndex = (short)Integer.decode(wIndexField.getText()).intValue();
+		ControlUsbIrpImp controlUsbIrpImp = new ControlUsbIrpImp(bmRequestType, bRequest, wValue, wIndex);
+		controlUsbIrpImp.setData(getData());
 
 		if (syncCheckBox.isSelected())
-			operations.syncSubmit(requestImp);
+			device.syncSubmit(controlUsbIrpImp);
 		else
-			operations.asyncSubmit(requestImp);
-*/
+			device.asyncSubmit(controlUsbIrpImp);
 	}
 
 	protected byte[] getData()

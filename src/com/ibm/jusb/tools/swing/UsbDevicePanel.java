@@ -149,26 +149,21 @@ public class UsbDevicePanel extends UsbPanel
 
 	protected void submit()
 	{
-//FIXME - implement
-throw new RuntimeException("Not implemented");
-/*
-		RequestPanel panel = null;
+		ControlUsbIrpPanel panel = null;
 
 		try {
 			for (int i=0; i<packetList.size(); i++) {
-				panel = (RequestPanel)packetList.get(i);
-//FIXME - remove this standard/class/vendor/etc... crap
-				panel.submit(usbDevice.getStandardOperations());
+				panel = (ControlUsbIrpPanel)packetList.get(i);
+				panel.submit(usbDevice);
 			}
 		} catch ( UsbException uE ) {
 			JOptionPane.showMessageDialog(null, "UsbException while submitting " + panel + " : " + uE.getMessage());
 		} catch ( NumberFormatException nfE ) {
 			JOptionPane.showMessageDialog(null, "NumberFormatException in " + panel + " : " + nfE.getMessage());
 		}
-*/
 	}
 
-	protected void addPacket(RequestPanel newPanel)
+	protected void addPacket(ControlUsbIrpPanel newPanel)
 	{
 		int index = packetJList.getSelectedIndex();
 		packetList.add(newPanel);
@@ -185,7 +180,7 @@ throw new RuntimeException("Not implemented");
 		if (packetJList.isSelectionEmpty())
 			return;
 
-		addPacket((RequestPanel)((RequestPanel)packetList.get(packetJList.getSelectedIndex())).clone());
+		addPacket((ControlUsbIrpPanel)((ControlUsbIrpPanel)packetList.get(packetJList.getSelectedIndex())).clone());
 	}
 
 	protected void removePacket()
@@ -272,7 +267,7 @@ throw new RuntimeException("Not implemented");
 
 	private ActionListener clearListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { outputTextArea.setText(""); } };
 	private ActionListener submitListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { submit(); } };
-	private ActionListener newPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { addPacket(new RequestPanel()); } };
+	private ActionListener newPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { addPacket(new ControlUsbIrpPanel()); } };
 	private ActionListener copyPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { copyPacket(); } };
 	private ActionListener removeListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { removePacket(); } };
 	private ActionListener upListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { upPacket(); } };
