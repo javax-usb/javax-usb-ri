@@ -165,8 +165,8 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	 * Set this as completed.
 	 * <p>
 	 * Setting this to true performs all required completion activities, such as waking up
-	 * {@link #waitUntilCompleted(long,int) waiting Threads} and (if needed) setting the
-	 * {@link #getRealRequest() "real" Request}'s params.
+	 * {@link #waitUntilCompleted(long) waiting Threads} and (if needed) setting the
+	 * {@link #getRequest() Request}'s params.
 	 * @param c If completed
 	 */
 	public void setCompleted(boolean c)

@@ -26,7 +26,7 @@ import com.ibm.jusb.*;
 public interface UsbPipeOsImp
 {
     /**
-     * Open this UsbPipeImp.
+     * Open this pipe.
 	 * <p>
 	 * The platform can perform whatever operations it likes.
 	 * This method does not currently require the platform to guarantee
@@ -44,8 +44,8 @@ public interface UsbPipeOsImp
 	 * defaults to true, so the platform should also accept short packets for
 	 * this submission.
 	 * <p>
-	 * The platform implementation does not need to notify the UsbPipeAbstraction
-	 * of completion by calling UsbPipeAbstraction.UsbIrpImpCompleted();
+	 * The platform implementation does not need to notify the UsbPipeImp
+	 * of completion by calling UsbPipeImp.UsbIrpImpCompleted();
 	 * since the operation is synchronous the pipe performs all completion
 	 * activities after the method returns (or throws UsbException).
      * @param data the byte[] data
@@ -57,8 +57,8 @@ public interface UsbPipeOsImp
 	/**
 	 * Synchronously submits this UsbIrpImp to the platform implementation.
 	 * <p>
-	 * The platform implementation does not need to notify the UsbPipeAbstraction
-	 * of completion by calling UsbPipeAbstraction.UsbIrpImpCompleted();
+	 * The platform implementation does not need to notify the UsbPipeImp
+	 * of completion by calling UsbPipeImp.UsbIrpImpCompleted();
 	 * since the operation is synchronous the pipe performs all completion
 	 * activities after the method returns (or throws UsbException).
 	 * @param irp the UsbIrpImp to use for this submission.
@@ -69,8 +69,8 @@ public interface UsbPipeOsImp
 	/**
 	 * Synchronously submits a List of UsbIrpImps to the platform implementation.
 	 * <p>
-	 * The platform implementation does not need to notify the UsbPipeAbstraction
-	 * of completion by calling UsbPipeAbstraction.UsbIrpImpCompleted();
+	 * The platform implementation does not need to notify the UsbPipeImp
+	 * of completion by calling UsbPipeImp.UsbIrpImpCompleted();
 	 * since the operation is synchronous the pipe performs all completion
 	 * activities after the method returns (or throws UsbException).
 	 * <p>
@@ -87,9 +87,9 @@ public interface UsbPipeOsImp
 	 * Asynchronously submits this UsbIrpImp to the platform implementation.
 	 * <p>
 	 * Since this is an asynchronous call, the platform implementation should
-	 * notify the UsbPipeAbstraction upon completion of the UsbIrpImp by
+	 * notify the UsbPipeImp upon completion of the UsbIrpImp by
 	 * calling
-	 * {@link com.ibm.jusb.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()}
+	 * {@link com.ibm.jusb.UsbPipeImp#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()}
 	 * <i>only if</i> the platform 'accepted' the submission by successfully
 	 * returning from this method.  If the platform throws a UsbException from this
 	 * method, it should <i>not</i> also call UsbIrpImpCompleted().
@@ -102,9 +102,9 @@ public interface UsbPipeOsImp
 	 * Asynchronously submits a List of UsbIrpImps to the platform implementation.
 	 * <p>
 	 * Since this is an asynchronous call, the platform implementation should
-	 * notify the UsbPipeAbstraction upon completion of the UsbIrpImp by
+	 * notify the UsbPipeImp upon completion of the UsbIrpImp by
 	 * calling
-	 * {@link com.ibm.jusb.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()},
+	 * {@link com.ibm.jusb.UsbPipeImp#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()},
 	 * for each UsbIrpImp in order, <i>only if</i> the platform 'accepted' the submission by successfully
 	 * returning from this method.  If the platform throws a UsbException from this
 	 * method, it should <i>not</i> also call UsbIrpImpCompleted().
@@ -127,7 +127,7 @@ public interface UsbPipeOsImp
 	public void abortAllSubmissions();
 
     /**
-     * Close this UsbPipeImp.
+     * Close the pipe.
      */
     public void close();
 }

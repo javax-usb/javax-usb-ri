@@ -49,8 +49,6 @@ public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
     /**
      * @return direction of this endpoint (i.e. in [from device to host] or out
      * [from host to device])
-     * @see javax.usb.UsbInfoConst#ENDPOINT_DIRECTION_IN
-     * @see javax.usb.UsbInfoConst#ENDPOINT_DIRECTION_OUT
      */
     public byte getDirection() { return (byte)(getEndpointAddress() & UsbInfoConst.ENDPOINT_DIRECTION_MASK); }
 
