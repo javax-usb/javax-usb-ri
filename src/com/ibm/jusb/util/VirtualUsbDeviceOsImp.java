@@ -20,7 +20,7 @@ import com.ibm.jusb.os.*;
  * Virtual UsbDeviceOsImp implementation.
  * @author Dan Streetman
  */
-public class VirtualUsbDeviceOsImp implements UsbDeviceOsImp
+public class VirtualUsbDeviceOsImp extends AbstractUsbDeviceOsImp implements UsbDeviceOsImp
 {
 	public VirtualUsbDeviceOsImp() { }
 
@@ -44,40 +44,18 @@ public class VirtualUsbDeviceOsImp implements UsbDeviceOsImp
 	}
 
 	/**
-	 * Synchronously submit a List of RequestImps.
-	 * @param list The List.
-	 * @throws UsbException If the submission is unsuccessful.
-	 */
-	public void syncSubmit(List list) throws UsbException
-	{
-		for (int i=0; i<list.size(); i++)
-			syncSubmit( (RequestImp)list.get(i) );
-	}
-
-	/**
 	 * Asynchronously submit a RequestImp.
 	 * @param requestImp The RequestImp.
-	 * @throws UsbException If the submission is unsuccessful.
 	 */
-	public void asyncSubmit(final RequestImp requestImp) throws UsbException
+	public void asyncSubmit(RequestImp requestImp) throws UsbException
 	{
-		Runnable r = new Runnable() {
-				public void run()
-				{
-					try {
-						syncSubmit(requestImp);
-					} catch ( UsbException uE ) {
-						requestImp.setUsbException(uE);
-						requestImp.setCompleted(true);
-					}
-				}
-			};
-
-		Thread t = new Thread(r);
-
-		t.setDaemon(true);
-		t.start();
+		runnableManager.add(new AsyncRunnable(requestImp));
 	}
+
+	//**************************************************************************
+	// Instance methods
+
+	private RunnableManager runnableManager = new RunnableManager();
 
 	//**************************************************************************
 	// Class constants
@@ -85,4 +63,21 @@ public class VirtualUsbDeviceOsImp implements UsbDeviceOsImp
 	public static final String VIRTUAL_ROOT_HUB_MANUFACTURER = "JSR80 Reference Implementation (platform-independent section)";
 	public static final String VIRTUAL_ROOT_HUB_PRODUCT = "JSR80 Virtual Root Hub";
 	public static final String VIRTUAL_ROOT_HUB_SERIALNUMBER = "19741113";
+
+	//**************************************************************************
+	// Inner classes
+
+	private class AsyncRunnable implements Runnable
+	{
+		public AsyncRunnable(RequestImp r) { requestImp = r; }
+
+		public void run()
+		{
+			try { syncSubmit(requestImp); }
+			catch ( UsbException uE ) { requestImp.setUsbException(uE); }
+		}
+
+		private RequestImp requestImp = null;
+	}
+
 }
