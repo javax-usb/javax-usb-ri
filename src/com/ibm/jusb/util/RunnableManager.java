@@ -234,7 +234,7 @@ public class RunnableManager
 				}
 
 				synchronized (lock) {
-					while (list.isEmpty()) {
+					while (running && list.isEmpty()) {
 						try { lock.wait(); }
 						catch ( InterruptedException iE ) { }
 					}
