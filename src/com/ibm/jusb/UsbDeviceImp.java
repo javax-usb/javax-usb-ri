@@ -15,20 +15,19 @@ import javax.usb.*;
 import javax.usb.event.*;
 import javax.usb.util.*;
 
+import com.ibm.jusb.os.*;
+
 /**
  * Abstract implementation of the UsbDevice interface
  * @author E. Michael Maximilien
  * @author Dan Streetman
  * @version 1.0.0
  */
-public class UsbDeviceAbstraction extends AbstractUsbInfo implements UsbDevice
+public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 {
-	//-------------------------------------------------------------------------
-	// Ctor(s)
-	//
+	public UsbDeviceImp() {}
 
-	/** Constructor */
-	UsbDeviceAbstraction() {}
+	public UsbDeviceImp(UsbDeviceOsImp osImp) { usbDeviceOsImp = osImp; }
 
 	//-------------------------------------------------------------------------
 	// Public methods
@@ -234,10 +233,10 @@ public class UsbDeviceAbstraction extends AbstractUsbInfo implements UsbDevice
 	//
 
 	/** @return the associated UsbDeviceImp */
-	UsbDeviceImp getUsbDeviceImp() { return usbDeviceImp; }
+	public UsbDeviceOsImp getUsbDeviceOsImp() { return usbDeviceOsImp; }
 
-	/** @param the UsbDeviceImp to use */
-	void setUsbDeviceImp( UsbDeviceImp deviceImp ) { usbDeviceImp = deviceImp; }
+	/** @param the UsbDeviceOsImp to use */
+	public void setUsbDeviceOsImp( UsbDeviceOsImp deviceImp ) { usbDeviceOsImp = deviceImp; }
 
 	/** @param desc the new device descriptor */
 	void setDeviceDescriptor( DeviceDescriptor desc ) { setDescriptor( desc ); }
@@ -368,7 +367,7 @@ public class UsbDeviceAbstraction extends AbstractUsbInfo implements UsbDevice
 	// Instance variables
 	//
 
-	private UsbDeviceImp usbDeviceImp = null;
+	private UsbDeviceOsImp usbDeviceOsImp = null;
 
 	private Vector listenerList = new Vector();
 
