@@ -185,7 +185,7 @@ public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmiss
 
 	public byte[] toBytes()
 	{
-		byte[] bytes = new byte[ REQUEST_HEADER_LENGTH + getLength() ];
+		bytes = new byte[ REQUEST_HEADER_LENGTH + getLength() ];
 
 		bytes[ 0 ] = getRequestType();
 		bytes[ 1 ] = getRequestCode();
@@ -203,6 +203,8 @@ public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmiss
 
 		return bytes;
 	}
+
+	public byte[] getBytes() { return bytes; }
 
 	//**************************************************************************
 	// Protected methods
@@ -235,6 +237,7 @@ public class RequestImp implements Request,UsbOperations.SubmitResult,UsbSubmiss
 	private short wValue = 0x0000;
 	private short wIndex = 0x0000;
 	private byte[] data = null;
+	private byte[] bytes = null;
 	private int dataLength = 0;
 
 	private RequestImpFactory requestImpFactory = null;
