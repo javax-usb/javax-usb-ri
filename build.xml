@@ -15,7 +15,7 @@
 	<property name="Jsr80Env.JSR80_RI_JARFILE" value="jsr80_ri.jar"/>
 	<property name="Jsr80Env.JSR80_RI_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
 
-	<property name="Jsr80Env.JSR80_RI_DEBUG" value="no"/>
+	<property name="Jsr80Env.JSR80_RI_DEBUG" value="yes"/>
 	<property name="Jsr80Env.JSR80_RI_OPTIMIZE" value="yes"/>
 	<property name="Jsr80Env.JSR80_RI_DEPRECATION" value="yes"/>
 	<property name="Jsr80Env.JSR80_RI_VERBOSE" value="no"/>
