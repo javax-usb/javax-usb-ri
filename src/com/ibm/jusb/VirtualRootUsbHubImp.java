@@ -23,7 +23,6 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 	{
 		super(virtualDeviceDescriptor, new VirtualRootUsbDeviceOsImp());
 		setSpeed(UsbConst.DEVICE_SPEED_FULL);
-		init();
 		UsbConfigurationImp virtualConfiguration = new UsbConfigurationImp(this, virtualConfigurationDescriptor);
 		UsbInterfaceImp virtualInterface = new UsbInterfaceImp(virtualConfiguration, virtualInterfaceDescriptor, new DefaultUsbInterfaceOsImp());
 		setActiveUsbConfigurationNumber(CONFIG_NUM);
@@ -31,11 +30,6 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 
 	//**************************************************************************
 	// Public methods
-
-	public void init()
-	{
-
-	}
 
 	/** No connect operation */
 	public void connect(UsbHubImp hub, byte portNumber) throws UsbException
@@ -68,8 +62,8 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 	public static final byte PRODUCT_INDEX = (byte)0x02;
 	public static final byte SERIALNUMBER_INDEX = (byte)0x03;
 
-	public static final String MANUFACTURER_STRING = "JSR80 (javax.usb) OS-independent Reference Implementation";
-	public static final String PRODUCT_STRING = "JSR80 virtual root UsbHub";
+	public static final String MANUFACTURER_STRING = "javax.usb OS-independent Reference Implementation";
+	public static final String PRODUCT_STRING = "Virtual Root UsbHub";
 	public static final String SERIALNUMBER_STRING = "19741113";
 
 	public static final String ENCODING = "UTF-16LE";
