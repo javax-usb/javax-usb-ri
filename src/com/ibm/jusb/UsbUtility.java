@@ -1,4 +1,4 @@
-package com.ibm.jusb.os;
+package com.ibm.jusb;
 
 /*
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
@@ -242,8 +242,8 @@ public class UsbUtility extends Object
 	// Class constants
 	//
 
-	private static final String JUSB_USB_DESCRIPTOR_FACTORY_PROP_NAME = "com.ibm.jusb.os.DescriptorFactory";
-    private static final String JUSB_USB_INFO_FACTORY_PROP_NAME = "com.ibm.jusb.os.usbInfoFactory";
-    private static final String JUSB_USB_PIPE_FACTORY_PROP_NAME = "com.ibm.jusb.os.usbPipeFactory";
+	private static final String JUSB_USB_DESCRIPTOR_FACTORY_PROP_NAME = "com.ibm.jusb.DescriptorFactory";
+    private static final String JUSB_USB_INFO_FACTORY_PROP_NAME = "com.ibm.jusb.usbInfoFactory";
+    private static final String JUSB_USB_PIPE_FACTORY_PROP_NAME = "com.ibm.jusb.usbPipeFactory";
 
 }

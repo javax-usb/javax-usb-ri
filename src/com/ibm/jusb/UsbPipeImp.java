@@ -1,4 +1,4 @@
-package com.ibm.jusb.os;
+package com.ibm.jusb;
 
 /**
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
@@ -103,7 +103,7 @@ public interface UsbPipeImp
 	 * Since this is an asynchronous call, the platform implementation should
 	 * notify the UsbPipeAbstraction upon completion of the UsbIrpImp by
 	 * calling
-	 * {@link com.ibm.jusb.os.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()}
+	 * {@link com.ibm.jusb.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()}
 	 * <i>only if</i> the platform 'accepted' the submission by successfully
 	 * returning from this method.  If the platform throws a UsbException from this
 	 * method, it should <i>not</i> also call UsbIrpImpCompleted().
@@ -118,7 +118,7 @@ public interface UsbPipeImp
 	 * Since this is an asynchronous call, the platform implementation should
 	 * notify the UsbPipeAbstraction upon completion of the UsbCompositeIrpImp by
 	 * calling
-	 * {@link com.ibm.jusb.os.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()}
+	 * {@link com.ibm.jusb.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()}
 	 * <i>only if</i> the platform 'accepted' the submission by successfully
 	 * returning from this method.  If the platform throws a UsbException from this
 	 * method, it should <i>not</i> also call UsbIrpImpCompleted().

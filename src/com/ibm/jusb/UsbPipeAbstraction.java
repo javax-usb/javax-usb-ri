@@ -1,4 +1,4 @@
-package com.ibm.jusb.os;
+package com.ibm.jusb;
 
 /**
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
@@ -305,10 +305,10 @@ public class UsbPipeAbstraction extends Object implements UsbPipe
 	/**
 	 * Transitions the UsbPipe state to the state specified
 	 * @param nextStateName the String name of the next state one of:
-	 * @see com.ibm.jusb.os.UsbPipeClosedState#NAME
-	 * @see com.ibm.jusb.os.UsbPipeIdleState#NAME
-	 * @see com.ibm.jusb.os.UsbPipeBusyState#NAME
-	 * @see com.ibm.jusb.os.UsbPipeErrorState#NAME
+	 * @see com.ibm.jusb.UsbPipeClosedState#NAME
+	 * @see com.ibm.jusb.UsbPipeIdleState#NAME
+	 * @see com.ibm.jusb.UsbPipeBusyState#NAME
+	 * @see com.ibm.jusb.UsbPipeErrorState#NAME
 	 * @exception javax.usb.UsbRuntimeException if the transition is invalid
 	 */
 	public void transition( String nextStateName )
