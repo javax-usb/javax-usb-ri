@@ -15,7 +15,7 @@ import com.ibm.jusb.*;
  * Interface for os implementation of UsbDevice.
  * @author Dan Streetman
  */
-public interface UsbDeviceImp
+public interface UsbDeviceOsImp
 {
 	/**
 	 * Synchronously submit a RequestImp.

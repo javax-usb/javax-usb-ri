@@ -15,7 +15,7 @@ import javax.usb.UsbException;
  * Interface for os implementation of UsbInterface.
  * @author Dan Streetman
  */
-public interface UsbInterfaceImp
+public interface UsbInterfaceOsImp
 {
 	/**
 	 * Claim this interface.

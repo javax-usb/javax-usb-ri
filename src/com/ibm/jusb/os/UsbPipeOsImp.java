@@ -19,7 +19,7 @@ import javax.usb.*;
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
-public interface UsbPipeImp
+public interface UsbPipeOsImp
 {
     /**
      * Open this UsbPipeImp.
