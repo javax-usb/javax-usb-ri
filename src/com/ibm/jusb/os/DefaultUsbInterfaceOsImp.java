@@ -94,15 +94,6 @@ public class DefaultUsbInterfaceOsImp implements UsbInterfaceOsImp
 	}
 
 	/**
-	 * Release this interface using the provided key.
-	 * <p>
-	 * This implementation ignores the key, since key/policy
-	 * checking is done by the UsbInterfaceImp.
-	 * @param key This class ignores the key.
-	 */
-	public void release(Object key) { release(); }
-
-	/**
 	 * Indicate if this interface is claimed.
 	 * <p>
 	 * If {@link #allowClaim() allowClaim} is true, this returns the state of the in-Java claim.

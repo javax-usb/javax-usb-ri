@@ -18,27 +18,6 @@ import javax.usb.*;
 public class DefaultUsbInterfacePolicy implements UsbInterfacePolicy
 {
 	/**
-	 * Whether to allow the UsbInterface to be released or not.
-	 * <p>
-	 * This is called when the claimed interface is released.
-	 * @param usbInterface The UsbInterface being released.
-	 * @param key The Object key passed to UsbInterface.release, or null.
-	 * @return If the UsbInterface should be released.
-	 */
-	public boolean release(UsbInterface usbInterface, Object key) { return true; }
-
-	/**
-	 * Whether to allow the UsbPipe to be opened or not.
-	 * <p>
-	 * This is called when a UsbPipe belonging to the claimed interface
-	 * is opened.
-	 * @param usbPipe The UsbPipe being opened.
-	 * @param key The Object key passed to UsbPipe.open, or null.
-	 * @return If the UsbPipe should be opened.
-	 */
-	public boolean open(UsbPipe usbPipe, Object key) { return true; }
-
-	/**
 	 * If the claim should be forced.
 	 * <p>
 	 * This will try to forcibly claim the UsbInterface.

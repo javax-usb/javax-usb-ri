@@ -106,15 +106,9 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	}
 
 	/**
-	 * Opens this UsbPipe using a null key.
+	 * Opens this UsbPipe.
 	 */
-	public void open() throws UsbPolicyDenied,UsbException,UsbNotActiveException,UsbNotClaimedException { open(null); }
-
-	/**
-	 * Opens this UsbPipe using the specified key.
-	 * @param key The key to pass to the UsbInterfacePolicy.
-	 */
-	public void open(Object key) throws UsbPolicyDenied,UsbException,UsbNotActiveException,UsbNotClaimedException
+	public void open() throws UsbException,UsbNotActiveException,UsbNotClaimedException
 	{
 		checkActive();
 
@@ -123,9 +117,6 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			String a = UsbUtil.toHexString(getUsbEndpointImp().getUsbInterfaceImp().getUsbInterfaceDescriptor().bAlternateSetting());
 			throw new UsbNotClaimedException("UsbInterface 0x" + i + " setting 0x" + a + " is not claimed");
 		}
-
-		if (!getUsbEndpointImp().getUsbInterfaceImp().getUsbInterfacePolicy().open(this, key))
-			throw new UsbPolicyDenied();
 
 /* FIXME - create UsbOpenException ? */
 		if (isOpen())

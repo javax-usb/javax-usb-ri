@@ -108,33 +108,12 @@ public class UsbInterfaceImp implements UsbInterface
 	}
 
 	/**
-	 * Release this interface using a key.
-	 * <p>
-	 * This calls the {@link #release(Object) other release}
-	 * with a null key.
-	 * @exception UsbPolicyDenied If the policy prevented release.
-	 * @exception UsbClaimException If the interface is already claimed.
-	 * @exception UsbException if the interface could not be released.
-	 * @exception UsbNotActiveException if the interface setting is not active.
-	 */
-	public void release() throws UsbPolicyDenied,UsbClaimException,UsbException,UsbNotActiveException
-	{
-		release(null);
-	}
-
-	/**
 	 * Release this interface.
-	 * <p>
-	 * The current UsbInterfacePolicy may prevent this.
-	 * This can only be called from an
-	 * {@link #isActive() active} alternate setting.
-	 * @param key The Object key to pass to the UsbInterfacePolicy.
-	 * @exception UsbPolicyDenied If the policy prevented release.
 	 * @exception UsbClaimException If the interface is already claimed.
 	 * @exception UsbException if the interface could not be released.
 	 * @exception UsbNotActiveException if the interface setting is not active.
 	 */
-	public synchronized void release(Object key) throws UsbPolicyDenied,UsbClaimException,UsbException,UsbNotActiveException
+	public void release() throws UsbClaimException,UsbException,UsbNotActiveException
 	{
 		checkSettingActive();
 
@@ -145,10 +124,7 @@ public class UsbInterfaceImp implements UsbInterface
 			if (((UsbEndpoint)endpoints.get(i)).getUsbPipe().isOpen())
 				throw new UsbException("Cannot release UsbInterface with any open UsbPipe");
 
-		if (!getUsbInterfacePolicy().release(this, key))
-			throw new UsbPolicyDenied("UsbInterfacePolicy prevented UsbInterface release");
-
-		getUsbInterfaceOsImp().release(key);
+		getUsbInterfaceOsImp().release();
 
 		setClaimed(null);
 	}

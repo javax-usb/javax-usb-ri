@@ -39,13 +39,6 @@ public interface UsbInterfaceOsImp
 	public void release() throws UsbException;
 
 	/**
-	 * Release this interface.
-	 * @param key The key passed.
-	 * @exception UsbException If the interface could not be released.
-	 */
-	public void release(Object key) throws UsbException;
-
-	/**
 	 * Indicate if this interface is claimed.
 	 * <p>
 	 * The claim must represent at least {@link #claim() Java claims}
