@@ -681,9 +681,15 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	void checkDisconnected() throws UsbDisconnectedException
 	{
-		if (disconnected)
+		if (isDisconnected())
 			throw new UsbDisconnectedException("This device has been disconnected");
 	}
+
+	/**
+	 * If this device is disconnected.
+	 * @return If this device is disconnected.
+	 */
+	boolean isDisconnected() { return disconnected; }
 
 	//**************************************************************************
 	// Instance variables

@@ -367,6 +367,10 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			irp = usbIrpImp;
 
 		if (irp.isUsbException()) {
+			/* If the device was disconnected, replace the error with a UsbAbortException. */
+			if (isDisconnected())
+				irp.setUsbException(new UsbAbortException("The device was disconnected"));
+
 			listenerImp.errorEventOccurred(new UsbPipeErrorEvent(this,irp));
 		} else {
 			listenerImp.dataEventOccurred(new UsbPipeDataEvent(this,irp));
@@ -424,6 +428,9 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	{
 		getUsbEndpointImp().checkDisconnected();
 	}
+
+	/** @return If this device is disconnected. */
+	protected boolean isDisconnected() { return getUsbEndpointImp().isDisconnected(); }
 
 	/**
 	 * Check if this pipe is active.
@@ -563,13 +570,11 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/** Disconnect this. */
 	void disconnect()
 	{
-		try {
-			abortAllSubmissions();
-		} catch ( Exception e ) {
-			/* Ignore */
-		} catch ( Error e ) {
-			/* Ignore */
-		}
+		/* We could abortAllSubmissions, but we probably don't need to.
+		 * Any pending submissions should either be automatically aborted,
+		 * or remain pending - but their status is not (or should not be)
+		 * relevant after a device disconnect.
+		 */
 	}
 
 	//**************************************************************************

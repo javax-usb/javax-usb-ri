@@ -195,6 +195,9 @@ public class UsbConfigurationImp implements UsbConfiguration
 	/** Check if this device is disconnected. */
 	void checkDisconnected() { getUsbDeviceImp().checkDisconnected(); }
 
+	/** @return If this device is disconnected. */
+	boolean isDisconnected() { return getUsbDeviceImp().isDisconnected(); }
+
 	//**************************************************************************
 	// Instance variables
 

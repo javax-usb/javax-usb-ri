@@ -103,7 +103,7 @@ public class UsbInterfaceImp implements UsbInterface
 
 		checkSettingActive();
 
-		if (hasUsbInterfacePolicy())
+		if (isJavaClaimed())
 			throw new UsbClaimException("UsbInterface is already claimed");
 
 		getUsbInterfaceOsImp().claim(policy);
@@ -124,7 +124,7 @@ public class UsbInterfaceImp implements UsbInterface
 
 		checkSettingActive();
 
-		if (!hasUsbInterfacePolicy())
+		if (!isJavaClaimed())
 			throw new UsbClaimException("UsbInterface is not claimed");
 
 		for (int i=0; i<endpoints.size(); i++)
@@ -142,10 +142,25 @@ public class UsbInterfaceImp implements UsbInterface
 		try { checkSettingActive(); }
 		catch ( UsbNotActiveException naE ) { return false; }
 
-		if (hasUsbInterfacePolicy())
+		if (isJavaClaimed())
 			return true;
 		else
 			return getUsbInterfaceOsImp().isClaimed();
+	}
+
+	/**
+	 * If this is claimed in java.
+	 * <p>
+	 * This should only be used by javax.usb implementations;
+	 * this is not part of the javax.usb API.
+	 * @return if this is claimed in java.
+	 */
+	public boolean isJavaClaimed()
+	{
+		try { checkSettingActive(); }
+		catch ( UsbNotActiveException naE ) { return false; }
+
+		return hasUsbInterfacePolicy();
 	}
 
 	/**
@@ -361,6 +376,9 @@ public class UsbInterfaceImp implements UsbInterface
 	{
 		getUsbConfigurationImp().checkDisconnected();
 	}
+
+	/** @return If this device is disconnected. */
+	boolean isDisconnected() { return getUsbConfigurationImp().isDisconnected(); }
 
 	//**************************************************************************
 	// Protected methods

@@ -95,6 +95,9 @@ public class UsbEndpointImp implements UsbEndpoint
 	 */
 	void checkDisconnected() { getUsbInterfaceImp().checkDisconnected(); }
 
+	/** @return If this device is disconnected. */
+	boolean isDisconnected() { return getUsbInterfaceImp().isDisconnected(); }
+
 	//**************************************************************************
     // Instance variables
 
