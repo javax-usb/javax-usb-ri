@@ -11,6 +11,9 @@ ANT       http://jakarta.apache.org/ant
 
 JSR80 API You must have the API classfiles/jar in your CLASSPATH.
 
+Note that pre-installed versions of these tools may not be right, e.g. some distros have "Kaffe"
+or "gcc-java" or another version of ant.  Those packages should be replaced/removed.
+
 *********
 * Build *
 *********
