@@ -1,4 +1,4 @@
-package com.ibm.jusb;
+package com.ibm.jusb.os;
 
 /**
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
@@ -12,9 +12,8 @@ package com.ibm.jusb;
 import javax.usb.UsbException;
 
 /**
- * Interface for platform-specific interface implementations.
+ * Interface for os implementation of UsbInterface.
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
  */
 public interface UsbInterfaceImp
 {

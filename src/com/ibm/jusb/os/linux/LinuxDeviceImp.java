@@ -16,7 +16,6 @@ import com.ibm.jusb.*;
 /**
  * Linux implementation of the UsbDevice interface
  * @author Dan Streetman
- * @author E. Michael Maximilien
  * @version 1.0.0
  */
 class LinuxDeviceImp implements UsbDeviceImp
@@ -41,48 +40,6 @@ class LinuxDeviceImp implements UsbDeviceImp
 	 */
 	public UsbDeviceAbstraction getUsbDeviceAbstraction() { return usbDeviceAbstraction; }
 
-	/**
-	 * Returns a StandardOpsImp object that can be used to submit
-	 * standard USB Request objects to this device.
-	 * @return a StandardOpsImp object to use with this UsbDevice.
-	 * @see javax.usb.Request
-	 */
-	public StandardOpsImp getStandardOpsImp()
-	{
-		if( linuxStandardOpsImp == null )
-			linuxStandardOpsImp = new LinuxStandardOpsImp( this );
-
-		return linuxStandardOpsImp;
-	}
-
-	/**
-	 * Returns a VendorOpsImp object that can be used to submit
-	 * vendor USB Request objects to this device.
-	 * @return a VendorOpsImp object to use with this UsbDevice.
-	 * @see javax.usb.Request
-	 */
-	public VendorOpsImp getVendorOpsImp()
-	{
-		if( linuxVendorOpsImp == null )
-			linuxVendorOpsImp = new LinuxVendorOpsImp( this );
-
-		return linuxVendorOpsImp;
-	}
-
-	/**
-	 * Returns a ClassOpsImp object that can be used to submit
-	 * Class USB Request objects to this device.
-	 * @return a ClassOpsImp object to use with this UsbDevice.
-	 * @see javax.usb.Request
-	 */
-	public ClassOpsImp getClassOpsImp()
-	{
-		if( linuxClassOpsImp == null )
-			linuxClassOpsImp = new LinuxClassOpsImp( this );
-
-		return linuxClassOpsImp;
-	}
-
 	//-------------------------------------------------------------------------
 	// Package methods
 	//
@@ -103,8 +60,4 @@ class LinuxDeviceImp implements UsbDeviceImp
 	private UsbDeviceAbstraction usbDeviceAbstraction = null;
 
 	private LinuxDeviceProxy linuxDeviceProxy = null;
-
-	private LinuxStandardOpsImp linuxStandardOpsImp = null;
-	private LinuxVendorOpsImp linuxVendorOpsImp = null;
-	private LinuxClassOpsImp linuxClassOpsImp = null;
 }

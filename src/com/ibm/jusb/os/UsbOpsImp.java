@@ -1,4 +1,4 @@
-package com.ibm.jusb;
+package com.ibm.jusb.os;
 
 /*
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
@@ -12,10 +12,8 @@ package com.ibm.jusb;
 import javax.usb.*;
 
 /**
- * This class defines the interface for implementing the UsbOperations and 
- * all sub-interfaces
+ * This class defines the interface for implementing the UsbOperations
  * @author E. Michael Maximilien
- * @version 1.0.0
  */
 public interface UsbOpsImp
 {

@@ -30,10 +30,10 @@ public class DefaultClassOperations extends AbstractUsbOperations implements Cla
 	 * @param classOpsImp the ClassOpsImp object
 	 * @exception javax.usb.UsbException if the RequestFactory could not be found
 	 */
-	public DefaultClassOperations( UsbDevice usbDevice, ClassOpsImp classOpsImp  ) throws UsbException
+	public DefaultClassOperations( UsbDevice usbDevice, UsbOpsImp ops  ) throws UsbException
 	{ 
 		super( usbDevice ); 
-		this.classOpsImp = classOpsImp;
+		opsImp = ops;
 	}
 
     //-------------------------------------------------------------------------
@@ -47,7 +47,7 @@ public class DefaultClassOperations extends AbstractUsbOperations implements Cla
 	 */
 	public synchronized void syncSubmit( Request request ) throws RequestException
 	{
-		getClassOpsImp().syncSubmit( request );
+		getOpsImp().syncSubmit( request );
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class DefaultClassOperations extends AbstractUsbOperations implements Cla
 	 */
 	public synchronized void syncSubmit( RequestBundle requestBundle ) throws RequestException
 	{
-		getClassOpsImp().syncSubmit( requestBundle );
+		getOpsImp().syncSubmit( requestBundle );
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class DefaultClassOperations extends AbstractUsbOperations implements Cla
 	 */
 	public UsbOperations.SubmitResult asyncSubmit( Request request ) throws RequestException
 	{
-		return getClassOpsImp().asyncSubmit( request );
+		return getOpsImp().asyncSubmit( request );
 	}
 
     //-------------------------------------------------------------------------
@@ -94,7 +94,7 @@ public class DefaultClassOperations extends AbstractUsbOperations implements Cla
 			                   createClassRequest( bmRequestType, requestType,
 												   wValue, wIndex, data );
 
-		getClassOpsImp().syncSubmit( classRequest );
+		getOpsImp().syncSubmit( classRequest );
 
 		return classRequest;
 	}
@@ -103,12 +103,12 @@ public class DefaultClassOperations extends AbstractUsbOperations implements Cla
 	// Protected methods
 	//
 
-	/** @return the ClassOpsImp object */
-	protected ClassOpsImp getClassOpsImp() { return classOpsImp; }
+	/** @return the UsbOpsImp object */
+	protected UsbOpsImp getOpsImp() { return ops; }
 
 	//-------------------------------------------------------------------------
 	// Instance variables
 	//
 
-	private ClassOpsImp classOpsImp = null;
+	private UsbOpsImp opsImp = null;
 }

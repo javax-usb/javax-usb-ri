@@ -30,9 +30,9 @@ public class DefaultHubClassOperations extends DefaultClassOperations implements
 	 * @param classOpsImp the ClassOpsImp object
 	 * @exception javax.usb.UsbException if the RequestFactory could not be found
 	 */
-	public DefaultHubClassOperations( UsbHub usbHub, HubClassOpsImp hubClassOpsImp  ) throws UsbException
+	public DefaultHubClassOperations( UsbHub usbHub, UsbOpsImp ops ) throws UsbException
 	{ 
-		super( usbHub, hubClassOpsImp ); 
+		super( usbHub, ops ); 
 	}
 
 	//-------------------------------------------------------------------------
@@ -59,7 +59,7 @@ public class DefaultHubClassOperations extends DefaultClassOperations implements
 		Request request = getRequestFactory().
 						  createClearFeatureRequest( bmRequestType, wValue, wIndex );
 
-		getClassOpsImp().syncSubmit( request );
+		getOpsImp().syncSubmit( request );
 
 		return request;
 	}
@@ -76,7 +76,7 @@ public class DefaultHubClassOperations extends DefaultClassOperations implements
 		Request request = getRequestFactory().
 						  createGetStateRequest( wIndex, data );
 
-		getClassOpsImp().syncSubmit( request );
+		getOpsImp().syncSubmit( request );
 
 		return request;
 	}
@@ -94,7 +94,7 @@ public class DefaultHubClassOperations extends DefaultClassOperations implements
 		Request request = getRequestFactory().
 						  createGetDescriptorRequest( wValue, wIndex, data );
 
-		getClassOpsImp().syncSubmit( request );
+		getOpsImp().syncSubmit( request );
 
 		return request;
 	}
@@ -112,7 +112,7 @@ public class DefaultHubClassOperations extends DefaultClassOperations implements
 		Request request = getRequestFactory().
 						  createGetStatusRequest( bmRequestType, wIndex, data );
 
-		getClassOpsImp().syncSubmit( request );
+		getOpsImp().syncSubmit( request );
 
 		return request;
 	}
@@ -129,7 +129,7 @@ public class DefaultHubClassOperations extends DefaultClassOperations implements
 		Request request = getRequestFactory().
 						  createSetDescriptorRequest( wValue, wIndex, data );
 
-		getClassOpsImp().syncSubmit( request );
+		getOpsImp().syncSubmit( request );
 
 		return request;
 	}
@@ -147,7 +147,7 @@ public class DefaultHubClassOperations extends DefaultClassOperations implements
 		Request request = getRequestFactory().
 						  createSetFeatureRequest( bmRequestType, wValue, wIndex );
 
-		getClassOpsImp().syncSubmit( request );
+		getOpsImp().syncSubmit( request );
 
 		return request;
 	}

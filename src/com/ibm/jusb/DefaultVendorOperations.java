@@ -30,10 +30,10 @@ public class DefaultVendorOperations extends AbstractUsbOperations implements Ve
 	 * @param vendorOpsImp the VendorOpsImp object
 	 * @exception javax.usb.UsbException if the RequestFactory could not be found
 	 */
-	public DefaultVendorOperations( UsbDevice usbDevice, VendorOpsImp vendorOpsImp  ) throws UsbException
+	public DefaultVendorOperations( UsbDevice usbDevice, UsbOpsImp ops  ) throws UsbException
 	{ 
 		super( usbDevice ); 
-		this.vendorOpsImp = vendorOpsImp;
+		opsImp = ops;
 	}
 
     //-------------------------------------------------------------------------
@@ -47,7 +47,7 @@ public class DefaultVendorOperations extends AbstractUsbOperations implements Ve
 	 */
 	public synchronized void syncSubmit( Request request ) throws RequestException
 	{
-		getVendorOpsImp().syncSubmit( request );
+		getOpsImp().syncSubmit( request );
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class DefaultVendorOperations extends AbstractUsbOperations implements Ve
 	 */
 	public synchronized void syncSubmit( RequestBundle requestBundle ) throws RequestException
 	{
-		getVendorOpsImp().syncSubmit( requestBundle );
+		getOpsImp().syncSubmit( requestBundle );
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class DefaultVendorOperations extends AbstractUsbOperations implements Ve
 	 */
 	public UsbOperations.SubmitResult asyncSubmit( Request request ) throws RequestException
 	{
-		return getVendorOpsImp().asyncSubmit( request );
+		return getOpsImp().asyncSubmit( request );
 	}
 
     //-------------------------------------------------------------------------
@@ -94,7 +94,7 @@ public class DefaultVendorOperations extends AbstractUsbOperations implements Ve
 			                    createVendorRequest( bmRequestType, requestType,
 													 wValue, wIndex, data );
 
-		getVendorOpsImp().syncSubmit( vendorRequest );
+		getOpsImp().syncSubmit( vendorRequest );
 
 		return vendorRequest;
 	}
@@ -103,12 +103,12 @@ public class DefaultVendorOperations extends AbstractUsbOperations implements Ve
 	// Protected methods
 	//
 
-	/** @return the VendorOpsImp object */
-	protected VendorOpsImp getVendorOpsImp() { return vendorOpsImp; }
+	/** @return the UsbOpsImp object */
+	protected UsbOpsImp getOpsImp() { return opsImp; }
 
 	//-------------------------------------------------------------------------
 	// Instance variables
 	//
 
-	private VendorOpsImp vendorOpsImp = null;
+	private UsbOpsImp opsImp = null;
 }

@@ -30,10 +30,10 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 	 * @param standardOpsImp the StandardOpsImp object
 	 * @exception javax.usb.UsbException if the RequestFactory could not be found
 	 */
-	public DefaultStandardOperations( UsbDevice usbDevice, StandardOpsImp standardOpsImp  ) throws UsbException
+	public DefaultStandardOperations( UsbDevice usbDevice, UsbOpsImp ops  ) throws UsbException
 	{ 
 		super( usbDevice ); 
-		this.standardOpsImp = standardOpsImp;
+		opsImp = ops;
 	}
 
     //-------------------------------------------------------------------------
@@ -47,7 +47,7 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 	 */
 	public synchronized void syncSubmit( Request request ) throws RequestException
 	{
-		getStandardOpsImp().syncSubmit( request );
+		getOpsImp().syncSubmit( request );
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 	 */
 	public synchronized void syncSubmit( RequestBundle requestBundle ) throws RequestException
 	{
-		getStandardOpsImp().syncSubmit( requestBundle );
+		getOpsImp().syncSubmit( requestBundle );
 	}
 
 	/**
@@ -69,7 +69,7 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 	 */
 	public UsbOperations.SubmitResult asyncSubmit( Request request ) throws RequestException
 	{
-		return getStandardOpsImp().asyncSubmit( request );
+		return getOpsImp().asyncSubmit( request );
 	}
 
     //-------------------------------------------------------------------------
@@ -272,12 +272,12 @@ public class DefaultStandardOperations extends AbstractUsbOperations implements 
 	// Protected methods
 	//
 
-	/** @return the StandardOpsImp object */
-	protected StandardOpsImp getStandardOpsImp() { return standardOpsImp; }
+	/** @return the UsbOpsImp object */
+	protected UsbOpsImp getOpsImp() { return opsImp; }
 
 	//-------------------------------------------------------------------------
 	// Instance variables
 	//
 
-	private StandardOpsImp standardOpsImp = null;
+	private UsbOpsImp opsImp = null;
 }

@@ -170,7 +170,7 @@ public class UsbDeviceAbstraction extends AbstractUsbInfo implements UsbDevice
 	public StandardOperations getStandardOperations() throws UsbException
 	{
 		if( standardOperations == null )
-			standardOperations = new DefaultStandardOperations( this, getUsbDeviceImp().getStandardOpsImp() );
+			standardOperations = new DefaultStandardOperations( this, getUsbDeviceImp().getOpsImp() );
 
 		return standardOperations;
 	}
@@ -186,7 +186,7 @@ public class UsbDeviceAbstraction extends AbstractUsbInfo implements UsbDevice
 	public ClassOperations getClassOperations() throws UsbException
 	{
 		if( classOperations == null )
-			classOperations = new DefaultClassOperations( this, getUsbDeviceImp().getClassOpsImp() );
+			classOperations = new DefaultClassOperations( this, getUsbDeviceImp().getOpsImp() );
 
 		return classOperations;
 	}
@@ -202,7 +202,7 @@ public class UsbDeviceAbstraction extends AbstractUsbInfo implements UsbDevice
 	public VendorOperations getVendorOperations() throws UsbException
 	{
 		if( vendorOperations == null )
-			vendorOperations = new DefaultVendorOperations( this, getUsbDeviceImp().getVendorOpsImp() );
+			vendorOperations = new DefaultVendorOperations( this, getUsbDeviceImp().getOpsImp() );
 
 		return vendorOperations;
 	}

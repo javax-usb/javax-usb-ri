@@ -1,4 +1,4 @@
-package com.ibm.jusb;
+package com.ibm.jusb.os;
 
 /*
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
@@ -9,13 +9,17 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.*;
+import com.ibm.jusb.*;
 
 /**
- * This class defines the interface for implementing the StandardOperations
- * @author E. Michael Maximilien
- * @version 1.0.0
+ * Interface for os implementation of UsbDevice.
+ * @author Dan Streetman
  */
-public interface StandardOpsImp extends UsbOpsImp
+public interface UsbDeviceImp
 {
+	/**
+	 * Get a UsbOpsImp for this UsbDevice.
+	 * @return A UsbOpsImp.
+	 */
+	public UsbOpsImp getUsbOpsImp();
 }

@@ -2,8 +2,8 @@
 
 <!--
 	XML Ant (http://www.apache.org/ant) build file for JSR80 (javax.usb) RI
-	@author E. Michael Maximilien
 	@author Dan Streetman
+	@author E. Michael Maximilien
 -->
 
 <project name="javax.usb" default="help">
@@ -99,14 +99,12 @@
 		<echo message="  help               Show this help"/>
 		<echo message="  jars               Create JAR files"/>
 		<echo message="  jdoc               Create JavaDOC"/>
-		<echo message="  mrproper           Clean everything"/>
-		<echo message="  version            Show RI version"/>
+		<echo message="  mrproper           Clean everything (including JAR/SO files)"/>
 		<echo message=""/>
 	</target>
 
-	<!-- Initialization -->
-	<target name="init">
-	</target>
+	<!-- compile, jars, jdoc -->
+	<target name="all" depends="compile,jars,jdoc"/>
 
 	<!--
 		Simple complete compile task:
@@ -114,7 +112,7 @@
 		2) Generates the JNI stub header
 		3) Invokes "make" to compile the C JNI code
 	-->
-	<target name="compile" depends="init">
+	<target name="compile">
 		<echo message="Compiling JSR80 (javax.usb) RI classes"/>
 		<mkdir dir="${jsr80.ri.dest.dir}"/>
 		<javac
@@ -140,7 +138,7 @@
 	</target>
 
 	<!-- Cleans the .class files -->
-	<target name="clean" depends="init">
+	<target name="clean">
 		<echo message="Cleaning JSR80 (javax.usb) RI classes and JNI object files" />
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
 			<fileset dir="${jsr80.ri.dest.dir}" includes="com/ibm/jusb/**/*.class"/>
@@ -152,7 +150,7 @@
 	</target>
 
 	<!-- Clean everything (Mr. Clean) -->
-	<target name="mrproper" depends="init,clean">
+	<target name="mrproper" depends="clean">
 		<echo message="Cleaning everything in JSR80 RI!"/>
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
 			<fileset dir="${jsr80.ri.src.jarfile.dir}" includes="${jsr80.ri.src.jarfile}"/>
@@ -165,7 +163,7 @@
 	</target>
 
 	<!-- Creates the source and class JAR files and moves JNI library -->
-	<target name="jars" depends="init,compile">
+	<target name="jars" depends="compile">
 		<mkdir dir="${jsr80.ri.src.jarfile.dir}"/>
 		<jar
 			jarfile="${jsr80.ri.src.jarfile.dir}/${jsr80.ri.src.jarfile}"
@@ -194,7 +192,7 @@
 		Also note that if the API jdoc dir is the same as the RI jdoc dir, the
 		last built jdoc will be overwritten (i.e. calling this will overwrite the API jdoc).
 	-->
-	<target name="jdoc" depends="init">
+	<target name="jdoc">
 		<mkdir dir="${jsr80.ri.jdoc.dir}"/>
 		<javadoc
 			packagenames="javax.usb.*,com.ibm.jusb.*"
@@ -218,20 +216,4 @@
 		/>
 	</target>
 
-	<!-- Display the version information for RI -->
-	<target name="version" depends="init">
-		<!-- No runnable version class for the RI yet -->
-		<fail message="No runnable Version class for RI (yet)."/>
-	</target>
-
-	<!-- compile, jars, jdoc -->
-	<target name="all" depends="init,compile,jars,jdoc"/>
-
 </project>
-
-
-
-
-
-
-

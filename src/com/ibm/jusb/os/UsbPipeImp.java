@@ -1,4 +1,4 @@
-package com.ibm.jusb;
+package com.ibm.jusb.os;
 
 /**
  * Copyright (c) 1999 - 2001, International Business Machines Corporation.
