@@ -1,0 +1,416 @@
+<?xml version="1.0"?>
+
+<!--
+	XML Ant (http://www.apache.org/ant) build file for JSR80 (javax.usb) RI
+	@author E. Michael Maximilien
+	@author Dan Streetman
+	@version 1.0.0-beta1
+-->
+
+<project name="javax.usb" default="help">
+
+	<!-- User overrides from file -->
+	<property name="ant.prop.file.name" value=".ant-global.properties"/>
+	<property file="${user.home}/${ant.prop.file.name}"/>
+	
+	<!-- User overrides from environment -->
+	<property environment="Jsr80Env"/>
+	
+	<property name="Jsr80Env.JSR80_RI_BUILDFILE" value="build_ri.xml"/>
+
+	<property name="Jsr80Env.JSR80_RI_VERSION" value="1.0.0-beta2"/>
+
+	<property name="Jsr80Env.JSR80_RI_DIST_NAME" value="jsr80-ri-${Jsr80Env.JSR80_RI_VERSION}"/>
+	<property name="Jsr80Env.JSR80_RI_DIST_ZIP_FILE" value="${Jsr80Env.JSR80_RI_DIST_NAME}.zip"/>
+	<property name="Jsr80Env.JSR80_RI_DIST_TAR_FILE" value="${Jsr80Env.JSR80_RI_DIST_NAME}.tar"/>
+
+	<property name="Jsr80Env.JSR80_RI_SRC_JARFILE" value="jsr80_ri_src.jar"/>
+	<property name="Jsr80Env.JSR80_RI_CLASS_JARFILE" value="jsr80_ri.jar"/>
+
+	<property name="Jsr80Env.JSR80_RI_DIST_DIR" value="dist"/>
+	<property name="Jsr80Env.JSR80_RI_SRC_DIR" value="src"/>
+	<property name="Jsr80Env.JSR80_RI_DEST_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
+	<property name="Jsr80Env.JSR80_RI_LIB_DIR" value="lib"/>
+	<property name="Jsr80Env.JSR80_RI_JNI_SRC_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}/jni/linux"/>
+	<property name="Jsr80Env.JSR80_RI_SRC_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
+	<property name="Jsr80Env.JSR80_RI_CLASS_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
+	<property name="Jsr80Env.JSR80_RI_DOCS_DIR" value="docs"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_DIR" value="${Jsr80Env.JSR80_RI_DOCS_DIR}/jdoc"/>
+	<property name="Jsr80Env.JSR80_RI_TEST_SRC_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}/test"/>
+	<property name="Jsr80Env.JSR80_RI_TEST_DEST_DIR" value="${Jsr80Env.JSR80_RI_DEST_DIR}/test"/>
+
+	<property name="Jsr80Env.JSR80_RI_DEBUG" value="no"/>
+	<property name="Jsr80Env.JSR80_RI_OPTIMIZE" value="yes"/>
+	<property name="Jsr80Env.JSR80_RI_DEPRECATION" value="yes"/>
+	<property name="Jsr80Env.JSR80_RI_VERBOSE" value="no"/>
+	<property name="Jsr80Env.JSR80_RI_QUIET" value="no"/>
+	<property name="Jsr80Env.JSR80_RI_COMPRESS" value="yes"/>
+
+	<property name="Jsr80Env.JSR80_RI_TEST_CLASSNAME" value="junit.textui.TestRunner"/>	
+	<property name="Jsr80Env.JSR80_RI_TEST_ARG" value="com.ibm.jusb.AllTests"/>
+
+	<property name="Jsr80Env.JSR80_RI_JDOC_WINDOWTITLE" value="JavaDOC for JSR80 (javax.usb) API and RI"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_DOCTITLE" value="JSR80 (javax.usb) API and RI"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_BOTTOM" value="Copyright &#169; 2000-2001 JCP (Java Community Process) All Rights Reserved."/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_HEADER" value="javax.usb Linux RI v${Jsr80Env.JSR80_RI_VERSION}"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_FOOTER" value="javax.usb Linux RI v${Jsr80Env.JSR80_RI_VERSION}"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_API_SRC_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
+
+	<!-- Variable defaults -->
+	<property name="jsr80.ri.buildfile" value="${Jsr80Env.JSR80_RI_BUILDFILE}"/>
+	
+	<property name="jsr80.ri.tmp.dir" value="RI-TMP-DIR"/>
+	<property name="jsr80.ri.dist.name.dir" value="${Jsr80Env.JSR80_RI_DIST_NAME}"/>
+	<property name="jsr80.ri.dist.zip.file" value="${Jsr80Env.JSR80_RI_DIST_ZIP_FILE}"/>
+	<property name="jsr80.ri.dist.tar.file" value="${Jsr80Env.JSR80_RI_DIST_TAR_FILE}"/>
+	<property name="jsr80.ri.manifest.file" value="jsr80_ri.mf"/>
+
+	<property name="jsr80.ri.readme.file" value="README-RI"/>
+	<property name="jsr80.ri.license.file" value="LICENSE-RI"/>
+	<property name="jsr80.ri.whatsnew.file" value="WHATSNEW-RI"/>
+
+	<property name="jsr80.ri.version" value="${Jsr80Env.JSR80_RI_VERSION}"/>
+	
+	<property name="jsr80.ri.dist.dir" value="${Jsr80Env.JSR80_RI_DIST_DIR}"/>
+	<property name="jsr80.ri.dest.dir" value="${Jsr80Env.JSR80_RI_DEST_DIR}"/>
+	<property name="jsr80.ri.src.dir" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
+	<property name="jsr80.ri.lib.dir" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
+	<property name="jsr80.ri.jni.src.dir" value="${Jsr80Env.JSR80_RI_JNI_SRC_DIR}"/>
+	<property name="jsr80.ri.docs.dir" value="${Jsr80Env.JSR80_RI_DOCS_DIR}"/>
+	<property name="jsr80.ri.jdoc.dir" value="${Jsr80Env.JSR80_RI_JDOC_DIR}"/>
+	<property name="jsr80.ri.test.src.dir" value="${Jsr80Env.JSR80_RI_TEST_SRC_DIR}"/>
+	<property name="jsr80.ri.test.dest.dir" value="${Jsr80Env.JSR80_RI_TEST_DEST_DIR}"/>
+
+	<property name="jsr80.ri.debug" value="${Jsr80Env.JSR80_RI_DEBUG}"/>
+	<property name="jsr80.ri.optimize" value="${Jsr80Env.JSR80_RI_OPTIMIZE}"/>
+	<property name="jsr80.ri.deprecation" value="${Jsr80Env.JSR80_RI_DEPRECATION}"/>
+	<property name="jsr80.ri.verbose" value="${Jsr80Env.JSR80_RI_VERBOSE}"/>
+	<property name="jsr80.ri.quiet" value="${Jsr80Env.JSR80_RI_QUIET}"/>
+	<property name="jsr80.ri.compress" value="${Jsr80Env.JSR80_RI_COMPRESS}"/>
+
+	<property name="jsr80.ri.jni.src.dir" value="${Jsr80Env.JSR80_RI_JNI_SRC_DIR}"/>
+	<property name="jsr80.ri.jni.dest.dir" value="${jsr80.ri.lib.dir}"/>
+	<property name="jsr80.ri.jni.library" value="libJavaxUsb.so"/>
+	<property name="jsr80.ri.src.jarfile" value="${Jsr80Env.JSR80_RI_SRC_JARFILE}"/>
+	<property name="jsr80.ri.class.jarfile" value="${Jsr80Env.JSR80_RI_CLASS_JARFILE}"/>
+	<property name="jsr80.ri.src.jarfile.dir" value="${Jsr80Env.JSR80_RI_SRC_JARFILE_DIR}"/>
+	<property name="jsr80.ri.class.jarfile.dir" value="${Jsr80Env.JSR80_RI_CLASS_JARFILE_DIR}"/>
+
+	<property name="jsr80.ri.jdoc.windowtitle" value="${Jsr80Env.JSR80_RI_JDOC_WINDOWTITLE}"/>
+	<property name="jsr80.ri.jdoc.doctitle" value="${Jsr80Env.JSR80_RI_JDOC_DOCTITLE}"/>
+	<property name="jsr80.ri.jdoc.bottom" value="${Jsr80Env.JSR80_RI_JDOC_BOTTOM}"/>
+	<property name="jsr80.ri.jdoc.header" value="${Jsr80Env.JSR80_RI_JDOC_HEADER}"/>
+	<property name="jsr80.ri.jdoc.footer" value="${Jsr80Env.JSR80_RI_JDOC_FOOTER}"/>
+	<property name="jsr80.ri.jdoc.verbose" value="no"/>
+	<property name="jsr80.ri.jdoc.version" value="yes"/>
+	<property name="jsr80.ri.jdoc.author" value="yes"/>
+	<property name="jsr80.ri.jdoc.nodeprecated" value="no"/>
+	<property name="jsr80.ri.jdoc.nodeprecatedlist" value="no"/>
+	<property name="jsr80.ri.jdoc.failonerror" value="yes"/>
+	<property name="jsr80.ri.jdoc.public" value="no"/>
+	<property name="jsr80.ri.jdoc.protected" value="no"/>
+	<property name="jsr80.ri.jdoc.package" value="yes"/>
+	<property name="jsr80.ri.jdoc.private" value="no"/>
+	<property name="jsr80.ri.jdoc.api.src.dir" value="${Jsr80Env.JSR80_RI_JDOC_API_SRC_DIR}"/>
+
+	<property name="jsr80.ri.test.classname" value="${Jsr80Env.JSR80_RI_TEST_CLASSNAME}"/>
+	<property name="jsr80.ri.test.requestops.classname" value="javax.usb.RequestOpsTests"/>
+
+	<property name="jsr80.ri.test.src.dir" value="${Jsr80Env.JSR80_RI_TEST_DIR}"/>
+	<property name="jsr80.ri.test.dest.dir" value="${Jsr80Env.JSR80_RI_TEST_DIR}"/>
+	<property name="jsr80.ri.test.arg" value="${Jsr80Env.JSR80_RI_TEST_ARG}"/>
+	<property name="jsr80.ri.test.fork" value="yes"/>
+
+	<!--
+		 This task shows the various options to run this build file
+	-->
+	<target name="help">
+		<echo message="Buildfile for JSR80 (javax.usb) RI"/>
+		<echo message=""/>
+		<echo message="Targets:"/>
+		<echo message=""/>
+		<echo message="  all                == compile jars jdoc"/>
+		<echo message="  clean              Clean all classes"/>
+		<echo message="  compile            Compile all classes"/>
+		<echo message="  help               Show this help"/>
+		<echo message="  jars               Create JAR files"/>
+		<echo message="  jdoc               Create JavaDOC"/>
+		<echo message="  mrproper           Clean everything"/>
+		<echo message="  version            Show RI version"/>
+		<echo message="  --------- JUnit tests ---------"/>
+		<echo message="  test-all           == test-clean test-compile test-run"/>
+		<echo message="  test-clean         Clean unit tests"/>
+		<echo message="  test-compile       Compile unit tests"/>
+		<echo message="  test-run           Run unit tests"/>
+		<echo message="  test-run-request   Run unit tests"/>
+		<echo message=""/>
+	</target>
+
+	<!-- Initialization -->
+	<target name="init">
+	</target>
+
+	<!--
+		Simple complete compile task:
+		1) Compiles the RI Java classes
+		2) Generates the JNI stub header
+		3) Invokes "make" to compile the C JNI code
+	-->
+	<target name="compile" depends="init">
+		<echo message="Compiling JSR80 (javax.usb) RI classes"/>
+		<mkdir dir="${jsr80.ri.dest.dir}"/>
+		<javac
+			srcdir="${jsr80.ri.src.dir}"
+			destdir="${jsr80.ri.dest.dir}"
+			debug="${jsr80.ri.debug}"
+			optimize="${jsr80.ri.optimize}"
+			deprecation="${jsr80.ri.deprecation}"
+			verbose="${jsr80.ri.verbose}"
+			failonerror="yes"
+			includes="com/ibm/jusb/**"/>
+
+		<echo message="Compiling JSR80 (javax.usb) JNI header and library"/>
+		<javah
+			class="com.ibm.jusb.os.linux.JavaxUsb"
+			destdir="${jsr80.ri.jni.src.dir}"
+			verbose="${jsr80.ri.verbose}"
+			classpath="${java.class.path}:${jsr80.ri.src.dir}"/>
+
+		<exec executable="make" dir="${jsr80.ri.jni.src.dir}" failonerror="yes">
+			<arg line="${jsr80.ri.jni.library}"/>
+		</exec>
+	</target>
+
+	<!-- 
+		Cleans the .class files
+	-->
+	<target name="clean" depends="init">
+		<echo message="Cleaning JSR80 (javax.usb) RI classes and JNI object files" />
+		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
+			<fileset dir="${jsr80.ri.dest.dir}" includes="com/ibm/jusb/**/*.class"/>
+		</delete>
+
+		<exec executable="make" dir="${jsr80.ri.jni.src.dir}" failonerror="yes">
+			<arg line="clean"/>
+		</exec>
+	</target>
+
+	<!-- Mr. Clean -->
+	<target name="mrproper" depends="init,clean">
+		<echo message="Cleaning everything in JSR80 RI!"/>
+		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
+			<fileset dir="${jsr80.ri.src.jarfile.dir}" includes="${jsr80.ri.src.jarfile}"/>
+			<fileset dir="${jsr80.ri.class.jarfile.dir}" includes="${jsr80.ri.class.jarfile}"/>
+			<fileset dir="${jsr80.ri.lib.dir}" includes="${jsr80.ri.jni.library}"/>
+		</delete>
+
+		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false"
+			dir="${jsr80.ri.jdoc.dir}"/>
+		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false"
+			file="${jsr80.ri.dist.zip.file}"/> 
+		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false"
+			file="${jsr80.ri.dist.tar.file}.gz"/> 
+	</target>
+
+	<!--
+		Creates the source and class JAR files and moves JNI library
+	-->
+	<target name="jars" depends="init,compile">
+		<mkdir dir="${jsr80.ri.src.jarfile.dir}"/>
+		<jar
+			jarfile="${jsr80.ri.src.jarfile.dir}/${jsr80.ri.src.jarfile}"
+			basedir="${jsr80.ri.src.dir}"
+			compress="${jsr80.ri.compress}"
+			includes="com/ibm/jusb/**/*.java"/>
+
+		<mkdir dir="${jsr80.ri.class.jarfile.dir}"/>
+		<jar
+			jarfile="${jsr80.ri.class.jarfile.dir}/${jsr80.ri.class.jarfile}"
+			basedir="${jsr80.ri.dest.dir}"
+			compress="${jsr80.ri.compress}"
+			includes="com/ibm/jusb/**/*.class,com/ibm/jusb/**/*.gif"/>
+
+		<mkdir dir="${jsr80.ri.lib.dir}"/>
+		<copy
+			file="${jsr80.ri.jni.src.dir}/${jsr80.ri.jni.library}"
+			todir="${jsr80.ri.lib.dir}"
+			overwrite="yes"/>
+	</target>
+
+	<!--
+		Builds the JavaDOC for the RI
+		Note that if the API source files are not in the RI source path,
+		AND/OR the classpath, only the RI JavaDOC will be built.
+	-->
+	<target name="jdoc" depends="init">
+		<mkdir dir="${jsr80.ri.jdoc.dir}"/>
+		<javadoc
+			packagenames="javax.usb.*,com.ibm.jusb.*"
+			sourcepath="${jsr80.ri.src.dir}:${jsr80.ri.jdoc.api.src.dir}"
+			destdir="${jsr80.ri.jdoc.dir}"
+			verbose="${jsr80.ri.verbose}"
+			Public="${jsr80.ri.public}"
+			Protected="${jsr80.ri.protected}"
+			Package="${jsr80.ri.package}"
+			Private="${jsr80.ri.private}"
+			Version="${jsr80.ri.version}"
+			Author="${jsr80.ri.author}"
+			windowtitle="${jsr80.ri.jdoc.windowtitle}"
+			doctitle="${jsr80.ri.jdoc.doctitle}"
+			bottom="${jsr80.ri.jdoc.bottom}"
+			header="${jsr80.ri.jdoc.header}"
+			footer="${jsr80.ri.jdoc.footer}"
+			nodeprecated="${jsr80.ri.jdoc.nodeprecated}"
+			nodeprecatedlist="${jsr80.ri.jdoc.nodeprecatedlist}"
+			failonerror="${jsr80.ri.jdoc.failonerror}"
+		/>
+	</target>
+
+	<!--
+		Display the version information for RI
+	-->
+	<target name="version" depends="init">
+		<!-- No runnable version class for the RI yet -->
+		<fail message="No runnable Version class for RI (yet)."/>
+	</target>
+
+	<!-- 
+		Builds a release distribution and Zip for this RI version 
+	-->
+	<target name="dist" depends="init,all">
+		<!-- Creating distribution directories -->
+		<mkdir dir="${jsr80.ri.dist.dir}"/>
+		<mkdir dir="${jsr80.ri.dist.dir}/src"/>
+		<mkdir dir="${jsr80.ri.dist.dir}/src/test"/>
+		<mkdir dir="${jsr80.ri.dist.dir}/lib"/>
+		<mkdir dir="${jsr80.ri.dist.dir}/docs"/>
+
+		<!-- Copying main project files -->
+		<copy file="${jsr80.ri.buildfile}" todir="${jsr80.ri.dist.dir}"/>
+		<copy file="${jsr80.ri.readme.file}" todir="${jsr80.ri.dist.dir}"/>
+		<copy file="${jsr80.ri.license.file}" todir="${jsr80.ri.dist.dir}"/>
+		<copy file="${jsr80.ri.whatsnew.file}" todir="${jsr80.ri.dist.dir}"/>
+
+		<!-- Copying docs files (directories) -->
+		<copy todir="${jsr80.ri.dist.dir}/docs">
+			<fileset dir="${jsr80.ri.docs.dir}"/>
+		</copy>
+
+		<!-- Copying src files -->
+		<copy todir="${jsr80.ri.dist.dir}/src">
+			<fileset dir="${jsr80.ri.src.dir}" includes="com/ibm/jusb/**,jni/**" excludes="**/*.class"/>
+		</copy>
+
+		<!-- Copying test files -->
+		<copy todir="${jsr80.ri.dist.dir}/src/test">
+			<fileset dir="${jsr80.ri.test.src.dir}" includes="javax/usb/**,com/ibm/jusb/**" excludes="**/*.class"/>
+		</copy>
+
+		<!-- Creating Zip distribution file -->
+		<echo message="Creating temp directory ${jsr80.ri.tmp.dir}/${jsr80.ri.dist.name.dir}"/>
+		<mkdir dir="${jsr80.ri.tmp.dir}/${jsr80.ri.dist.name.dir}"/>
+		<copy todir="${jsr80.ri.tmp.dir}/${jsr80.ri.dist.name.dir}">
+			<fileset dir="${jsr80.ri.dist.dir}"/>
+		</copy>
+
+		<zip zipfile="${jsr80.ri.dist.zip.file}" basedir="${jsr80.ri.tmp.dir}"/>
+		<echo message="Zip distribution file ${jsr80.ri.dist.zip.file} created sucessfully"/>
+
+		<tar tarfile="${jsr80.ri.dist.tar.file}" basedir="${jsr80.ri.tmp.dir}"/>
+		<gzip zipfile="${jsr80.ri.dist.tar.file}.gz" src="${jsr80.ri.dist.tar.file}"/>
+		<delete file="${jsr80.ri.dist.tar.file}"/>
+		<echo message="Tar distribution file ${jsr80.ri.dist.tar.file}.gz created sucessfully"/>
+
+		<echo message="Cleaning temp directory ${jsr80.ri.tmp.dir}"/>
+		<delete dir="${jsr80.ri.tmp.dir}"/>
+		<echo message="Cleaing distribution directory ${jsr80.ri.dist.dir}"/>
+		<delete dir="${jsr80.ri.dist.dir}"/>
+	</target>
+
+	<!--
+		clean, compile, jars, jdoc
+	-->
+	<target name="all" depends="init,clean,compile,jars,jdoc"/>
+
+	<!-- 
+		The following are unit test tasks.  We have created a series of
+		JUnit XyzTestCase classes to unit test various aspect and portions
+		of the API and RI.  These tasks allows compilation and running of
+		these tests.
+		Find JUnit at: http://www.junit.org
+	-->
+
+	<!--
+		Compiles all JUnit tests
+	-->
+	<target name="test-compile" depends="init,compile">
+		<mkdir dir="${jsr80.ri.test.dest.dir}"/>
+		<javac
+			srcdir="${jsr80.ri.test.src.dir}"
+			destdir="${jsr80.ri.test.dest.dir}"
+			debug="${jsr80.ri.debug}"
+			optimize="${jsr80.ri.optimize}"
+			deprecation="${jsr80.ri.deprecation}"
+			verbose="${jsr80.ri.verbose}"
+			failonerror="yes">
+				<classpath>
+					<pathelement path="${java.class.path}"/>
+					<pathelement location="${jsr80.ri.class.jarfile.dir}/${jsr80.ri.class.jarfile}"/>
+					<pathelement location="${jsr80.ri.src.jarfile.dir}/${jsr80.ri.src.jarfile}"/>
+					<pathelement path="${jsr80.ri.dest.dir}"/>
+					<pathelement path="${jsr80.ri.src.dir}"/>
+				</classpath>
+		</javac>
+	</target>
+
+	<!--
+		Runs the root "AllTests" JUnit TestSuite for the RI and API
+	-->
+	<target name="test-run" depends="init,test-compile">
+		<java classname="${jsr80.ri.test.classname}" fork="${jsr80.ri.test.fork}" failonerror="yes">
+			<arg value="${jsr80.ri.test.arg}"/>
+			<classpath>
+				<pathelement path="${java.class.path}"/>
+				<pathelement path="${jsr80.ri.test.dest.dir}"/>
+				<pathelement location="${jsr80.ri.class.jarfile.dir}/${jsr80.ri.class.jarfile}"/>
+				<pathelement path="${jsr80.ri.dest.dir}"/>
+			</classpath>
+		</java>
+	</target>
+
+	<!--
+		Runs the RequestOpsTests JUnit TestSuite for the Request/<Xyz>Operations interfaces
+	-->
+	<target name="test-run-requestops" depends="init,test-compile">
+		<java classname="${jsr80.ri.test.classname}" fork="${jsr80.ri.test.fork}" failonerror="yes">
+			<arg value="${jsr80.ri.test.requestops.classname}"/>
+			<classpath>
+				<pathelement path="${java.class.path}"/>
+				<pathelement path="${jsr80.ri.test.dest.dir}"/>
+				<pathelement location="${jsr80.ri.class.jarfile.dir}/${jsr80.ri.class.jarfile}"/>
+				<pathelement path="${jsr80.ri.dest.dir}"/>
+			</classpath>
+		</java>
+	</target>
+
+	<!--
+		Cleans all the JUnit tests classes
+	-->
+	<target name="test-clean" depends="init">
+		<delete>
+			<fileset dir="${jsr80.ri.test.dest.dir}" includes="**/*.class"/>
+		</delete>
+	</target>
+
+	<!--
+		Does a full blown <clean, compile and run> for the tests classes
+	-->
+	<target name="test-all" depends="init,test-clean,test-compile,test-run"/>
+</project>
+
+
+
+
+
+
+

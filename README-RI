@@ -1,0 +1,17 @@
+#
+# This file constitutes the main README for the JSR80 RI
+# @author E. Michael Maximilien (maxim@us.ibm.com) 
+# @author Dan Streetman (ddstreet@us.ibm.com)
+#
+
+This API release is based on the version 1.0.0 of the JSR80 specification.
+
+The JCP web site for the JSR80 is: http://jcp.org/detail/80.jsp
+The IBM dW web site for this project is: http://oss.software.ibm.com/developerworks/projects/javaxusb
+
+Installation:
+
+Directory structure:
+
+More information:
+
