@@ -20,7 +20,7 @@ import com.ibm.jusb.*;
  * should implement the methods.
  * @author Dan Streetman
  */
-public class AbstractUsbInterfaceOsImp
+public class AbstractUsbInterfaceOsImp implements UsbInterfaceOsImp
 {
 	/**
 	 * Claim this interface (in Java only).
