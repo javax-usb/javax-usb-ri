@@ -28,13 +28,12 @@ import com.ibm.jusb.util.*;
  */
 public class UsbPipeImp extends Object implements UsbPipe
 {
+	public UsbPipeImp( UsbEndpointImp ep )
+
     public UsbPipeImp( UsbEndpointImp ep, UsbPipeOsImp pipe )
     {
 		usbEndpointImp = ep;
 		setUsbPipeOsImp( pipe );
-
-		if (getUsbEndpoint().getUsbInterface().isActive())
-			setActive( true );
     }
 
 	/** @param the UsbPipeOsImp to use */
@@ -47,7 +46,7 @@ public class UsbPipeImp extends Object implements UsbPipe
     // Public methods
 
 	/** @return if this UsbPipe is active */
-	public boolean isActive() { return active; }
+	public boolean isActive() { return getUsbEndpoint().getUsbInterface().isActive(); }
 
 	/** @return if this UsbPipe is open */
 	public boolean isOpen() { return open; }
@@ -62,10 +61,13 @@ public class UsbPipeImp extends Object implements UsbPipe
 	public boolean isIdle() { return 0 == submissionCount; }
 
 	/** @return if this UsbPipe is in an error state */
-	public boolean isInError() { return null != usbException; }
+	public boolean isInError() { return 0 != getErrorCode(); }
 
 	/** @return the error code indicating the cause of the current error state */
 	public int getErrorCode() { return errorCode; }
+
+	/** @param ec The error code */
+	public void setErrorCode( int ec ) { errorCode = ec; }
 
 	/**
 	 * Return the current sequence number.
@@ -138,6 +140,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 		submissionCount++;
 		sequenceNumber++;
 
+//FIXME-try-catch always decrement
 		int result = getUsbPipeOsImp().syncSubmit(data);
 
 		submissionCount--;
@@ -259,25 +262,6 @@ public class UsbPipeImp extends Object implements UsbPipe
 	 */
 	public UsbPipeEventHelper getUsbPipeEventHelper() { return usbPipeEventHelper; }
 
-	/**
-	 * Set this UsbPipe's active status.
-	 * @param status whether this pipe should become active or inactive.
-	 */
-	public synchronized void setActive( boolean status )
-	{
-		if (status == active)
-			return;
-
-//FIXME
-/* Check this behavior!  Is this correct/enough? */
-		if (!status) {
-			abortAllSubmissions();
-			close();
-		}
-
-		active = status;
-	}
-
 	//**************************************************************************
 	// Protected methods
 
@@ -306,9 +290,7 @@ public class UsbPipeImp extends Object implements UsbPipe
 	/** Get a uniquely-numbered SubmitResult */
 	protected UsbIrpImp createSubmitResult()
 	{
-		UsbIrpImp irp = 
-//FIXME!!!!!!!!!!!!!!!!!!!!
-/*create!!!!!!!!!!!*/ null;
+		UsbIrpImp irp = usbIrpImpFactory.createUsbIrpImp();
 
 		irp.setNumber( ++submitResultCount );
 
@@ -332,12 +314,13 @@ public class UsbPipeImp extends Object implements UsbPipe
 
 	private boolean active = false;
 	private boolean open = false;
-	private UsbException usbException = null;
 	private int errorCode = 0;
 
     private UsbPipeOsImp usbPipeOsImp = null;
 
 	private UsbPipeEventHelper usbPipeEventHelper = new UsbPipeEventHelper( this, new FifoScheduler() );
+
+	private UsbIrpImpFactory usbIrpImpFactory = new UsbIrpImpFactory();
 
 	private long sequenceNumber = 0;
 	private int submissionCount = 0;
