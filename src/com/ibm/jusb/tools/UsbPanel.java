@@ -10,6 +10,7 @@ package com.ibm.jusb.tools;
  */
 
 import java.awt.*;
+import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.tree.*;
@@ -28,15 +29,31 @@ public abstract class UsbPanel extends JPanel
 {
 	public UsbPanel()
 	{
-		setLayout(new BorderLayout());
-		add(textArea, BorderLayout.NORTH);
+		refreshPanel.add(refreshButton);
+		refreshButton.addActionListener(refreshListener);
 		textArea.setEditable(false);
+		mainPanel.setLayout(new BorderLayout());
+		mainPanel.add(refreshPanel, BorderLayout.NORTH);
+		mainPanel.add(textArea, BorderLayout.SOUTH);
+		setLayout(new BorderLayout());
+		add(mainPanel, BorderLayout.NORTH);
 	}
 
 	public String toString() { return string; }
 
+	protected abstract void refresh();
+
+	protected void clear() { textArea.replaceRange("", 0, textArea.getText().length()); }
 	protected void append(String s) { textArea.append(s); }
 	protected void appendln(String s) { append(s + "\n"); }
+
+	protected JPanel mainPanel = new JPanel();
+
+	protected JPanel refreshPanel = new JPanel();
+	protected JButton refreshButton = new JButton("Refresh");
+	protected ActionListener refreshListener = new ActionListener() {
+			public void actionPerformed(ActionEvent aE) { refresh(); }
+		};
 
 	protected JTextArea textArea = new JTextArea();
 	protected String string;
@@ -49,6 +66,12 @@ public static class UsbHubPanel extends UsbDevicePanel
 		usbDevice = hub;
 		usbHub = hub;
 		string = hub.isUsbRootHub() ? "UsbRootHub" : "UsbHub";
+		refresh();
+	}
+
+	protected void refresh()
+	{
+		clear();
 		appendln(string);
 		initText();
 	}
@@ -69,6 +92,12 @@ public static class UsbPortPanel extends UsbPanel
 		super();
 		usbPort = port;
 		string = "UsbPort " + port.getPortNumber();
+		refresh();
+	}
+
+	protected void refresh()
+	{
+		clear();
 		appendln(string);
 		initText();
 	}
@@ -91,6 +120,12 @@ public static class UsbDevicePanel extends UsbPanel
 		super();
 		usbDevice = device;
 		string = "UsbDevice";
+		refresh();
+	}
+
+	protected void refresh()
+	{
+		clear();
 		appendln(string);
 		initText();
 	}
@@ -124,6 +159,12 @@ public static class UsbConfigPanel extends UsbPanel
 		super();
 		usbConfig = config;
 		string = "UsbConfig " + config.getConfigNumber();
+		refresh();
+	}
+
+	protected void refresh()
+	{
+		clear();
 		appendln(string);
 		initText();
 	}
@@ -148,8 +189,15 @@ public static class UsbInterfacePanel extends UsbPanel
 		super();
 		usbInterface = iface;
 		string = "UsbInterface " + iface.getInterfaceNumber();
+		refresh();
+	}
+
+	protected void refresh()
+	{
+		clear();
 		appendln(string);
 		initText();
+		createClaimPanel();
 	}
 
 	protected void initText()
@@ -167,7 +215,36 @@ public static class UsbInterfacePanel extends UsbPanel
 		appendln("Number of UsbEndpoints : " + UsbUtil.unsignedInt(usbInterface.getNumEndpoints()));
 	}
 
+	protected void createClaimPanel()
+	{
+		claimButton.addActionListener(claimListener);
+		claimPanel.add(claimButton);
+		releaseButton.addActionListener(releaseListener);
+		claimPanel.add(releaseButton);
+		add(claimPanel, BorderLayout.SOUTH);
+	}
+
 	private UsbInterface usbInterface = null;
+
+	private JPanel claimPanel = new JPanel();
+	private JButton claimButton = new JButton("Claim");
+	private ActionListener claimListener = new ActionListener() {
+			public void actionPerformed(ActionEvent aE)
+			{
+				try { usbInterface.claim(); }
+				catch ( UsbException uE ) { JOptionPane.showMessageDialog(null, "Could not claim UsbInterface : " + uE.getMessage()); }
+				refresh();
+			}
+		};
+	private JButton releaseButton = new JButton("Release");
+	private ActionListener releaseListener = new ActionListener() {
+			public void actionPerformed(ActionEvent aE)
+			{
+				try { usbInterface.release(); }
+				catch ( UsbException uE ) { JOptionPane.showMessageDialog(null, "Could not release UsbInterface : " + uE.getMessage()); }
+				refresh();
+			}
+		};
 }
 
 public static class UsbEndpointPanel extends UsbPanel
@@ -177,6 +254,11 @@ public static class UsbEndpointPanel extends UsbPanel
 		super();
 		usbEndpoint = ep;
 		string = "UsbEndpoint 0x" + UsbUtil.toHexString(ep.getEndpointAddress());
+	}
+
+	protected void refresh()
+	{
+		clear();
 		appendln(string);
 		initText();
 	}
@@ -217,6 +299,11 @@ public static class UsbPipePanel extends UsbPanel
 		super();
 		usbPipe = pipe;
 		string = "UsbPipe";
+	}
+
+	protected void refresh()
+	{
+		clear();
 		appendln(string);
 		initText();
 	}

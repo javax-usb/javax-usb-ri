@@ -9,6 +9,9 @@ package com.ibm.jusb.tools;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.awt.*;
+import java.util.*;
+
 import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.event.*;
@@ -38,11 +41,12 @@ public class SwingUsbView
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tree.setEditable(false);
 		tree.addTreeSelectionListener(selectionListener);
+		tree.addTreeExpansionListener(expansionListener);
 
 		createTree(rootHub, rootNode);
 
-		treeModel.reload();
-		frame.pack();
+		frame.setSize(DEFAULT_SIZE);
+		splitPane.setDividerLocation(0.50);
 
 		services.addUsbServicesListener(topologyListener);
 	}
@@ -53,6 +57,7 @@ public class SwingUsbView
 		UsbServices services = UsbHostManager.getInstance().getUsbServices();
 		SwingUsbView s = new SwingUsbView(services, services.getUsbRootHub());
 		
+		s.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		s.frame.setVisible(true);
 	}
 
@@ -73,12 +78,18 @@ public class SwingUsbView
 					child = getDeviceNode(device);
 					createDevice(device, child);
 				}
+
+				deviceTable.put(device, child);
 			} else {
 				child = getPortNode(port);
 			}
 
 			node.add(child);
 		}
+
+		treeModel.reload(node);
+		for (int i=0; i<node.getChildCount(); i++)
+				tree.expandPath(new TreePath(((DefaultMutableTreeNode)node.getChildAt(i)).getPath()));
 	}
 
 	protected void createDevice(UsbDevice device, DefaultMutableTreeNode node)
@@ -164,6 +175,8 @@ public class SwingUsbView
 
 	private JFrame frame = new JFrame("UsbView");
 
+	private Hashtable deviceTable = new Hashtable();
+
 	private DefaultMutableTreeNode rootNode = null;
 	private DefaultTreeModel treeModel = null;
 	private JTree tree = null;
@@ -175,11 +188,45 @@ public class SwingUsbView
 
 	private UsbServicesListener topologyListener = new UsbServicesListener() {
 			public void usbDeviceAttached(UsbServicesEvent usE)
-			{ 
-/*FIXME - implement*/ }
+			{
+				UsbInfoIterator iterator = usE.getUsbDevices().usbInfoIterator();
+
+				while (iterator.hasNext()) {
+					UsbDevice device = (UsbDevice)iterator.nextUsbInfo();
+
+					if (deviceTable.containsKey(device.getUsbPort().getUsbHub())) {
+						DefaultMutableTreeNode parent = (DefaultMutableTreeNode)deviceTable.get(device.getUsbPort().getUsbHub());
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode)parent.getChildAt(UsbUtil.unsignedInt(device.getUsbPort().getPortNumber()) - 1);
+						node.setUserObject(new UsbPanel.UsbDevicePanel(device));
+						createDevice(device, node);
+						treeModel.reload(node);
+						deviceTable.put(device, node);
+					}
+				}
+			}
 			public void usbDeviceDetached(UsbServicesEvent usE)
-			{ 
-/*FIXME - implement*/ }
+			{
+				UsbInfoIterator iterator = usE.getUsbDevices().usbInfoIterator();
+
+				while (iterator.hasNext()) {
+					UsbDevice device = (UsbDevice)iterator.nextUsbInfo();
+
+					if (deviceTable.containsKey(device)) {
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode)deviceTable.get(device);
+						node.setUserObject(new UsbPanel.UsbPortPanel(device.getUsbPort()));
+						node.removeAllChildren();
+						treeModel.reload(node);
+						deviceTable.remove(device);
+					}
+				}
+			}
+		};
+
+	private TreeExpansionListener expansionListener = new TreeExpansionListener() {
+			public void treeCollapsed(TreeExpansionEvent teE)
+			{ splitPane.resetToPreferredSizes(); }
+			public void treeExpanded(TreeExpansionEvent teE)
+			{ splitPane.resetToPreferredSizes(); }
 		};
 
 	private TreeSelectionListener selectionListener = new TreeSelectionListener() {
@@ -189,5 +236,7 @@ public class SwingUsbView
 					infoScroll.getViewport().setView((UsbPanel)((DefaultMutableTreeNode)tsE.getPath().getLastPathComponent()).getUserObject());
 			}
 		};
+
+	private static final Dimension DEFAULT_SIZE = new Dimension(640,480);
 
 }
