@@ -55,8 +55,13 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 	 */
 	public void complete()
 	{
-		super.complete();
+		/* Set wrapped UsbIrp fields before completing ourself */
 		completeUsbIrp();
+
+		/* set wrapper as complete and notify waiters */
+		super.complete();
+
+		/* Let device or pipe fire event(s) */
 		executeCompletion();
 	}
 
