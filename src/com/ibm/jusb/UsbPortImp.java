@@ -12,31 +12,25 @@ package com.ibm.jusb;
 import javax.usb.*;
 
 /**
- * Concrete class implementing the UsbPort interface
+ * UsbPort implementation.
  * @author E. Michael Maximilien
  * @author Dan Streetman
- * @version 1.0.0
  */
-class UsbPortImp extends AbstractUsbInfo implements UsbPort
+public class UsbPortImp extends AbstractUsbInfo implements UsbPort
 {
-    //-------------------------------------------------------------------------
-    // Ctor(s)
-    //
-
     /**
-     * 2-args ctor
-     * @param number this port number
-     * @param usbHub the UsbHub device that this port belongs to
+	 * Constructor.
+     * @param usbHub The parent UsbHubImp.
+     * @param number The (1-based) port number.
      */
-    UsbPortImp( int number, UsbHub usbHub )
+    public UsbPortImp( UsbHubImp hub, byte number )
     {
-        this.number = number;
-        this.usbHub = usbHub;
+		usbHubImp = hub;
+		portNumber = number;
     }
 
-    //-------------------------------------------------------------------------
-    // Public overridden interface methods
-    //
+	//**************************************************************************
+	// Public methods
 
     /** @return name of this UsbInfo object */
     public String getName() 
@@ -47,63 +41,59 @@ class UsbPortImp extends AbstractUsbInfo implements UsbPort
         return super.getName();
     }
 
-    //-------------------------------------------------------------------------
-    // Public interface methods
-    //
-
 	/**
 	 * Return the number of this port.
 	 * <p>
-	 * The port number is one greater than its index in getUsbHub().getUsbPorts().
-	 * It is internally represented here as an int instead of a byte, because
-	 * it's really a <strong>unsigned</strong> byte.  Unfortunately, Java
-	 * does not have unsigned bytes.
-	 * @return the number of this port
+	 * The port number is 1-based, so it is one greater than its index
+	 * in {@link com.ibm.jusb.UsbHubImp#getUsbPortImp(byte) UsbHubImp.getUsbPortImp(number)}.
+	 * @return The number of this port.
 	 */
-    public byte getPortNumber() { return (byte)number; }
+    public byte getPortNumber() { return number; }
 
-    /** @return USB hub that this port belongs to */
-    public UsbHub getUsbHub() { return usbHub; }
+    /** @return The parent UsbHub */
+    public UsbHub getUsbHub() { return getUsbHubImp(); }
+
+    /** @return The parent UsbHubImp */
+    public UsbHubImp getUsbHubImp() { return usbHubImp; }
 
     /** @return true if a device is attached to this port */
     public boolean isUsbDeviceAttached() { return (getUsbDevice() != null); }
 
-    /** @return the attached UsbDevice to this port (null if none attached) */
-    public UsbDevice getUsbDevice() { return attachedUsbDevice; }
+    /** @return The attached UsbDevice or null if none attached */
+    public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
 
-    /** 
-     * Attaches the UsbDevice to this port
-     * @param usbDevice the UsbDevice to attach
-	 * @throws javax.usb.UsbException if there is already a device attached
+    /** @return The attached UsbDeviceImp or null if none attached */
+    public UsbDeviceImp getUsbDeviceImp() { return usbDeviceImp; }
+
+    /**
+     * Attaches the UsbDeviceImp to this port.
+     * @param device The UsbDeviceImp to attach.
+	 * @throws javax.usb.UsbException If there is already a device attached.
      */
-    public void attachUsbDevice( UsbDevice usbDevice ) throws UsbException
-    { 
+    public synchronized void attachUsbDeviceImp( UsbDeviceImp device ) throws UsbException
+    {
 		if (isUsbDeviceAttached())
 			throw new UsbException( USB_PORT_DEVICE_ALREADY_ATTACHED );
 
-        attachedUsbDevice = usbDevice; 
+        usbDeviceImp = device;
     }
 
     /** 
-     * Detaches the attached UsbDevice from this port
-	 * @param usbDevice the UsbDevice to detach
-	 * @throws javax.usb.UsbException if the UsbDevice is not already attached
+     * Detaches the attached UsbDeviceImp from this port.
+	 * @param device the UsbDeviceImp to detach.
+	 * @throws javax.usb.UsbException If the UsbDeviceImp is not already attached.
      */
-    public void detachUsbDevice( UsbDevice usbDevice ) throws UsbException
+    public synchronized void detachUsbDeviceImp( UsbDeviceImp device ) throws UsbException
 	{
 		try {
-			if (!getUsbDevice().equals( usbDevice ))
+			if (!getUsbDeviceImp().equals( device ))
 				throw new UsbException( USB_PORT_DEVICE_NOT_ATTACHED );
 		} catch ( NullPointerException npE ) {
 			throw new UsbException( USB_PORT_DEVICE_NOT_ATTACHED );
 		}
 
-		attachedUsbDevice = null;
+		usbDeviceImp = null;
 	}
-
-    //-------------------------------------------------------------------------
-    // Public accept method for the Visitor pattern
-    //
 
     /**
      * Visitor.accept method
@@ -111,21 +101,19 @@ class UsbPortImp extends AbstractUsbInfo implements UsbPort
      */
     public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbPort( this ); }
 
-    //-------------------------------------------------------------------------
+	//**************************************************************************
     // Instance variables
-    //
 
-    private int number = 0;
+    private byte number = 0;
 
-    private UsbHub usbHub = null;
-    private UsbDevice attachedUsbDevice = null;
+    private UsbHubImp usbHubImp = null;
+    private UsbDeviceImp usbDeviceImp = null;
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Class constants
-	//
 
     public static final String USB_PORT_NAME_STRING = "port";
 
-	private static final String USB_PORT_DEVICE_ALREADY_ATTACHED = "UsbPort already has a UsbDevice attached";
-	private static final String USB_PORT_DEVICE_NOT_ATTACHED = "Specified UsbDevice not attached";
+	private static final String USB_PORT_DEVICE_ALREADY_ATTACHED = "UsbPort already has a UsbDeviceImp attached";
+	private static final String USB_PORT_DEVICE_NOT_ATTACHED = "Specified UsbDeviceImp not attached";
 }

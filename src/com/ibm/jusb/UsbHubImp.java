@@ -13,100 +13,97 @@ import javax.usb.*;
 import javax.usb.util.*;
 
 /**
- * Implementation of the UsbHub interface
+ * UsbHub implementation.
  * @author E. Michael Maximilien
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
  */
-class UsbHubImp extends UsbDeviceAbstraction implements UsbHub
+public class UsbHubImp extends UsbDeviceImp implements UsbHub
 {
-	//-------------------------------------------------------------------------
-	// Ctor(s)
-	//
+	/** Constructor */
+	public UsbHubImp( ) { this( 1 ); }
 
 	/**
-	 * Creates a hub with the number of ports specified
-	 * @param numberOfPorts the total number of ports for this hub
+	 * Constructor
+	 * @param ports The initial number of ports.
 	 */
-	UsbHubImp( int numberOfPorts ) { createUsbPorts( numberOfPorts ); }
+	public UsbHubImp( int ports ) { resize( ports ); }
 
-	//-------------------------------------------------------------------------
-	// Private/protected methods
-	//
+	//**************************************************************************
+	// Public methods
 
 	/**
-	 * Creates UsbPort objects
-	 * @param n the number of UsbPort object to create
+	 * Resizes to the specified number of ports.
+	 * <p>
+	 * If resizing decreases the number of ports and there are
+	 * devices attached to lost ports, this will remove only down to the
+	 * port with a device attached.  The device(s) need to be removed before the port(s)!
+	 * @param ports The total number of ports to resize to.
 	 */
-	protected void createUsbPorts( int n )
+	public synchronized void resize( int ports )
 	{
-		int newNumberOfPorts = UsbUtil.unsignedInt( getNumberOfPorts() ) + n;
+		int oldports = UsbUtil.unsignedInt( getNumberOfPorts() );
 
-		if ( newNumberOfPorts > USB_HUB_MAX_PORTS )
-			newNumberOfPorts = USB_HUB_MAX_PORTS;
+		if ( ports == oldports )
+			return;
 
-		if ( newNumberOfPorts < USB_HUB_MIN_PORTS )
-			newNumberOfPorts = USB_HUB_MIN_PORTS;
+		if ( ports > USB_HUB_MAX_PORTS )
+			ports = USB_HUB_MAX_PORTS;
 
-		for (int i = UsbUtil.unsignedInt( getNumberOfPorts() ); i < newNumberOfPorts; i++)
-			portList.addUsbInfo( new UsbPortImp( i+1, this ) );
+		if ( ports < USB_HUB_MIN_PORTS )
+			ports = USB_HUB_MIN_PORTS;
+
+		if ( ports < oldports ) {
+			/* Remove ports */
+			for (int i=oldports; i>ports; i--) {
+				if ( getUsbPortImp((byte)i).isUsbDeviceAttached() )
+					return; /* Cannot remove in-use port */
+				else
+					portList.removeUsbInfo(i-1);
+			}
+		} else {
+			/* Add ports */
+			for (int i = oldports; i < ports; i++)
+				portList.addUsbInfo( new UsbPortImp( this, i+1 ) );
+		}
+
 	}
-
-	//-------------------------------------------------------------------------
-	// Package methods
-	//
 
 	/**
 	 * Attach this device to this hub at the specified port.
-	 * @param usbDevice the UsbDevice to attach
-	 * @param portNumber the number of the port to attach the device to
-	 * @exception javax.usb.UsbException if the device is being attached to 
-	 * a non-existing port or that the port already is occupied
+	 * @param usbDeviceImp the UsbDeviceImp to attach.
+	 * @param portNumber the number (1-based) of the port to attach the device to.
+	 * @exception javax.usb.UsbException If the port is already occupied.
 	 */
-	void addDevice( UsbDevice usbDevice, byte portNumber ) throws UsbException
+	public synchronized void addUsbDeviceImp( UsbDeviceImp usbDeviceImp, byte portNumber ) throws UsbException
 	{
 		if ( UsbUtil.unsignedInt( portNumber ) > UsbUtil.unsignedInt( getNumberOfPorts() ) )
-			throw new UsbException( USB_HUB_PORT_OUT_OF_RANGE );
+			resize( portNumber );
 
-		UsbPortImp usbPort =(UsbPortImp)getUsbPort( portNumber );
+		UsbPortImp usbPortImp = getUsbPortImp( portNumber );
 
-		usbPort.attachUsbDevice( usbDevice );
-
-		attachedDeviceList.addUsbInfo( usbDevice );
+		usbPortImp.attachUsbDevice( usbDevice );
 	}
 
 	/**
-	 * Dettach this device to this hub at the specified port.
-	 * @param usbDevice the UsbDevice to attach
-	 * @param portNumber the number of the port the device is attached to
+	 * Remove the device from this hub at the specified port.
+	 * @param usbDeviceImp The UsbDeviceImp to remove.
+	 * @param portNumber The number (1-based) of the port the device is attached to.
 	 * @exception javax.usb.UsbException if the device is not already attached
-	 * to the port it is being removed from
+	 * to the port it is being removed from.
 	 */
-	void removeDevice( UsbDevice usbDevice, byte portNumber ) throws UsbException
+	public synchronized void removeUsbDeviceImp( UsbDeviceImp usbDeviceImp, byte portNumber ) throws UsbException
 	{
-		if ( UsbUtil.unsignedInt( portNumber ) > UsbUtil.unsignedInt( getNumberOfPorts() ) )
-			throw new UsbException( USB_HUB_PORT_OUT_OF_RANGE );
+		UsbPortImp usbPortImp = getUsbPortImp( portNumber );
 
-		UsbPortImp usbPort =(UsbPortImp)getUsbPort( portNumber );
-
-		usbPort.detachUsbDevice( usbDevice );
-
-		attachedDeviceList.removeUsbInfo( usbDevice );
+		/* UsbPortImp does checking */
+		usbPortImp.detachUsbDeviceImp( usbDeviceImp );
 	}
-
-	//-------------------------------------------------------------------------
-	// Public methods
-	//
 
 	/** @return true if this is a UsbHub and false otherwise */
 	public boolean isUsbHub() { return true; }
 
 	/** @return true if this is the root hub */
 	public boolean isUsbRootHub() { return false;  }
-
-	//-------------------------------------------------------------------------
-	// Public interface methods
-	//
 
 	/** @return the number of ports for this hub */
 	public byte getNumberOfPorts() { return (byte)portList.size(); }
@@ -115,26 +112,43 @@ class UsbHubImp extends UsbDeviceAbstraction implements UsbHub
 	public UsbInfoListIterator getUsbPorts() { return portList.usbInfoListIterator(); }
 
 	/**
-	 * @param number the number of the port to get
-	 * @return the port with the specified number
-	 * @throws UsbRuntimeException if the port number if not valid
+	 * Get the specified port.
+	 * @param number The number (1-based) of the port to get.
+	 * @return The port with the specified number.
+	 * @throws UsbRuntimeException If the port number if not valid.
 	 */
-	public UsbPort getUsbPort( byte number )
+	public UsbPort getUsbPort( byte number ) { return getUsbPortImp( number ); }
+
+	/**
+	 * Get the specified port.
+	 * @param number The number (1-based) of the port to get.
+	 * @return The port with the specified number.
+	 * @throws UsbRuntimeException If the port number if not valid.
+	 */
+	public synchronized UsbPortImp getUsbPortImp( byte number )
 	{
-		UsbInfoIterator iterator = getUsbPorts();
+		int num = UsbUtil.unsignedInt(number);
 
-		while ( iterator.hasNext() ) {
-			UsbPort usbPort = (UsbPort)iterator.nextUsbInfo();
+		if (0 >= num || num >= UsbUtil.unsignedInt(getNumberOfPorts()))
+			throw new UsbRuntimeException( USB_HUB_PORT_OUT_OF_RANGE + num );
 
-			if (number == usbPort.getPortNumber())
-				return usbPort;
-		}
-
-		throw new UsbRuntimeException( USB_HUB_PORT_OUT_OF_RANGE );
+		return (UsbPortImp)portList.getUsbInfo(num - 1);
 	}
 
 	/** @return an iteration of devices currently attached to this hub */
-	public UsbInfoListIterator getAttachedUsbDevices() { return attachedDeviceList.usbInfoListIterator(); }
+	public synchronized UsbInfoListIterator getAttachedUsbDevices()
+	{
+		UsbInfoList attachedDevices = new DefaultUsbInfoList();
+
+		for (int i=0; i<portList.size(); i++) {
+			UsbPortImp portImp = (UsbPortImp)portList.getUsbInfo(i);
+			UsbDevice device = portImp.getUsbDevice();
+			if (null != device)
+				attachedDevices.add(device);
+		}
+
+		return attachedDevices.usbInfoListIterator();
+	}
 
 	/**
 	 * Returns a HubClassOperations object that can be used to submit
@@ -145,14 +159,11 @@ class UsbHubImp extends UsbDeviceAbstraction implements UsbHub
 	 */
 	public HubClassOperations getHubClassOperations()
 	{
-		//<temp>
-		throw new RuntimeException( "Not yet implemented!" );
-		//</temp>
+//FIXME!!
+//<temp>
+throw new RuntimeException( "Not yet implemented!" );
+//</temp>
 	}
-
-	//-------------------------------------------------------------------------
-	// Public accept method for the Visitor pattern
-	//
 
 	/**
 	 * Visitor.accept method
@@ -160,22 +171,19 @@ class UsbHubImp extends UsbDeviceAbstraction implements UsbHub
 	 */
 	public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbHub( this ); }
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Instance variables
-	//
 
 	protected UsbInfoList portList = new DefaultUsbInfoList();
-	protected UsbInfoList attachedDeviceList = new DefaultUsbInfoList();
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Class constants
-	//
 
 	public static final int USB_HUB_MIN_PORTS = 0x01;
-	public static final int USB_HUB_MAX_PORTS = 0xff; /* USB 1.1 spec table 11.8 - max of 255 ports */
+	public static final int USB_HUB_MAX_PORTS = 0xff - 1; /* USB 1.1 spec table 11.8 - max of 255 ports, but 1-based numbering makes it 254! */
 
 	public static final String USB_HUB_NAME = "hub";
 
-	private static final String USB_HUB_PORT_OUT_OF_RANGE = "No such port number on this hub";
+	private static final String USB_HUB_PORT_OUT_OF_RANGE = "No such port number on this hub : ";
 	private static final String USB_DEVICE_NOT_ATTACHED = "The UsbDevice is not attached on the specified port";
 }
