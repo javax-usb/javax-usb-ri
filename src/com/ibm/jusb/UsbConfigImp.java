@@ -169,8 +169,18 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	/** @return The parent UsbDeviceImp */
 	public UsbDeviceImp getUsbDeviceImp() { return usbDeviceImp; }
 
-	/** @param device The parent UsbDeviceImp */
-	public void setUsbDeviceImp(UsbDeviceImp device) { usbDeviceImp = device; }
+	/**
+	 * Set the UsbDeviceImp.
+	 * <p>
+	 * This will also add this to the parent UsbDeviceImp.
+	 * @param device The parent UsbDeviceImp
+	 */
+	public void setUsbDeviceImp(UsbDeviceImp device)
+	{
+		usbDeviceImp = device;
+
+		device.addUsbConfigImp(this);
+	}
 
 	/** @return the config descriptor for this config */
 	public ConfigDescriptor getConfigDescriptor() { return (ConfigDescriptor)getDescriptor(); }

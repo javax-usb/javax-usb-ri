@@ -285,7 +285,11 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	public void setActiveUsbConfigNumber( byte num ) { activeConfigNumber = num; }
 
 	/** @param the configuration to add */
-	public void addUsbConfigImp( UsbConfigImp config ) { configs.addUsbInfo( config ); }
+	public void addUsbConfigImp( UsbConfigImp config )
+	{
+		if (!configs.contains(config))
+			configs.addUsbInfo( config );
+	}
 
 	/**
 	 * Connect to the parent UsbHubImp.

@@ -100,8 +100,18 @@ public class UsbPipeImp extends Object implements UsbPipe
 	/** @return the UsbEndpointImp associated with this UsbPipeImp */
 	public UsbEndpointImp getUsbEndpointImp() { return usbEndpointImp; }
 
-	/** @param ep The UsbEndpointImp */
-	public void setUsbEndpointImp(UsbEndpointImp ep) { usbEndpointImp = ep; }
+	/**
+	 * Set the UsbEndpointImp.
+	 * <p>
+	 * This will also set this on the parent UsbEndpointImp.
+	 * @param ep The UsbEndpointImp
+	 */
+	public void setUsbEndpointImp(UsbEndpointImp ep)
+	{
+		usbEndpointImp = ep;
+
+		ep.setUsbPipeImp(this);
+	}
 
 	/**
 	 * Opens this UsbPipe so its ready for submissions.

@@ -83,8 +83,18 @@ public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
 	/** @return The UsbInterfaceImp */
 	public UsbInterfaceImp getUsbInterfaceImp() { return usbInterfaceImp; }
 
-	/** @param iface The interface */
-    public void setUsbInterfaceImp( UsbInterfaceImp iface ) { usbInterfaceImp = iface; }
+	/**
+	 * Set the UsbInterfaceImp.
+	 * <p>
+	 * This will also add this to the parent UsbInterfaceImp.
+	 * @param iface The interface
+	 */
+    public void setUsbInterfaceImp( UsbInterfaceImp iface )
+	{
+		usbInterfaceImp = iface;
+
+		iface.addUsbEndpointImp(this);
+	}
 
 	/** @return The UsbPipe */
     public UsbPipe getUsbPipe() { return getUsbPipeImp(); }

@@ -24,11 +24,14 @@ import com.ibm.jusb.util.*;
  * <ul>
  * <li>The UsbConfigImp must be set either in the constructor or by its {@link #setUsbConfigImp(UsbConfigImp) setter}.</li>
  * <li>The InterfaceDescriptor must be set either in the constructor or by its {@link #setInterfaceDescriptor(InterfaceDescriptor) setter}.</li>
- * <li>The UsbInterfaceOsImp may optionally be set either in the constructor or by its {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) setter}.
- *     If the platform implementation does not provide any interface claiming ability, it may leave the default setting which manages
- *     in-Java claims and releases.</li>
- * <li>If the active alternate setting number is not 0 (the default), it must be {@link #setActiveAlternateSettingNumber(byte) set} after
- *     creating the active alternate setting.</li>
+ * <li>The UsbInterfaceOsImp may optionally be set either in the constructor or by its
+ *     {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) setter}.
+ *     If the platform implementation does not provide any interface claiming ability,
+ *     it may leave the default setting which manages in-Java claims and releases.</li>
+ * <li>If the active alternate setting number is not the first added to the parent UsbConfigImp either
+ *     {@link com.ibm.jusb.UsbConfigImp#addUsbInterfaceImp(UsbInterfaceImp) directly} or by
+ *     {@link #setUsbConfigImp(UsbConfigImp) setUsbConfigImp}, it must be
+ *     {@link #setActiveAlternateSettingNumber(byte) set} after creating the active alternate setting.</li>
  * <li>All UsbEndpointImps must be {@link #addUsbEndpointImp(UsbEndpointImp) added}.</li>
  * </ul>
  * <p>
@@ -187,8 +190,18 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	/** @return The parent config */
 	public UsbConfigImp getUsbConfigImp() { return usbConfigImp; }
 
-	/** @param config The parent config */
-	public void setUsbConfigImp(UsbConfigImp config) { usbConfigImp = config; }
+	/**
+	 * Set the UsbConfigImp.
+	 * <p>
+	 * This also adds this to the parent UsbConfigImp.
+	 * @param config The parent config
+	 */
+	public void setUsbConfigImp(UsbConfigImp config)
+	{
+		usbConfigImp = config;
+
+		config.addUsbInterfaceImp(this);
+	}
 
 	/** @return the UsbDevice that this interface belongs to */
 	public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
@@ -338,7 +351,11 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	}
 
 	/** @param ep the endpoint to add */
-	public void addUsbEndpointImp( UsbEndpointImp ep ) { endpoints.addUsbInfo( ep ); }
+	public void addUsbEndpointImp( UsbEndpointImp ep )
+	{
+		if (!endpoints.contains(ep))
+			endpoints.addUsbInfo( ep );
+	}
 
 	//-------------------------------------------------------------------------
 	// Private methods
