@@ -21,23 +21,23 @@ import com.ibm.jusb.util.*;
 /**
  * Basic abstract class implementing the UsbServices interface
  * @author E. Michael Maximilien
- * @version 0.0.1
+ * @author Dan Streetman
  */
-public abstract class AbstractUsbServices extends Object implements UsbServices
+public abstract class AbstractUsbServices implements UsbServices
 {
     /**
      * Adds a new UsbServicesListener object to receive events when the USB host
      * has changes.  For instance a new device is plugged in or unplugged.
      * @param l the UsbServicesListener to register     
      */
-    public synchronized void addUsbServicesListener( UsbServicesListener l ) { getTopologyHelper().addUsbServicesListener( l ); }
+    public synchronized void addUsbServicesListener( UsbServicesListener l ) { usbServicesEventHelper.addEventListener( l ); }
 
     /**
      * Adds a new UsbServicesListener object to receive events when the USB host
      * has changes.  For instance a new device is plugged in or unplugged.
      * @param l the UsbServicesListener to register     
      */
-    public synchronized void removeUsbServicesListener( UsbServicesListener l ) { getTopologyHelper().removeUsbServicesListener( l ); }
+    public synchronized void removeUsbServicesListener( UsbServicesListener l ) { usbServicesEventHelper.removeEventListener( l ); }
 
 	/** @return the RequestFactory used to create Request object for the USB operations */ 
 	public RequestFactory getRequestFactory() { return requestFactory; }
@@ -50,17 +50,6 @@ public abstract class AbstractUsbServices extends Object implements UsbServices
 
 	/** @return a new instance of a UsbIrpFactory */
 	public UsbIrpFactory getNewUsbIrpFactory() { return new UsbIrpImpFactory(); }
-
-    //-------------------------------------------------------------------------
-    // Protected methods
-    //
-
-    /** @return the UsbTopologyServicesHelper object */
-    protected UsbTopologyServicesHelper getTopologyHelper() { return topologyHelper; }
-
-    //-------------------------------------------------------------------------
-    // Public methods
-    //
 
 	/**
 	 * Return all UsbDevices under the specificed UsbHub (including itself) in BFS order.
@@ -152,10 +141,31 @@ public abstract class AbstractUsbServices extends Object implements UsbServices
 		return bfsDevices;
 	}
 
+	//**************************************************************************
+	// Protected methods
+
+	/**
+	 * Fire a device attached event
+	 * @param event The event to fire.
+	 */
+	protected void fireDeviceAttachedEvent(UsbServicesEvent event)
+	{
+		usbServicesEventHelper.usbDeviceAttached(event);
+	}
+
+	/**
+	 * Fire a device detached event.
+	 * @param event The event to fire.
+	 */
+	protected void fireDeviceDetachedEvent(UsbServicesEvent event)
+	{
+		usbServicesEventHelper.usbDeviceDetached(event);
+	}
+
     //**************************************************************************
     // Instance variables
 
-    private UsbTopologyServicesHelper topologyHelper = new UsbTopologyServicesHelper( this, new FifoScheduler() );
+	private UsbServicesEventHelper usbServicesEventHelper = new UsbServicesEventHelper();
 	private RequestFactory requestFactory = new RequestImpFactory();
 	private UsbIrpFactory usbIrpFactory = new UsbIrpImpFactory();
 
