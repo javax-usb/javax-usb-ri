@@ -493,7 +493,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 */
 	protected UsbControlIrpImp usbControlIrpToUsbControlIrpImp(UsbControlIrp usbControlIrp) throws UsbException,IllegalArgumentException
 	{
-		UsbControlIrpImp.checkUsbControlIrp(UsbControlIrp);
+		UsbControlIrpImp.checkUsbControlIrp(usbControlIrp);
 
 		UsbControlIrpImp usbControlIrpImp = null;
 
@@ -515,12 +515,16 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 * @exception IllegalArgumentException If the UsbControlIrp is invalid.
 	 * @exception UsbException If the UsbControlIrp is not ready for submission.
 	 */
-	protected List usbControlIrpListToUsbControlIrpImpList(List list) throws ClassCastException,IllegalArgumentException
+	protected List usbControlIrpListToUsbControlIrpImpList(List list) throws IllegalArgumentException,UsbException
 	{
 		List newList = new ArrayList();
 
-		for (int i=0; i<list.size(); i++)
-			newList.add(usbControlIrpToUsbControlIrpImp((UsbControlIrp)list.get(i)));
+		try {
+			for (int i=0; i<list.size(); i++)
+				newList.add(usbControlIrpToUsbControlIrpImp((UsbControlIrp)list.get(i)));
+		} catch ( ClassCastException ccE ) {
+			throw new IllegalArgumentException("The List contains a non-UsbIrp object.");
+		}
 
 		return newList;
 	}
