@@ -9,6 +9,8 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.util.*;
+
 import javax.usb.*;
 import javax.usb.util.*;
 
@@ -298,8 +300,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	/** @return the bundle of UsbPipes contained in this interface setting. */
 	public UsbPipeBundle getUsbPipes()
 	{
-//FIXME - create from endpoints
-return null;
+		return new UsbPipeBundleImp(endpoints);
 	}
 
 	/** @return the interface descriptor for this interface */
@@ -311,7 +312,7 @@ return null;
 		try {
 			return getUsbDeviceImp().getString( getInterfaceDescriptor().getInterfaceIndex() );
 		} catch ( UsbException uE ) {
-//FIXME - this method should return null
+//FIXME - this method should throw UsbException
 			return null;
 		}
 	}
@@ -383,13 +384,50 @@ return null;
 	private UsbInfoList alternateSettings = null;
 	private byte activeAlternateSettingNumber = 0;
 
-	private UsbPipeBundle usbPipeBundle = new UsbPipeBundleImp();
-
 	//-------------------------------------------------------------------------
 	// Class constants
 	//
 
 	public static final String USB_INTERFACE_NAME_STRING = "interface";
 	public static final String USB_INTERFACE_SETTING_NAME_STRING = " setting";
+
+	//**************************************************************************
+	// Inner classes
+
+	public static class UsbPipeBundleImp implements UsbPipeBundle
+	{
+		public UsbPipeBundleImp(UsbInfoList infoList)
+		{
+			for (int i=0; i<infoList.size(); i++)
+				list.add(infoList.getUsbInfo(i));
+		}
+
+		public UsbPipe getUsbPipe(byte epAddress)
+		{
+			for (int i=0; i<list.size(); i++)
+				if (epAddress == ((UsbPipe)list.get(i)).getEndpointAddress())
+					return (UsbPipe)list.get(i);
+
+			throw new UsbRuntimeException("UsbPipeBundle does not contain UsbPipe with address " + UsbUtil.toHexString(epAddress));
+		}
+
+		public boolean containsUsbPipe(byte epAddress)
+		{
+			try {
+				getUsbPipe(epAddress);
+				return true;
+			} catch ( UsbRuntimeException urE ) {
+				return false;
+			}
+		}
+
+		public int size() { return list.size(); }
+
+		public boolean isEmpty() { return list.isEmpty(); }
+
+		public Enumeration elements() { return Collections.enumeration(list); }
+
+		private List list = new ArrayList();
+	}
 
 }
