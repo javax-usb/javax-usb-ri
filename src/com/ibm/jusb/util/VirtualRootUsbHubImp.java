@@ -23,7 +23,7 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 	public VirtualRootUsbHubImp()
 	{
 		super(virtualDeviceDescriptor, new VirtualUsbDeviceOsImp());
-		setSpeed(UsbConst.SPEED_FULL);
+		setSpeed(UsbConst.DEVICE_SPEED_FULL);
 		init();
 	}
 
@@ -48,22 +48,13 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 	}
 
 	/** No disconnect */
-	public void disconnect()
-	{
-		throw new UsbRuntimeException("Cannot disconnect Virtual Root UsbHub");
-	}
+	public void disconnect() { }
 
 	/** No UsbPort use */
-	public void setUsbPortImp(UsbPortImp port)
-	{
-		throw new UsbRuntimeException("Virtual Root UsbHub cannot have parent UsbPort");
-	}
+	public void setParentUsbPortImp(UsbPortImp port) { }
 
 	/** No UsbPort use */
-	public UsbPortImp getUsbPortImp()
-	{
-		throw new UsbRuntimeException("Virtual Root UsbHub has no parent UsbPort");
-	}
+	public UsbPortImp getParentUsbPortImp() { return null; }
 
 	//**************************************************************************
 	// Class constants
@@ -80,24 +71,24 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 	public static final byte SETTING_NUM = (byte)0x00;
 
 	public static final DeviceDescriptorImp virtualDeviceDescriptor =
-		new DeviceDescriptorImp( DescriptorConst.DESCRIPTOR_MIN_LENGTH_DEVICE,
-								 DescriptorConst.DESCRIPTOR_TYPE_DEVICE,
-								 DescriptorConst.DEVICE_CLASS_HUB,
+		new DeviceDescriptorImp( UsbConst.DESCRIPTOR_MIN_LENGTH_DEVICE,
+								 UsbConst.DESCRIPTOR_TYPE_DEVICE,
+								 USB_BCD,
+								 UsbConst.HUB_CLASSCODE,
 								 (byte)0x00, /* subclass */
 								 (byte)0x00, /* protocol */
 								 (byte)0x08, /* maxpacketsize */
-								 (byte)0x00, /* man index */
-								 (byte)0x00, /* prod index */
-								 (byte)0x00, /* serial index */
-								 (byte)0x01, /* n configs */
 								 VENDOR_ID,
 								 PRODUCT_ID,
 								 DEVICE_BCD,
-								 USB_BCD );
+								 (byte)0x00, /* man index */
+								 (byte)0x00, /* prod index */
+								 (byte)0x00, /* serial index */
+								 (byte)0x01 /* n configs */ );
 
 	public static final ConfigDescriptorImp virtualConfigDescriptor =
-		new ConfigDescriptorImp( DescriptorConst.DESCRIPTOR_MIN_LENGTH_CONFIG,
-								 DescriptorConst.DESCRIPTOR_TYPE_CONFIG,
+		new ConfigDescriptorImp( UsbConst.DESCRIPTOR_MIN_LENGTH_CONFIG,
+								 UsbConst.DESCRIPTOR_TYPE_CONFIG,
 								 (short)CONFIG_TOTAL_LEN,
 								 (byte)0x01, /* n interfaces */
 								 CONFIG_NUM,
@@ -106,12 +97,12 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 								 (byte)0x00 ); /* maxpower */
 
 	public static final InterfaceDescriptorImp virtualInterfaceDescriptor =
-		new InterfaceDescriptorImp( DescriptorConst.DESCRIPTOR_MIN_LENGTH_INTERFACE,
-									DescriptorConst.DESCRIPTOR_TYPE_INTERFACE,
+		new InterfaceDescriptorImp( UsbConst.DESCRIPTOR_MIN_LENGTH_INTERFACE,
+									UsbConst.DESCRIPTOR_TYPE_INTERFACE,
 									INTERFACE_NUM,
 									SETTING_NUM,
 									(byte)0x00, /* num endpoints */
-									DescriptorConst.DEVICE_CLASS_HUB,
+									UsbConst.HUB_CLASSCODE,
 									(byte)0x00, /* subclass */
 									(byte)0x00, /* protocol */
 									(byte)0x00 ); /* iface index */

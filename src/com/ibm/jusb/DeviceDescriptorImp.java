@@ -170,7 +170,7 @@ public class DeviceDescriptorImp extends DescriptorImp implements DeviceDescript
     private short idProduct = 0x0000;
     private short bcdDevice = 0x0000;
     private byte iManufacturer = 0x00;
-    private byte iPoduct = 0x00;
-    private byte ISerialNumber = 0x00;
+    private byte iProduct = 0x00;
+    private byte iSerialNumber = 0x00;
     private byte bNumConfigurations = 0x00;
 }

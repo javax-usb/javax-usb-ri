@@ -22,9 +22,8 @@ import javax.usb.*;
  *     Note the UsbPipeImp will automatically do this inside its {@link com.ibm.jusb.UsbPipeImp#setUsbEndpointImp(UsbEndpointImp) setUsbEndpointImp} method.</li>
  * </ul>
  * @author Dan Streetman
- * @author E. Michael Maximilien
  */
-public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
+public class UsbEndpointImp implements UsbEndpoint
 {
 	/**
 	 * Constructor.
@@ -40,41 +39,14 @@ public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
 	//**************************************************************************
     // Public methods
 
-    /** @return name of this UsbInfo object */
-    public String getName() 
-    {
-        if( super.getName().equals( "" ) )
-            setName( USB_ENDPOINT_NAME_STRING + (byte)(getEndpointAddress() & UsbInfoConst.ENDPOINT_NUMBER_MASK) );
-        
-        return super.getName();
-    }
-
-    /** @return the unique address of this endpoint */
-    public byte getEndpointAddress() { return getEndpointDescriptor().getEndpointAddress(); }
-
     /**
      * @return direction of this endpoint (i.e. in [from device to host] or out
      * [from host to device])
      */
-    public byte getDirection() { return (byte)(getEndpointAddress() & UsbInfoConst.ENDPOINT_DIRECTION_MASK); }
-
-    /** @return the attribute of this endpoint */
-    public byte getAttributes() { return getEndpointDescriptor().getAttributes(); }
+    public byte getDirection() { return (byte)(getEndpointDescriptor().bEndpointAddress() & UsbConst.ENDPOINT_DIRECTION_MASK); }
 
     /** @return this endpoint's type */
-    public byte getType() { return (byte)(getAttributes() & UsbInfoConst.ENDPOINT_TYPE_MASK); }
-
-    /** @return the max packet size required for this endpoint */
-    public short getMaxPacketSize() { return getEndpointDescriptor().getMaxPacketSize(); }
-
-    /** @return this endpoint interval */
-    public byte getInterval() { return getEndpointDescriptor().getInterval(); }
-
-    /** @return the UsbDevice associated with this Endpoint */
-    public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
-
-	/** @return The UsbDeviceImp */
-	public UsbDeviceImp getUsbDeviceImp() { return getUsbInterfaceImp().getUsbDeviceImp(); }
+    public byte getType() { return (byte)(getEndpointDescriptor().bmAttributes() & UsbConst.ENDPOINT_TYPE_MASK); }
 
     /** @return The UsbInterface */
     public UsbInterface getUsbInterface() { return getUsbInterfaceImp(); }
@@ -106,26 +78,16 @@ public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
 	public void setUsbPipeImp(UsbPipeImp pipe) { usbPipeImp = pipe; }
 
 	/** @return the endpoint descriptor for this endpoint */
-	public EndpointDescriptor getEndpointDescriptor() { return (EndpointDescriptor)getDescriptor(); }
-
-    /**
-     * Visitor.accept method
-     * @param visitor the UsbInfoVisitor visiting this UsbInfo
-     */
-    public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbEndpoint( this ); }
+	public EndpointDescriptor getEndpointDescriptor() { return endpointDescriptor; }
 
 	/** @param desc the endpoint descriptor */
-	public void setEndpointDescriptor( EndpointDescriptor desc ) { setDescriptor( desc ); }
+	public void setEndpointDescriptor( EndpointDescriptor desc ) { endpointDescriptor = desc; }
 
 	//**************************************************************************
     // Instance variables
 
     private UsbInterfaceImp usbInterfaceImp = null;
+	private EndpointDescriptor endpointDescriptor = null;
     private UsbPipeImp usbPipeImp = null;
-
-	//**************************************************************************
-	// Class constants
-
-    public static final String USB_ENDPOINT_NAME_STRING = "endpoint";
 
 }

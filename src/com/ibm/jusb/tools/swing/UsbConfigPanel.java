@@ -18,7 +18,6 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 import javax.usb.*;
-import javax.usb.os.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
@@ -32,7 +31,7 @@ public class UsbConfigPanel extends UsbPanel
 	{
 		super();
 		usbConfig = config;
-		string = "UsbConfig " + config.getConfigNumber();
+		string = "UsbConfig " + config.getConfigDescriptor().bConfigurationValue();
 		
 		add(Box.createVerticalGlue());
 		JPanel panel = new JPanel(new BorderLayout());
@@ -51,12 +50,16 @@ public class UsbConfigPanel extends UsbPanel
 
 	protected void initText()
 	{
-		appendln("Config Number : " + UsbUtil.unsignedInt(usbConfig.getConfigNumber()));
+		String configString = null;
+
+		try { configString = usbConfig.getConfigString(); } catch ( Exception e ) { configString = "Error : " + e.getMessage(); }
+
+		appendln("Config Number : " + UsbUtil.unsignedInt(usbConfig.getConfigDescriptor().bConfigurationValue()));
 		appendln("Is Active : " + usbConfig.isActive());
-		appendln("Config String : " + usbConfig.getConfigString());
-		appendln("Attributes : " + UsbUtil.toHexString(usbConfig.getAttributes()));
-		appendln("Max Power (mA) : " + (2 * UsbUtil.unsignedInt(usbConfig.getMaxPower()))); /* units are 2mA */
-		appendln("Number of UsbInterfaces : " + UsbUtil.unsignedInt(usbConfig.getNumInterfaces()));
+		appendln("Config String : " + configString);
+		appendln("Attributes : " + UsbUtil.toHexString(usbConfig.getConfigDescriptor().bmAttributes()));
+		appendln("Max Power (mA) : " + (2 * UsbUtil.unsignedInt(usbConfig.getConfigDescriptor().bMaxPower()))); /* units are 2mA */
+		appendln("Number of UsbInterfaces : " + UsbUtil.unsignedInt(usbConfig.getConfigDescriptor().bNumInterfaces()));
 	}
 
 	private UsbConfig usbConfig = null;

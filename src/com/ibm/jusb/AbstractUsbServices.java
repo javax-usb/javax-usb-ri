@@ -12,41 +12,37 @@ package com.ibm.jusb;
 import javax.usb.*;
 import javax.usb.event.*;
 
+import com.ibm.jusb.event.*;
+import com.ibm.jusb.util.*;
+
 /**
  * Abstract implementation of UsbServices.
  * @author Dan Streetman
- * @author E. Michael Maximilien
  */
 public abstract class AbstractUsbServices implements UsbServices
 {
-	/** @return The UsbRootHub. */
-	public UsbRootHub getUsbRootHub() throws UsbException { return getUsbRootHubImp(); }
+	/** @return The root UsbHub. */
+	public UsbHub getRootUsbHub() throws UsbException { return getRootUsbHubImp(); }
 
-	/** @return The UsbRootHubImp. */
-	public UsbRootHubImp getUsbRootHubImp() { return usbRootHubImp; }
+	/** @return The root UsbHubImp. */
+	public UsbHubImp getRootUsbHubImp() { return rootUsbHubImp; }
 
     /** @param listener The listener to add. */
     public synchronized void addUsbServicesListener( UsbServicesListener listener )
 	{
-		usbServicesEventHelper.addEventListener( listener );
+		listenerImp.addEventListener( listener );
 	}
 
     /** @param listener The listener to remove. */
-    public synchronized void removeUsbServicesListener( UsbServicesListener l )
+    public synchronized void removeUsbServicesListener( UsbServicesListener listener )
 	{
-		usbServicesEventHelper.removeEventListener( listener );
+		listenerImp.removeEventListener( listener );
 	}
-
-	//**************************************************************************
-	// Protected methods
-
-	/** @return The UsbServicesEventHelper */
-	protected UsbServicesEventHelper getUsbServicesEventHelper() { return usbServicesEventHelper; }
 
     //**************************************************************************
     // Instance variables
 
-	private UsbRootHubImp usbRootHubImp = new VirtualUsbRootHubImp();
-	private UsbServicesEventHelper usbServicesEventHelper = new UsbServicesEventHelper();
+	private UsbHubImp rootUsbHubImp = new VirtualRootUsbHubImp();
+	protected UsbServicesListenerImp listenerImp = new UsbServicesListenerImp();
 
 }

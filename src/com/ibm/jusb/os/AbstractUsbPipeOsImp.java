@@ -50,9 +50,9 @@ public abstract class AbstractUsbPipeOsImp implements UsbPipeOsImp
 	{
 		asyncSubmit(irp);
 
-		irp.waitUntilCompleted();
+		irp.waitUntilComplete();
 
-		if (irp.isInUsbException())
+		if (irp.isUsbException())
 			throw irp.getUsbException();
 	}
 
@@ -115,6 +115,4 @@ public abstract class AbstractUsbPipeOsImp implements UsbPipeOsImp
 	 * The OS-implementation must implement this method.
 	 */
 	public abstract void abortAllSubmissions();
-
-	private UsbIrpImpFactory usbIrpImpFactory = new UsbIrpImpFactory();
 }

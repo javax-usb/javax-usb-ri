@@ -18,7 +18,6 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 import javax.usb.*;
-import javax.usb.os.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 

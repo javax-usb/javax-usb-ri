@@ -18,7 +18,6 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 import javax.usb.*;
-import javax.usb.os.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
@@ -48,21 +47,27 @@ public class UsbDevicePanel extends UsbPanel
 
 	protected void initText()
 	{
-		appendln("Vendor ID : 0x" + UsbUtil.toHexString(usbDevice.getVendorId()));
-		appendln("Product ID : 0x" + UsbUtil.toHexString(usbDevice.getProductId()));
-		appendln("Speed : " + usbDevice.getSpeedString());
-		appendln("Manufacturer : " + usbDevice.getManufacturer());
-		appendln("Product : " + usbDevice.getProductString());
-		appendln("Serial Number : " + usbDevice.getSerialNumber());
-		appendln("Device Class : 0x" + UsbUtil.toHexString(usbDevice.getDeviceClass()));
-		appendln("Device Subclass : 0x" + UsbUtil.toHexString(usbDevice.getDeviceSubClass()));
-		appendln("Device Protocol : 0x" + UsbUtil.toHexString(usbDevice.getDeviceProtocol()));
-		appendln("BCD Device : " + UsbUtil.toHexString(usbDevice.getBcdDevice()));
-		appendln("BCD USB : " + UsbUtil.toHexString(usbDevice.getBcdUsb()));
-		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbDevice.getMaxPacketSize()));
+		String manufacturer = null, product = null, serialNumber = null;
+
+		try { manufacturer = usbDevice.getManufacturerString(); } catch ( Exception e ) { manufacturer = "Error : " + e.getMessage(); }
+		try { product = usbDevice.getProductString(); } catch ( Exception e ) { product = "Error : " + e.getMessage(); }
+		try { serialNumber = usbDevice.getSerialNumberString(); } catch ( Exception e ) { serialNumber = "Error : " + e.getMessage(); }
+
+		appendln("Vendor ID : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().idVendor()));
+		appendln("Product ID : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().idProduct()));
+		appendln("Speed : " + usbDevice.getSpeed());
+		appendln("Manufacturer : " + manufacturer);
+		appendln("Product : " + product);
+		appendln("Serial Number : " + serialNumber);
+		appendln("Device Class : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bDeviceClass()));
+		appendln("Device Subclass : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bDeviceSubClass()));
+		appendln("Device Protocol : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bDeviceProtocol()));
+		appendln("BCD Device : " + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bcdDevice()));
+		appendln("BCD USB : " + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bcdUSB()));
+		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbDevice.getDeviceDescriptor().bMaxPacketSize0()));
 		appendln("Is Configured : " + usbDevice.isConfigured());
 		appendln("Active UsbConfig Number : " + UsbUtil.unsignedInt(usbDevice.getActiveUsbConfigNumber()));
-		appendln("Number of UsbConfigs : " + UsbUtil.unsignedInt(usbDevice.getNumConfigs()));
+		appendln("Number of UsbConfigs : " + UsbUtil.unsignedInt(usbDevice.getDeviceDescriptor().bNumConfigurations()));
 	}
 
 	protected void initPanels()
@@ -144,6 +149,9 @@ public class UsbDevicePanel extends UsbPanel
 
 	protected void submit()
 	{
+//FIXME - implement
+throw new RuntimeException("Not implemented");
+/*
 		RequestPanel panel = null;
 
 		try {
@@ -157,6 +165,7 @@ public class UsbDevicePanel extends UsbPanel
 		} catch ( NumberFormatException nfE ) {
 			JOptionPane.showMessageDialog(null, "NumberFormatException in " + panel + " : " + nfE.getMessage());
 		}
+*/
 	}
 
 	protected void addPacket(RequestPanel newPanel)
@@ -224,18 +233,18 @@ public class UsbDevicePanel extends UsbPanel
 		refreshButtons();
 	}
 
-	protected void gotData(byte[] data, int len)
+	protected void gotData(byte[] data)
 	{
-		for (int i=0; i<len && i<data.length; i++)
+		for (int i=0; i<data.length; i++)
 			outputTextArea.append(UsbUtil.toHexString(data[i]) + " ");
 		outputTextArea.append("\n");
 		outputTextArea.setCaretPosition(outputTextArea.getText().length());
 		validate();
 	}
 
-	protected void gotError(int error, UsbException uE)
+	protected void gotError(UsbException uE)
 	{
-		JOptionPane.showMessageDialog(null, "Got UsbDeviceErrorEvent code " + error + " : " + uE.getMessage());
+		JOptionPane.showMessageDialog(null, "Got UsbDeviceErrorEvent : " + uE.getMessage());
 	}
 
 	private JPanel clearPanel = new JPanel(new BorderLayout());
@@ -273,8 +282,8 @@ public class UsbDevicePanel extends UsbPanel
 		new ListSelectionListener() { public void valueChanged(ListSelectionEvent lsE) { updateSelection(); } };
 
 	private UsbDeviceListener deviceListener = new UsbDeviceListener() {
-			public void dataEventOccurred(UsbDeviceDataEvent uddE) { gotData(uddE.getData(), uddE.getDataLength()); }
-			public void errorEventOccurred(UsbDeviceErrorEvent udeE) { gotError(udeE.getErrorCode(), udeE.getUsbException()); }
+			public void dataEventOccurred(UsbDeviceDataEvent uddE) { gotData(uddE.getData()); }
+			public void errorEventOccurred(UsbDeviceErrorEvent udeE) { gotError(udeE.getUsbException()); }
 			public void usbDeviceDetached(UsbDeviceEvent udE) { }
 		};
 

@@ -9,10 +9,6 @@ package com.ibm.jusb.tools;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.*;
-import javax.usb.event.*;
-import javax.usb.util.*;
-
 import com.ibm.jusb.tools.text.*;
 import com.ibm.jusb.tools.swing.*;
 

@@ -9,6 +9,7 @@ package com.ibm.jusb.tools.swing;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -18,7 +19,6 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 import javax.usb.*;
-import javax.usb.os.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
@@ -33,7 +33,7 @@ public class UsbInterfacePanel extends UsbPanel
 		super();
 		usbInterface = iface;
 		createClaimPanel();
-		string = "UsbInterface " + iface.getInterfaceNumber();
+		string = "UsbInterface " + iface.getInterfaceDescriptor().bInterfaceNumber();
 		
 		// add empty space, make the UI more consistent
 		add(Box.createVerticalGlue());
@@ -53,17 +53,23 @@ public class UsbInterfacePanel extends UsbPanel
 
 	protected void initText()
 	{
-		appendln("Interface Number : " + UsbUtil.unsignedInt(usbInterface.getInterfaceNumber()));
+		String ifaceString = null;
+		int activeSetting = -1;
+
+		try { ifaceString = usbInterface.getInterfaceString(); } catch ( Exception e ) { ifaceString = "Error : " + e.getMessage(); }
+		try { activeSetting = UsbUtil.unsignedInt(usbInterface.getActiveSettingNumber()); } catch ( NotActiveException naE ) { }
+
+		appendln("Interface Number : " + UsbUtil.unsignedInt(usbInterface.getInterfaceDescriptor().bInterfaceNumber()));
 		appendln("Is Active : " + usbInterface.isActive());
 		appendln("Is Claimed : " + usbInterface.isClaimed());
-		appendln("Alternate Setting : " + UsbUtil.unsignedInt(usbInterface.getAlternateSettingNumber()));
-		appendln("Active Alternate Setting Number : " + UsbUtil.unsignedInt(usbInterface.getActiveAlternateSettingNumber()));
-		appendln("Interface Class : " + UsbUtil.toHexString(usbInterface.getInterfaceClass()));
-		appendln("Interface Subclass : " + UsbUtil.toHexString(usbInterface.getInterfaceSubClass()));
-		appendln("Interface Protocol : " + UsbUtil.toHexString(usbInterface.getInterfaceProtocol()));
-		appendln("Interface String : " + usbInterface.getInterfaceString());
-		appendln("Number of Alternate Settings : " + UsbUtil.unsignedInt(usbInterface.getNumAlternateSettings()));
-		appendln("Number of UsbEndpoints : " + UsbUtil.unsignedInt(usbInterface.getNumEndpoints()));
+		appendln("Alternate Setting : " + UsbUtil.unsignedInt(usbInterface.getInterfaceDescriptor().bAlternateSetting()));
+		appendln("Active Alternate Setting Number : " + (0 > activeSetting ? "Not Active" : new Integer(activeSetting).toString()));
+		appendln("Interface Class : " + UsbUtil.toHexString(usbInterface.getInterfaceDescriptor().bInterfaceClass()));
+		appendln("Interface Subclass : " + UsbUtil.toHexString(usbInterface.getInterfaceDescriptor().bInterfaceSubClass()));
+		appendln("Interface Protocol : " + UsbUtil.toHexString(usbInterface.getInterfaceDescriptor().bInterfaceProtocol()));
+		appendln("Interface String : " + ifaceString);
+		appendln("Number of Alternate Settings : " + usbInterface.getNumSettings());
+		appendln("Number of UsbEndpoints : " + UsbUtil.unsignedInt(usbInterface.getInterfaceDescriptor().bNumEndpoints()));
 	}
 
 	protected void createClaimPanel()
@@ -96,6 +102,7 @@ public class UsbInterfacePanel extends UsbPanel
 			{
 				try { usbInterface.release(); }
 				catch ( UsbException uE ) { JOptionPane.showMessageDialog(null, "Could not release UsbInterface : " + uE.getMessage()); }
+				catch ( NotActiveException naE ) { JOptionPane.showMessageDialog(null, "Could not release UsbInterface : " + naE.getMessage()); }
 				refresh();
 			}
 		};

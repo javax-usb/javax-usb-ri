@@ -25,14 +25,14 @@ public class VirtualUsbDeviceOsImp extends AbstractUsbDeviceOsImp implements Usb
 	public VirtualUsbDeviceOsImp() { }
 
 	/**
-	 * Synchronously submit a RequestImp.
-	 * @param requestImp The RequestImp.
+	 * Synchronously submit a UsbIrpImp.ControlUsbIrpImp.
+	 * @param controlUsbIrpImp The UsbIrpImp.ControlUsbIrpImp.
 	 * @return The number of bytes transferred.
 	 * @throws UsbException If the submission is unsuccessful.
 	 */
-	public void syncSubmit(RequestImp requestImp) throws UsbException
+	public void syncSubmit(UsbIrpImp.ControlUsbIrpImp controlUsbIrpImp) throws UsbException
 	{
-		byte[] data = requestImp.getData();
+		byte[] data = controlUsbIrpImp.getData();
 		byte bmRequestType = data[0];
 		byte bRequest = data[1];
 		short wValue = (short)((data[3] << 8) | data[2]);
@@ -44,12 +44,12 @@ public class VirtualUsbDeviceOsImp extends AbstractUsbDeviceOsImp implements Usb
 	}
 
 	/**
-	 * Asynchronously submit a RequestImp.
-	 * @param requestImp The RequestImp.
+	 * Asynchronously submit a UsbIrpImp.ControlUsbIrpImp.
+	 * @param controlUsbIrpImp The UsbIrpImp.ControlUsbIrpImp.
 	 */
-	public void asyncSubmit(RequestImp requestImp) throws UsbException
+	public void asyncSubmit(UsbIrpImp.ControlUsbIrpImp controlUsbIrpImp) throws UsbException
 	{
-		runnableManager.add(new AsyncRunnable(requestImp));
+		runnableManager.add(new AsyncRunnable(controlUsbIrpImp));
 	}
 
 	//**************************************************************************
@@ -69,15 +69,15 @@ public class VirtualUsbDeviceOsImp extends AbstractUsbDeviceOsImp implements Usb
 
 	private class AsyncRunnable implements Runnable
 	{
-		public AsyncRunnable(RequestImp r) { requestImp = r; }
+		public AsyncRunnable(UsbIrpImp.ControlUsbIrpImp r) { controlUsbIrpImp = r; }
 
 		public void run()
 		{
-			try { syncSubmit(requestImp); }
-			catch ( UsbException uE ) { requestImp.setUsbException(uE); }
+			try { syncSubmit(controlUsbIrpImp); }
+			catch ( UsbException uE ) { controlUsbIrpImp.setUsbException(uE); }
 		}
 
-		private RequestImp requestImp = null;
+		private UsbIrpImp.ControlUsbIrpImp controlUsbIrpImp = null;
 	}
 
 }

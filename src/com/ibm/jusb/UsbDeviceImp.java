@@ -18,6 +18,7 @@ import javax.usb.util.*;
 
 import com.ibm.jusb.os.*;
 import com.ibm.jusb.util.*;
+import com.ibm.jusb.event.*;
 
 /**
  * UsbDevice platform-independent implementation.
@@ -26,14 +27,14 @@ import com.ibm.jusb.util.*;
  * <ul>
  * <li>The DeviceDescriptor must be set, either in the constructor or by its {@link #setDeviceDescriptor(DeviceDescriptor) setter}.</li>
  * <li>The UsbDeviceOsImp must be set, either in the constructor or by its {@link #setUsbDeviceOsImp(UsbDeviceOsImp) setter}.</li>
- * <li>The speed string must be set by its {@link #setSpeedString(String) setter}.</li>
+ * <li>The speed must be set by its {@link #setSpeed(Object) setter}.</li>
  * <li>All UsbConfigImps must be {@link #addUsbConfigImp(UsbConfigImp) added}.</li>
  * <li>The active config number must be {@link #setActiveUsbConfigNumber(byte) set}.</li>
  * </ul>
  * After setup, this may be connected to the topology tree by using the {@link #connect(UsbHubImp,byte) connect} method.
  * If the connect method is not used, there are additional steps:
  * <ul>
- * <li>Set the parent UsbPortImp by the {@link #setUsbPortImp(UsbPortImp) setter}.</li>
+ * <li>Set the parent UsbPortImp by the {@link #setParentUsbPortImp(UsbPortImp) setter}.</li>
  * <li>Set this on the UsbPortImp by its {@link com.ibm.jusb.UsbPortImp#attachUsbDeviceImp(UsbDeviceImp) setter}.</li>
  * </ul>
  * If the parent UsbHubImp is not large enough, it can be {@link com.ibm.jusb.UsbHubImp@resize(int) resized}.  This should
@@ -65,25 +66,34 @@ public class UsbDeviceImp implements UsbDevice
 	public void setUsbDeviceOsImp( UsbDeviceOsImp deviceImp ) { usbDeviceOsImp = deviceImp; }
 
 	/** @return The port that this device is attached to */
-	public UsbPort getParentUsbPort() { return getUsbPortImp(); }
+	public UsbPort getParentUsbPort() { return getParentUsbPortImp(); }
 
 	/** @return The port that this device is attached to */
 	public UsbPortImp getParentUsbPortImp() { return usbPortImp; }
 
 	/** @param The parent port */
-	public void setUsbPortImp( UsbPortImp port ) { usbPortImp = port; }
+	public void setParentUsbPortImp( UsbPortImp port ) { usbPortImp = port; }
 
 	/** @return true if this is a UsbHub and false otherwise */
 	public boolean isUsbHub() { return false; }
 
 	/** @return The manufacturer string. */
-	public String getManufacturerString() throws UsbException { return getString( getDeviceDescriptor().iManufacturer() ); }
+	public String getManufacturerString() throws UsbException,UnsupportedEncodingException
+	{
+		return getString( getDeviceDescriptor().iManufacturer() );
+	}
 
 	/** @return The serial number string. */
-	public String getSerialNumberString() throws UsbException { return getString( getDeviceDescriptor().iSerialNumber() ); }
+	public String getSerialNumberString() throws UsbException,UnsupportedEncodingException
+	{
+		return getString( getDeviceDescriptor().iSerialNumber() );
+	}
 
 	/** @return The product string. */
-	public String getProductString() throws UsbException { return getString( getDeviceDescriptor().iProduct() ); }
+	public String getProductString() throws UsbException,UnsupportedEncodingException
+	{
+		return getString( getDeviceDescriptor().iProduct() );
+	}
 
 	/** @return The speed of this device. */
 	public Object getSpeed() { return speed; }
@@ -101,7 +111,7 @@ public class UsbDeviceImp implements UsbDevice
 			for (int i=0; i<configs.size(); i++) {
 				UsbConfigImp config = (UsbConfigImp)configs.get(i);
 
-				if (number == config.getConfigDescriptor().getConfigNumber())
+				if (number == config.getConfigDescriptor().bConfigurationValue())
 					return config;
 			}
 		}
@@ -156,15 +166,21 @@ public class UsbDeviceImp implements UsbDevice
 
 	/**
 	 * @return the String from the specified STringDescriptor
-	 * @throws javax.usb.UsbException if an error occurrs while getting the StringDescriptor.
+	 * @exception UsbException if an error occurrs while getting the StringDescriptor.
+	 * @exception UnsupportedEncodingException If the string encoding is not supported.
 	 */
-	public String getString( byte index ) throws UsbException
+	public String getString( byte index ) throws UsbException,UnsupportedEncodingException
 	{
 		StringDescriptor desc = getStringDescriptor( index );
 
-		return ( null == desc ? null : desc.getString() );
+		try {
+			return desc.getString();
+		} catch ( NullPointerException npE ) {
+			return null;
+		}
 	}
 
+//FIXME - fix this
 	/** @param requestImp The RequestImp that completed. */
 	//public void requestImpCompleted(RequestImp requestImp)
 	//{
@@ -186,13 +202,13 @@ public class UsbDeviceImp implements UsbDevice
 	/** @param the listener to add */
 	public void addUsbDeviceListener( UsbDeviceListener listener ) 
 	{
-		usbDeviceEventHelper.addEventListener(listener);
+		listenerImp.addEventListener(listener);
 	}
 
 	/** @param the listener to remove */
 	public void removeUsbDeviceListener( UsbDeviceListener listener )
 	{
-		usbDeviceEventHelper.removeEventListener(listener);
+		listenerImp.removeEventListener(listener);
 	}
 
 	/** @param desc the new device descriptor */
@@ -203,7 +219,7 @@ public class UsbDeviceImp implements UsbDevice
 	 */
 	public StringDescriptor getCachedStringDescriptor( byte index )
 	{
-		return (StringDescriptor)stringDescriptors.get( new Byte( index ) );
+		return (StringDescriptor)stringDescriptors.get( new Byte( index ).toString() );
 	}
 
 	/**
@@ -232,7 +248,7 @@ public class UsbDeviceImp implements UsbDevice
 	public void addUsbConfigImp( UsbConfigImp config )
 	{
 		if (!configs.contains(config))
-			configs.addUsbInfo( config );
+			configs.add( config );
 	}
 
 	/**
@@ -244,14 +260,14 @@ public class UsbDeviceImp implements UsbDevice
 	{
 		hub.addUsbDeviceImp( this, portNumber );
 
-		setUsbPortImp(hub.getUsbPortImp(portNumber));
+		setParentUsbPortImp(hub.getUsbPortImp(portNumber));
 	}
 
 	/**
 	 * Disconnect UsbDeviceImp.
 	 * <p>
 	 * Only call this if the device was connected to the topology tree;
-	 * i.e. the UsbPortImp has been {@link #setUsbPortImp(UsbPortImp) set}.
+	 * i.e. the UsbPortImp has been {@link #setParentUsbPortImp(UsbPortImp) set}.
 	 * This will fire
 	 * {@link javax.usb.event.UsbDeviceListener#usbDeviceDetached(UsbDeviceEvent) usbDeviceDetached}
 	 * events to all listeners.
@@ -262,9 +278,11 @@ public class UsbDeviceImp implements UsbDevice
 	 */
 	public void disconnect()
 	{
-		getUsbPortImp().detachUsbDeviceImp( this );
+		getParentUsbPortImp().detachUsbDeviceImp( this );
 
-		fireDetachEvent();
+		listenerImp.usbDeviceDetached(new UsbDeviceEvent(this));
+
+//FIXME - turn off all subcomponents; close pipes, release ifaces, etc.
 	}
 
 	/** Compare this to another UsbDeviceImp */
@@ -285,51 +303,75 @@ public class UsbDeviceImp implements UsbDevice
 		return true;
 	}
 
+	/**
+	 * Submit a ControlUsbIrp synchronously to the Default Control Pipe.
+	 * @param irp The ControlUsbIrp.
+	 * @exception UsbException If an error occurrs.
+	 */
+	public void syncSubmit( UsbIrp.ControlUsbIrp irp ) throws UsbException
+	{
+//FIXME - implement
+throw new UsbException("not implemented");
+	}
+
+	/**
+	 * Submit a ControlUsbIrp asynchronously to the Default Control Pipe.
+	 * @param irp The ControlUsbIrp.
+	 * @exception UsbException If an error occurrs.
+	 */
+	public void asyncSubmit( UsbIrp.ControlUsbIrp irp ) throws UsbException
+	{
+throw new UsbException("not implemented");
+	}
+
+	/**
+	 * Submit a List of ControlUsbIrps synchronously to the Default Control Pipe.
+	 * <p>
+	 * All ControlUsbIrps are guaranteed to be atomically (with respect to other clients
+	 * of this API) submitted to the Default Control Pipe.  Atomicity on a native level
+	 * is implementation-dependent.
+	 * @param list The List of ControlUsbIrps.
+	 * @exception UsbException If an error occurrs.
+	 */
+	public void syncSubmit( List list ) throws UsbException
+	{
+throw new UsbException("not implemented");
+	}
+
+	/**
+	 * Submit a List of ControlUsbIrps asynchronously to the Default Control Pipe.
+	 * <p>
+	 * All ControlUsbIrps are guaranteed to be atomically (with respect to other clients
+	 * of this API) submitted to the Default Control Pipe.  Atomicity on a native level
+	 * is implementation-dependent.
+	 * @param list The List of ControlUsbIrps.
+	 * @exception UsbException If an error occurrs.
+	 */
+	public void asyncSubmit( List list ) throws UsbException
+	{
+throw new UsbException("not implemented");
+	}
+
 	//**************************************************************************
 	// Protected methods
-
-	/**
-	 * Fire an error event.
-	 * @param uE The UsbException.
-	 */
-	protected void fireErrorEvent(UsbException uE)
-	{
-		usbDeviceEventHelper.errorEventOccurred(new UsbDeviceErrorEvent(this,uE));
-	}
-
-	/**
-	 * Fire a data event.
-	 * @param data The data.
-	 * @param len The data length.
-	 */
-	protected void fireDataEvent(byte[] data, int len)
-	{
-		usbDeviceEventHelper.dataEventOccurred(new UsbDeviceDataEvent(this,data,len));
-	}
-
-	/** Fire detach event. */
-	protected void fireDetachEvent()
-	{
-		usbDeviceEventHelper.usbDeviceDetached(new UsbDeviceEvent(this));
-	}
 
 	/** @return the device's default langID */
 	protected synchronized short getLangId() throws UsbException
 	{
-		if (0x0000 == langId) {
-			byte[] data = new byte[256];
-
-//FIXME
-//getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
+//FIXME - implement
 throw new UsbException("Not implemented");
+//		if (0x0000 == langId) {
+//			byte[] data = new byte[256];
 
-			if (4 > data[0])
-				throw new UsbException("Strings not supported by device");
+//getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
 
-			langId = (short)((data[3] << 8) | data[2]);
-		}
+//			if (4 > data[0])
+//				throw new UsbException("Strings not supported by device");
 
-		return langId;
+//			langId = (short)((data[3] << 8) | data[2]);
+//		}
+
+//		return langId;
 	}
 
 	/** Update the StringDescriptor at the specified index. */
@@ -337,51 +379,46 @@ throw new UsbException("Not implemented");
 	{
 		byte[] data = new byte[256];
 
-		Request request = getStandardOperations().getDescriptor( (short)((DescriptorConst.DESCRIPTOR_TYPE_STRING << 8) | (index)), getLangId(), data );
+//FIXME - implement
+//Request request = getStandardOperations().getDescriptor( (short)((DescriptorConst.DESCRIPTOR_TYPE_STRING << 8) | (index)), getLangId(), data );
+throw new UsbException("Not implemented.");
 
 //FIXME - this need changing!
 
 		/* requested string not present */
-		if (2 > request.getDataLength())
-			return;
+//if (2 > request.getLength())
+//			return;
 
 		/* claimed length must be at least 2; length byte and type byte are mandatory. */
-		if (2 > UsbUtil.unsignedInt(data[0]))
-			throw new UsbException("String Descriptor length byte is an invalid length, minimum length must be 2, claimed length " + UsbUtil.unsignedInt(data[0]));
+//		if (2 > UsbUtil.unsignedInt(data[0]))
+//			throw new UsbException("String Descriptor length byte is an invalid length, minimum length must be 2, claimed length " + UsbUtil.unsignedInt(data[0]));
 
 		/* string length (descriptor len minus 2 for header) */
-		int len = UsbUtil.unsignedInt(data[0]) - 2;
+//		int len = UsbUtil.unsignedInt(data[0]) - 2;
 
-		if (request.getDataLength() < (len + 2))
-			throw new UsbException("String Descriptor length byte is longer than Descriptor data");
+//		if (request.getLength() < (len + 2))
+//			throw new UsbException("String Descriptor length byte is longer than Descriptor data");
 
-		setStringDescriptor( index, new StringDescriptorImp( data[0], data[1], bytesToString(data,len) ) );
+//FIXME - fix this
+//setStringDescriptor( index, new StringDescriptorImp( data[0], data[1], bytesToString(data,len) ) );
 	}
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Instance variables
-	//
 
 	private UsbDeviceOsImp usbDeviceOsImp = null;
+
+	private DeviceDescriptor deviceDescriptor = null;
 
 	private Hashtable stringDescriptors = new Hashtable();
 	private short langId = 0x0000;
 
-	private String speedString = "";
+	private Object speed = UsbConst.DEVICE_SPEED_UNKNOWN;
     
-	private UsbInfoList configs = new DefaultUsbInfoList();
+	private List configs = new ArrayList();
 	private byte activeConfigNumber = 0;
 
 	private UsbPortImp usbPortImp = null;
 
-	private UsbOperationsImp usbOperationsImp = new UsbOperationsImp(this);
-
-	private UsbDeviceEventHelper usbDeviceEventHelper = new UsbDeviceEventHelper();
-
-	//-------------------------------------------------------------------------
-	// Class constants
-	//
-
-	public static final String USB_DEVICE_NAME = "device";
-
+	private UsbDeviceListenerImp listenerImp = new UsbDeviceListenerImp();
 }

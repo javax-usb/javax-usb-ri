@@ -18,7 +18,6 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 import javax.usb.*;
-import javax.usb.os.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
@@ -68,7 +67,8 @@ public class UsbIrpPanel extends JPanel implements Cloneable
 		lastData = getData();
 
 		if (irpCheckBox.isSelected()) {
-			UsbIrp irp = UsbHostManager.getInstance().getUsbServices().getUsbIrpFactory().createUsbIrp();
+//FIXME - move UsbIrpImp to API
+			UsbIrp irp = null;
 			irp.setData(lastData);
 			irp.setAcceptShortPacket(acceptShortCheckBox.isSelected());
 			if (syncCheckBox.isSelected())

@@ -13,7 +13,6 @@ import javax.usb.*;
 
 /**
  * UsbPort implementation.
- * @author E. Michael Maximilien
  * @author Dan Streetman
  */
 public class UsbPortImp implements UsbPort
@@ -58,12 +57,12 @@ public class UsbPortImp implements UsbPort
     /**
      * Attaches the UsbDeviceImp to this port.
      * @param device The UsbDeviceImp to attach.
-	 * @throws javax.usb.UsbRuntimeException If there is already a device attached.
+	 * @throws IllegalArgumentException If there is already a device attached.
      */
-    public synchronized void attachUsbDeviceImp( UsbDeviceImp device )
+    public synchronized void attachUsbDeviceImp( UsbDeviceImp device ) throws IllegalArgumentException
     {
 		if (isUsbDeviceAttached())
-			throw new UsbRuntimeException( USB_PORT_DEVICE_ALREADY_ATTACHED );
+			throw new IllegalArgumentException( USB_PORT_DEVICE_ALREADY_ATTACHED );
 
         usbDeviceImp = device;
     }
@@ -71,25 +70,19 @@ public class UsbPortImp implements UsbPort
     /** 
      * Detaches the attached UsbDeviceImp from this port.
 	 * @param device the UsbDeviceImp to detach.
-	 * @throws javax.usb.UsbRuntimeException If the UsbDeviceImp is not already attached.
+	 * @throws IllegalArgumentException If the UsbDeviceImp is not already attached.
      */
-    public synchronized void detachUsbDeviceImp( UsbDeviceImp device )
+    public synchronized void detachUsbDeviceImp( UsbDeviceImp device ) throws IllegalArgumentException
 	{
 		try {
 			if (!getUsbDeviceImp().equals( device ))
-				throw new UsbRuntimeException( USB_PORT_DEVICE_NOT_ATTACHED );
+				throw new IllegalArgumentException( USB_PORT_DEVICE_NOT_ATTACHED );
 		} catch ( NullPointerException npE ) {
-			throw new UsbRuntimeException( USB_PORT_DEVICE_NOT_ATTACHED );
+			throw new IllegalArgumentException( USB_PORT_DEVICE_NOT_ATTACHED );
 		}
 
 		usbDeviceImp = null;
 	}
-
-    /**
-     * Visitor.accept method
-     * @param visitor the UsbInfoVisitor visiting this UsbInfo
-     */
-    public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbPort( this ); }
 
 	//**************************************************************************
     // Instance variables
@@ -98,11 +91,6 @@ public class UsbPortImp implements UsbPort
 
     private UsbHubImp usbHubImp = null;
     private UsbDeviceImp usbDeviceImp = null;
-
-	//**************************************************************************
-	// Class constants
-
-    public static final String USB_PORT_NAME_STRING = "port";
 
 	private static final String USB_PORT_DEVICE_ALREADY_ATTACHED = "UsbPort already has a UsbDeviceImp attached";
 	private static final String USB_PORT_DEVICE_NOT_ATTACHED = "Specified UsbDeviceImp not attached";

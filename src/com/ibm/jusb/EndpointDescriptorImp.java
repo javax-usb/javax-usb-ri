@@ -27,7 +27,7 @@ public class EndpointDescriptorImp extends DescriptorImp implements EndpointDesc
 	 * @param wMaxPacketSize This descriptor's wMaxPacketSize.
 	 */
 	public EndpointDescriptorImp( byte bLength, byte bDescriptorType,
-		byte bEndpointAddress, byte bmAttributes, byte bInterval, short wMaxPacketSize );
+		byte bEndpointAddress, byte bmAttributes, byte bInterval, short wMaxPacketSize )
 	{
 		super(bLength, bDescriptorType);
 		this.bEndpointAddress = bEndpointAddress;

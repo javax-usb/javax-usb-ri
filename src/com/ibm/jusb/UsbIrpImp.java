@@ -24,30 +24,25 @@ import com.ibm.jusb.util.*;
  * The user must provide some fields:
  * <ul>
  * <li>{@link #getData() data} via its {@link #setData(byte[]) setter}.</li>
+ * <li>{@link #getLength() length} via its {@link #setLength(int) setter}.</li>
+ * <li>{@link #getOffset() offset} via its {@link #setOffset(int) setter}.</li>
  * <li>{@link #getAcceptShortPacket() short packet policy} via its {@link #setAcceptShortPacket(boolean) setter}.</li>
- * </ul>
- * <p>
- * The os-indpendent implementation will set fields:
- * <ul>
- * <li>The {@link #getNumber() number} via its {@link #setNumber(long) setter}.</li>
- * <li>The {@link #getSequenceNumber() sequence number} via its {@link #setSequenceNumber(long) setter}.</li>
- * <li>{@link #getUsbPipeImp() UsbPipeImp} via its {@link #setUsbPipeImp(UsbPipeImp) setter}.</li>
  * </ul>
  * <p>
  * The os implementation will then process this.
  * If processing is successful, the implementation will set the
- * {@link #getDataLength() data length} via its {@link #setDataLength(int) setter};
+ * {@link #getLength() length} via its {@link #setLength(int) setter};
  * if unsuccessful, the implementation will set the
  * {@link #getUsbException() UsbException} via its {@link #setUsbException(UsbException) setter}.
- * In either case the implementation will then set this {@link #complete() completed}.
+ * In either case the implementation will then set this {@link #complete() complete}.
  * <p>
  * If the user provided their own UsbIrp implementation, then the UsbPipeImp will 'wrap' their
  * implementation with this UsbIrpImp by {@link #setUsbIrp(UsbIrp) setting} the local
  * {@link #getUsbIrp() UsbIrp}.  If this has a local UsbIrp when it is
- * {@link #complete() completed}, this will set the proper fields on the wrapped UsbIrp.
+ * {@link #complete() complete}, this will set the proper fields on the wrapped UsbIrp.
  * @author Dan Streetman
  */
-public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,UsbSubmission
+public class UsbIrpImp implements UsbIrp,UsbSubmission
 {
 	/** Constructor. */
 	public UsbIrpImp() { }
@@ -61,60 +56,63 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,UsbSubmission
 	//*************************************************************************
 	// Public methods
 
-	/**
-	 * @return a unique number for this submission.
-	 */
-	public long getNumber() { return number; }
-
-	/** @return the sequence number of this submission */
-	public long getSequenceNumber() { return sequenceNumber; }
-
-	/** @return the UsbPipe associated with this submission */
-	public UsbPipe getUsbPipe() { return getUsbPipeImp(); }
-
-	/** @return the UsbPipeImp */
-	public UsbPipeImp getUsbPipeImp() { return usbPipeImp; }
-
 	/** @return the data associated with this submission */
 	public byte[] getData() { return data; }
 
 	/** @param data the data associated with the submission */
 	public void setData( byte[] newData ) { data = newData; }
 
-	/**
-	 * If this UsbIrp is in progress on a UsbPipe.
-	 * @return if this UsbIrp is active
-	 */
-	public boolean isActive() { return active; }
+	/** @return The offset. */
+	public int getOffset() { return offset; }
 
-	/** @return true if this submit has completed */
-	public boolean isCompleted() { return completed; }
+	/** @param o The offset. */
+	public void setOffset(int o) { offset = o; }
+
+	/** @return The length. */
+	public int getLength() { return length; }
+
+	/** @param l The length. */
+	public void setLength(int l) { length = l; }
+
+	/** @return true if this submit has complete */
+	public boolean isComplete() { return complete; }
 
 	/** @return if a UsbException occured during submission */
-	public boolean isInUsbException() { return ( null != getUsbException() ); }
+	public boolean isUsbException() { return ( null != getUsbException() ); }
 
-	/** @return the number of bytes transmitted in this submission */
-	public int getDataLength() { return dataLength; }
-
-	/** Wait (block) until this submission is completed */
-	public void waitUntilCompleted() { waitUntilCompleted( 0 ); }
-
-	/** Wait (block) until this submission is completed */
-	public void waitUntilCompleted( long msecs ) { waitUntilCompleted( msecs, 0 ); }
-
-	/** Wait (block) until this submission is completed */
-	public void waitUntilCompleted( long msecs, int nsecs )
+	/** Wait (block) until this submission is complete */
+	public void waitUntilComplete()
 	{
-		if (isCompleted())
-			return;
-
-		synchronized ( waitLock ) {
-			waitCount++;
-			while (!isCompleted()) {
-				try { waitLock.wait( msecs, nsecs ); }
-				catch ( InterruptedException iE ) { }
+		if (!isComplete()) {
+			synchronized ( waitLock ) {
+				waitCount++;
+				while (!isComplete()) {
+					try { waitLock.wait(); }
+					catch ( InterruptedException iE ) { }
+				}
+				waitCount--;
 			}
-			waitCount--;
+		}
+	}
+
+	/** Wait (block) until this submission is complete */
+	public void waitUntilComplete( long msecs )
+	{
+		if (0 == msecs) {
+			waitUntilComplete();
+			return;
+		}
+
+		if (!isComplete()) {
+			synchronized ( waitLock ) {
+				waitCount++;
+//FIXME - wait specified amount of time even if interrupted
+				if (!isComplete()) {
+					try { waitLock.wait( msecs ); }
+					catch ( InterruptedException iE ) { }
+				}
+				waitCount--;
+			}
 		}
 	}
 
@@ -131,88 +129,29 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,UsbSubmission
 	 */
 	public void setAcceptShortPacket( boolean accept ) { acceptShortPacket = accept; }
 
-	/**
-	 * Recycle this UsbIrpImp
-	 * <p>
-	 * This should be called when the UsbIrpImp is no longer needed
-	 */
-	public void recycle() { }
-
-	/**
-	 * Sets the number for this submission
-	 * @param i the new number
-	 */
-	public void setNumber( long l )
-	{
-		number = l;
-
-		try { getUsbIrp().setNumber(l); }
-		catch ( NullPointerException npE ) { }
-	}
-
-	/** @param the seqeunce number of this submision */
-	public void setSequenceNumber( long sn )
-	{
-		sequenceNumber = sn;
-
-		try { getUsbIrp().setSequenceNumber(sn); }
-		catch ( NullPointerException npE ) { }
-	}
-
-	/**
-	 * Sets the pipe for this submission
-	 * @param pipe the pipe to use
-	 */
-	public void setUsbPipe( UsbPipe pipe ) { setUsbPipeImp((UsbPipeImp)pipe); }
-
-	/**
-	 * Sets the pipe for this submission
-	 * @param pipe the pipe to use
-	 */
-	public void setUsbPipeImp( UsbPipeImp pipe ) { usbPipeImp = pipe; }
-
-	/**
-	 * Set isActive.
-	 * <p>
-	 * This indicates whether the UsbIrp is in progress on a UsbPipe.
-	 * @param b whether this is active
-	 */
-	public void setActive( boolean b ) { active = b; }
-
-	/**
-	 * Sets isCompleted
-	 * @param b whether this is done
-	 */
-	public void setCompleted( boolean b ) { completed = b; }
+	/** @param b If this is complete. */
+	public void setComplete( boolean b ) { complete = b; }
 
 	/**
 	 * Complete this submission.
-	 * <p>
-	 * This will wake up all
-	 * {@link #waitUntilCompleted() waiting Threads}.
 	 */
 	public void complete()
 	{
-		setCompleted(true);
+		setComplete(true);
 
-		notifyCompleted();
+		notifyComplete();
 
 //FIXME - the user's UsbIrp methods could block or generate Exception/Error which will cause problems
 		try {
 			UsbIrp irp = getUsbIrp();
 			irp.setUsbException(getUsbException());
-			irp.setDataLength(getDataLength());
-			irp.setCompleted(true);
+			irp.setLength(getLength());
+			irp.complete();
 		} catch ( NullPointerException npE ) { }
 
-		getUsbPipeImp().usbIrpImpCompleted(this);
+//FIXME - fire event somehow...?
+//getUsbPipeImp().usbIrpImpComplete(this);
 	}
-
-	/**
-	 * Sets the complted result
-	 * @param i the result
-	 */
-	public void setDataLength( int i ) { dataLength = i; }
 
 	/**
 	 * Sets the UsbException that occured during submission
@@ -235,7 +174,11 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,UsbSubmission
 	//*************************************************************************
 	// Protected methods
 
-	protected void notifyCompleted()
+	/**
+	 * Notify any Threads {@link #waitUntilComplete() waiting for completion}.
+	 * This <b>must</b> be called <i>after</i> setting this as {@link #isComplete() complete}.
+	 */
+	protected void notifyComplete()
 	{
 		if (0 < waitCount) {
 			synchronized ( waitLock ) {
@@ -244,22 +187,75 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,UsbSubmission
 		}
 	}
 
-	//*************************************************************************
-	// Instance variables
-
 	private UsbIrp usbIrp = null;
 
 	private Object waitLock = new Object();
 	private int waitCount = 0;
 
-	private long number = -1;
-	private long sequenceNumber = -1;
-	private UsbPipeImp usbPipeImp = null;
 	private byte[] data = null;
-	private boolean active = false;
-	private boolean completed = false;
+	private boolean complete = false;
 	private boolean acceptShortPacket = true;
-	private int dataLength = -1;
+	private int offset = -1;
+	private int length = -1;
 	private UsbException usbException = null;
+
+	//*************************************************************************
+	// Inner classes
+
+	public static class ControlUsbIrpImp extends UsbIrpImp implements UsbIrp.ControlUsbIrp
+	{
+		/**
+		 * Get the bmRequestType.
+		 * @return The bmRequestType.
+		 */
+		public byte getRequestType() { return bmRequestType; }
+
+		/**
+		 * Get the bRequest.
+		 * @return The bRequest.
+		 */
+		public byte getRequest() { return bRequest; }
+
+		/**
+		 * Get the wValue.
+		 * @return The wValue.
+		 */
+		public short getValue() { return wValue; }
+
+		/**
+		 * Get the wIndex.
+		 * @return The wIndex.
+		 */
+		public short getIndex() { return wIndex; }
+
+		/**
+		 * Set the bmRequestType.
+		 * @param bmRequestTyp The bmRequestType.
+		 */
+		public void setRequestType(byte bmRequestType) { this.bmRequestType = bmRequestType; }
+
+		/**
+		 * Set the bRequest.
+		 * @param bRequest The bRequest.
+		 */
+		public void setRequest(byte bRequest) { this.bRequest = bRequest; }
+
+		/**
+		 * Set the wValue.
+		 * @param wValue The wValue.
+		 */
+		public void setValue(short wValue) { this.wValue = wValue; }
+
+		/** 
+		 * Set the wIndex.
+		 * @param wIndex The wIndex.
+		 */
+		public void setIndex(short wIndex) { this.wIndex = wIndex; }
+
+		private byte bmRequestType = 0x00;
+		private byte bRequest = 0x00;
+		private short wValue = 0x0000;
+		private short wIndex = 0x0000;
+	}
 
 }

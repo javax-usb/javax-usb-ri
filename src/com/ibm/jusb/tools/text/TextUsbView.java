@@ -20,9 +20,9 @@ import javax.usb.util.*;
 public class TextUsbView
 {
 	/** Main */
-	public static void main( String[] argv ) throws UsbException
+	public static void main( String[] argv ) throws Exception
 	{
-		UsbRootHub rootHub = UsbHostManager.getInstance().getUsbServices().getUsbRootHub();
+		UsbHub rootHub = UsbHostManager.getUsbServices().getRootUsbHub();
 
 		for (int i=0; i<argv.length; i++) {
 			if ("-v".equals(argv[i]) || "--verbose".equals(argv[i]))
@@ -32,15 +32,15 @@ public class TextUsbView
 		displayUsbDevice(rootHub, "");
 	}
 
-	protected static void displayUsbDevice(UsbDevice device, String offset)
+	protected static void displayUsbDevice(UsbDevice device, String offset) throws Exception
 	{
 		print((device.isUsbHub() ? "UsbHub" : "UsbDevice"));
 
-		if (1 < verbose) print(" " + device.getManufacturer());
+		if (1 < verbose) print(" " + device.getManufacturerString());
 
 		if (0 < verbose) print(" " + device.getProductString());
 
-		if (2 < verbose) print(" " + device.getSerialNumber());
+		if (2 < verbose) print(" " + device.getSerialNumberString());
 
 		println("");
 

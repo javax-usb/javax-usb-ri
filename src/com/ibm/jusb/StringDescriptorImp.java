@@ -9,6 +9,8 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.io.*;
+
 import javax.usb.StringDescriptor;
 
 /**
@@ -26,7 +28,7 @@ public class StringDescriptorImp extends DescriptorImp implements StringDescript
 	public StringDescriptorImp( byte bLength, byte bDescriptorType, byte[] bString )
 	{
 		super(bLength, bDescriptorType);
-		this.bString = (null == bString ? "" : bString);
+		this.bString = bString;
 	}
 
 	/**
@@ -35,11 +37,15 @@ public class StringDescriptorImp extends DescriptorImp implements StringDescript
 	 */
 	public byte[] bString()
 	{
-		byte[] bStringCopy = new byte[bString.length];
+		try {
+			byte[] bStringCopy = new byte[bString.length];
 
-		System.arraycopy(bString, 0, bStringCopy, 0, bString.length);
+			System.arraycopy(bString, 0, bStringCopy, 0, bString.length);
 
-		return bStringCopy;
+			return bStringCopy;
+		} catch ( NullPointerException npE ) {
+			return null;
+		}
 	}
 
 	/**
@@ -67,6 +73,9 @@ public class StringDescriptorImp extends DescriptorImp implements StringDescript
 	 */
 	private String createString() throws UnsupportedEncodingException
 	{
+		if (null == bString())
+			return null;
+
 		byte[] s16 = bString();
 
 		for (int i=0; i<ENCODING.length; i++) {
@@ -78,14 +87,14 @@ public class StringDescriptorImp extends DescriptorImp implements StringDescript
 		byte[] s8 = new byte[s16.length/2];
 
 		/* Convert 16-bit (little-endian) to 8-bit, checking each high bit. */
-		for (int i8=0, int i16=0; i8<s8.length && (i16+1)<s16.length; i8++, i16++, i16++) {
+		for (int i8=0, i16=0; i8<s8.length && (i16+1)<s16.length; i8++, i16++, i16++) {
 			s8[i8] = s16[i16];
 			/* if high bit is non-zero, character is not 8-bit. */
 			if (0 != s16[i16+1])
 				throw new UnsupportedEncodingException("No 16-bit encoding available for 16-bit string");
 		}
 
-		return new String( s, ENCODING_8BIT );
+		return new String( s8, ENCODING_8BIT );
 	}
 
 	private byte[] bString = null;

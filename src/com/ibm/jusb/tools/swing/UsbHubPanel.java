@@ -18,7 +18,6 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 import javax.usb.*;
-import javax.usb.os.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
@@ -33,7 +32,7 @@ public class UsbHubPanel extends UsbDevicePanel
 		super();
 		usbDevice = hub;
 		usbHub = hub;
-		string = hub.isUsbRootHub() ? "UsbRootHub" : "UsbHub";
+		string = hub.isRootUsbHub() ? "Root UsbHub" : "UsbHub";
 		initPanels();
 		refresh();
 	}

@@ -16,10 +16,10 @@ import javax.usb.event.*;
 import com.ibm.jusb.util.*;
 
 /**
- * Helper class to handle multiplexing UsbDeviceEvents to listeners.
+ * Implementation of UsbDeviceListener.
  * @author Dan Streetman
  */
-public class UsbDeviceEventHelper extends EventListenerHelper implements UsbDeviceListener
+public class UsbDeviceListenerImp extends EventListenerImp implements UsbDeviceListener
 {
 	/** @param event The Event to fire. */
 	public void errorEventOccurred(UsbDeviceErrorEvent event)

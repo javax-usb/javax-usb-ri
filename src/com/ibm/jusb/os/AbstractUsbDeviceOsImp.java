@@ -26,45 +26,45 @@ import com.ibm.jusb.*;
 public abstract class AbstractUsbDeviceOsImp implements UsbDeviceOsImp
 {
 	/**
-	 * Synchronously submit a RequestImp.
+	 * Synchronously submit a UsbIrpImp.ControlUsbIrpImp.
 	 * <p>
-	 * This method is implemented using {@link #asyncSubmit(RequestImp) asyncSubmit(RequestImp)}.
-	 * @param requestImp The RequestImp.
+	 * This method is implemented using {@link #asyncSubmit(UsbIrpImp.ControlUsbIrpImp) asyncSubmit(UsbIrpImp.ControlUsbIrpImp)}.
+	 * @param controlUsbIrpImp The UsbIrpImp.ControlUsbIrpImp.
 	 * @throws UsbException If the submission is unsuccessful.
 	 */
-	public void syncSubmit(RequestImp requestImp) throws UsbException
+	public void syncSubmit(UsbIrpImp.ControlUsbIrpImp controlUsbIrpImp) throws UsbException
 	{
-		asyncSubmit(requestImp);
+		asyncSubmit(controlUsbIrpImp);
 
-		requestImp.waitUntilCompleted();
+		controlUsbIrpImp.waitUntilComplete();
 
-		if (requestImp.isUsbException())
-			throw requestImp.getUsbException();
+		if (controlUsbIrpImp.isUsbException())
+			throw controlUsbIrpImp.getUsbException();
 	}
 
 	/**
-	 * Synchronously submit a List of RequestImps.
+	 * Synchronously submit a List of UsbIrpImp.ControlUsbIrpImps.
 	 * <p>
-	 * This method is implemented using {@link #syncSubmit(RequestImp) syncSubmit(RequestImp)}.
-	 * This implementation does not throw UsbException; errors are set on a per-RequestImp basis
-	 * but overall execution continues.  Persistent errors will cause all remaining RequestImps to
+	 * This method is implemented using {@link #syncSubmit(UsbIrpImp.ControlUsbIrpImp) syncSubmit(UsbIrpImp.ControlUsbIrpImp)}.
+	 * This implementation does not throw UsbException; errors are set on a per-UsbIrpImp.ControlUsbIrpImp basis
+	 * but overall execution continues.  Persistent errors will cause all remaining UsbIrpImp.ControlUsbIrpImps to
 	 * fail and have their UsbException set, but no UsbException will be thrown.
 	 * @param list The List.
 	 */
 	public void syncSubmit(List list) throws UsbException
 	{
 		for (int i=0; i<list.size(); i++) {
-			try { syncSubmit((RequestImp)list.get(i)); }
+			try { syncSubmit((UsbIrpImp.ControlUsbIrpImp)list.get(i)); }
 			catch ( UsbException uE ) { /* continue processing list */ }
 		}
 	}
 
 	/**
-	 * Asynchronously submit a RequestImp.
+	 * Asynchronously submit a UsbIrpImp.ControlUsbIrpImp.
 	 * <p>
 	 * The OS-implementation must implement this method.
-	 * @param requestImp The RequestImp.
+	 * @param controlUsbIrpImp The UsbIrpImp.ControlUsbIrpImp.
 	 * @throws UsbException If the submission is unsuccessful.
 	 */
-	public abstract void asyncSubmit(RequestImp requestImp) throws UsbException;
+	public abstract void asyncSubmit(UsbIrpImp.ControlUsbIrpImp controlUsbIrpImp) throws UsbException;
 }

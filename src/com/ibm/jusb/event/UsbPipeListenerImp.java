@@ -15,12 +15,11 @@ import javax.usb.*;
 import javax.usb.event.*;
 import com.ibm.jusb.util.*;
 
-
 /**
- * Helper class to handle multiplexing UsbPipeEvents to listeners.
+ * Implementation of UsbPipeListener.
  * @author Dan Streetman
  */
-public class UsbPipeEventHelper extends EventListenerHelper implements UsbPipeListener
+public class UsbPipeListenerImp extends EventListenerImp implements UsbPipeListener
 {
 	/** @param event The Event to fire. */
 	public void errorEventOccurred(UsbPipeErrorEvent event)

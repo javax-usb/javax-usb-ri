@@ -18,12 +18,8 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 import javax.usb.*;
-import javax.usb.os.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
-
-//FIXME - create default implementation in API util pacakge
-import com.ibm.jusb.RequestImp;
 
 /**
  * Class to display Request information.
@@ -76,8 +72,11 @@ public class RequestPanel extends JPanel implements Cloneable
 		return newPanel;
 	}
 
-	public void submit(UsbOperations operations) throws UsbException,NumberFormatException
+	public void submit(UsbDevice device) throws UsbException,NumberFormatException
 	{
+//FIXME - implement
+throw new RuntimeException("not implemented");
+/*
 		lastData = getData();
 		RequestFactory factory = UsbHostManager.getInstance().getUsbServices().getRequestFactory();
 
@@ -92,6 +91,7 @@ public class RequestPanel extends JPanel implements Cloneable
 			operations.syncSubmit(requestImp);
 		else
 			operations.asyncSubmit(requestImp);
+*/
 	}
 
 	protected byte[] getData()

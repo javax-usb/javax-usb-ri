@@ -17,7 +17,6 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 import javax.usb.*;
-import javax.usb.os.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
@@ -27,7 +26,7 @@ import javax.usb.event.*;
  */
 public class SwingUsbView
 {
-	public SwingUsbView(UsbServices services, UsbRootHub hub)
+	public SwingUsbView(UsbServices services, UsbHub hub)
 	{
 		rootHub = hub;
 		rootNode = new DefaultMutableTreeNode(new UsbHubPanel(rootHub));
@@ -55,9 +54,9 @@ public class SwingUsbView
 	/** Main */
 	public static void main( String[] argv ) throws Exception
 	{
-		UsbServices services = UsbHostManager.getInstance().getUsbServices();
-		SwingUsbView s = new SwingUsbView(services, services.getUsbRootHub());
-		
+		UsbServices services = UsbHostManager.getUsbServices();
+		SwingUsbView s = new SwingUsbView(services, services.getRootUsbHub());
+
 		s.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		s.frame.setVisible(true);
 
@@ -67,9 +66,9 @@ public class SwingUsbView
 
 	protected void createTree(UsbHub hub, DefaultMutableTreeNode node)
 	{
-		UsbInfoIterator iterator = hub.getUsbPorts();
+		Iterator iterator = hub.getUsbPorts().iterator();
 		while (iterator.hasNext()) {
-			UsbPort port = (UsbPort)iterator.nextUsbInfo();
+			UsbPort port = (UsbPort)iterator.next();
 			DefaultMutableTreeNode child = null;
 
 			if (port.isUsbDeviceAttached()) {
@@ -98,10 +97,10 @@ public class SwingUsbView
 
 	protected void createDevice(UsbDevice device, DefaultMutableTreeNode node)
 	{
-		UsbInfoIterator iterator = device.getUsbConfigs();
+		Iterator iterator = device.getUsbConfigs().iterator();
 
 		while (iterator.hasNext()) {
-			UsbConfig config = (UsbConfig)iterator.nextUsbInfo();
+			UsbConfig config = (UsbConfig)iterator.next();
 			DefaultMutableTreeNode child = getConfigNode(config);
 
 			createConfig(config, child);
@@ -112,14 +111,14 @@ public class SwingUsbView
 
 	protected void createConfig(UsbConfig config, DefaultMutableTreeNode node)
 	{
-		UsbInfoIterator iterator = config.getUsbInterfaces();
+		Iterator iterator = config.getUsbInterfaces().iterator();
 
 		while (iterator.hasNext()) {
-			UsbInterface iface = (UsbInterface)iterator.nextUsbInfo();
-			UsbInfoListIterator altIterator = iface.getAlternateSettings();
+			UsbInterface iface = (UsbInterface)iterator.next();
+			Iterator altIterator = iface.getSettings().iterator();
 
 			while (altIterator.hasNext()) {
-					UsbInterface setting = (UsbInterface)altIterator.nextUsbInfo();
+					UsbInterface setting = (UsbInterface)altIterator.next();
 
 					DefaultMutableTreeNode child = getInterfaceNode(setting);
 
@@ -132,10 +131,10 @@ public class SwingUsbView
 
 	protected void createInterface(UsbInterface iface, DefaultMutableTreeNode node)
 	{
-		UsbInfoIterator iterator = iface.getUsbEndpoints();
+		Iterator iterator = iface.getUsbEndpoints().iterator();
 
 		while (iterator.hasNext()) {
-			UsbEndpoint ep = (UsbEndpoint)iterator.nextUsbInfo();
+			UsbEndpoint ep = (UsbEndpoint)iterator.next();
 			DefaultMutableTreeNode child = getEndpointNode(ep);
 
 			createEndpoint(ep, child);
@@ -181,7 +180,7 @@ public class SwingUsbView
 		return new DefaultMutableTreeNode(new UsbEndpointPanel(ep));
 	}
 
-	private UsbRootHub rootHub = null;
+	private UsbHub rootHub = null;
 
 	private JFrame frame = new JFrame("UsbView");
 
@@ -197,35 +196,27 @@ public class SwingUsbView
 	private UsbServicesListener topologyListener = new UsbServicesListener() {
 			public void usbDeviceAttached(UsbServicesEvent usE)
 			{
-				UsbInfoIterator iterator = usE.getUsbDevices().usbInfoIterator();
+				UsbDevice device = usE.getUsbDevice();
 
-				while (iterator.hasNext()) {
-					UsbDevice device = (UsbDevice)iterator.nextUsbInfo();
-
-					if (deviceTable.containsKey(device.getUsbPort().getUsbHub())) {
-						DefaultMutableTreeNode parent = (DefaultMutableTreeNode)deviceTable.get(device.getUsbPort().getUsbHub());
-						DefaultMutableTreeNode node = (DefaultMutableTreeNode)parent.getChildAt(UsbUtil.unsignedInt(device.getUsbPort().getPortNumber()) - 1);
-						node.setUserObject(new UsbDevicePanel(device));
-						createDevice(device, node);
-						treeModel.reload(node);
-						deviceTable.put(device, node);
-					}
+				if (deviceTable.containsKey(device.getParentUsbPort().getUsbHub())) {
+					DefaultMutableTreeNode parent = (DefaultMutableTreeNode)deviceTable.get(device.getParentUsbPort().getUsbHub());
+					DefaultMutableTreeNode node = (DefaultMutableTreeNode)parent.getChildAt(UsbUtil.unsignedInt(device.getParentUsbPort().getPortNumber()) - 1);
+					node.setUserObject(new UsbDevicePanel(device));
+					createDevice(device, node);
+					treeModel.reload(node);
+					deviceTable.put(device, node);
 				}
 			}
 			public void usbDeviceDetached(UsbServicesEvent usE)
 			{
-				UsbInfoIterator iterator = usE.getUsbDevices().usbInfoIterator();
+				UsbDevice device = usE.getUsbDevice();
 
-				while (iterator.hasNext()) {
-					UsbDevice device = (UsbDevice)iterator.nextUsbInfo();
-
-					if (deviceTable.containsKey(device)) {
-						DefaultMutableTreeNode node = (DefaultMutableTreeNode)deviceTable.get(device);
-						node.setUserObject(new UsbPortPanel(device.getUsbPort()));
-						node.removeAllChildren();
-						treeModel.reload(node);
-						deviceTable.remove(device);
-					}
+				if (deviceTable.containsKey(device)) {
+					DefaultMutableTreeNode node = (DefaultMutableTreeNode)deviceTable.get(device);
+					node.setUserObject(new UsbPortPanel(device.getParentUsbPort()));
+					node.removeAllChildren();
+					treeModel.reload(node);
+					deviceTable.remove(device);
 				}
 			}
 		};

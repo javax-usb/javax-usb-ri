@@ -9,6 +9,7 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.io.*;
 import java.util.*;
 
 import javax.usb.*;
@@ -38,9 +39,8 @@ import com.ibm.jusb.util.*;
  * When changing the active alternate setting, call the {@link #setActiveAlternateSettingNumber(byte) setActiveAlternateSettingNumber} method.
  * This will update the parent config's active interface setting map.
  * @author Dan Streetman
- * @author E. Michael Maximilien
  */
-public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
+public class UsbInterfaceImp implements UsbInterface
 {
 	/**
 	 * Constructor.
@@ -69,19 +69,6 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	//**************************************************************************
 	// Public methods
 
-	/** @return name of this UsbInfo object */
-	public String getName() 
-	{
-		if( super.getName().equals( "" ) ) {
-			setName( USB_INTERFACE_NAME_STRING + getInterfaceNumber() );
-
-			if (1 < getAlternateSettings().size())
-				setName( super.getName() + USB_INTERFACE_SETTING_NAME_STRING + getAlternateSettingNumber() );
-		}
-        
-		return super.getName();
-	}
-
 	/**
 	 * Claim this interface.
 	 * <p>
@@ -89,10 +76,10 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 * {@link #isActive() active} alternate setting.
 	 * <p>
 	 * All alternate settings will be claimed.
-	 * @throws javax.usb.UsbException if the interface could not be claimed.
-	 * @throws javax.usb.NotActiveException if the interface setting is not active.
+	 * @exception UsbException if the interface could not be claimed.
+	 * @exception NotActiveException if the interface setting is not active.
 	 */
-	public void claim() throws UsbException
+		public void claim() throws UsbException,NotActiveException
 	{
 		checkSettingActive();
 
@@ -106,10 +93,10 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 * <p>
 	 * This can only be called from an
 	 * {@link #isActive() active} alternate setting.
-	 * @throws javax.usb.UsbException if the interface could not be released.
-	 * @throws javax.usb.NotActiveException if the interface setting is not active.
+	 * @exception UsbException if the interface could not be released.
+	 * @exception NotActiveException if the interface setting is not active.
 	 */
-	public void release() throws UsbException
+	public void release() throws UsbException,NotActiveException
 	{
 		checkSettingActive();
 
@@ -137,27 +124,15 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 */
 	public boolean isActive()
 	{
-		return getUsbConfig().isActive() &&
-			getAlternateSettingNumber() == getActiveAlternateSettingNumber();
+		try {
+			return getInterfaceDescriptor().bAlternateSetting() == getActiveSettingNumber();
+		} catch ( NotActiveException naE ) {
+			return false;
+		}
 	}
 
-	/** @return this interface's number */
-	public byte getInterfaceNumber() { return getInterfaceDescriptor().getInterfaceNumber(); }
-
-	/** @return this interface's class */
-	public byte getInterfaceClass() { return getInterfaceDescriptor().getInterfaceClass(); }
-
-	/** @return this interface's sub-class */
-	public byte getInterfaceSubClass() { return getInterfaceDescriptor().getInterfaceSubClass(); }
-
-	/** @return this interface's protocol */
-	public byte getInterfaceProtocol() { return getInterfaceDescriptor().getInterfaceProtocol(); }
-
-	/** @return this interface's number of endpoints */
-	public byte getNumEndpoints() { return getInterfaceDescriptor().getNumEndpoints(); }
-
-	/** @return an iteration of this interface's endpoints */
-	public UsbInfoListIterator getUsbEndpoints() { return endpoints.usbInfoListIterator(); }
+	/** @return The endpoints. */
+	public List getUsbEndpoints() { return endpoints; }
 
 	/**
 	 * @param index The index of the UsbEndpoint to get.
@@ -167,20 +142,20 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 
 	/**
 	 * @param index The index of the UsbEndpoint to get.
-	 * @return The UsbEndpointImp with the specified address.
+	 * @return The UsbEndpointImp with the specified address, or null.
 	 */
 	public UsbEndpointImp getUsbEndpointImp( byte address )
 	{
 		synchronized ( endpoints ) {
 			for (int i=0; i<endpoints.size(); i++) {
-				UsbEndpointImp ep = (UsbEndpointImp)endpoints.getUsbInfo(i);
+				UsbEndpointImp ep = (UsbEndpointImp)endpoints.get(i);
 
-				if (address == ep.getEndpointAddress())
+				if (address == ep.getEndpointDescriptor().bEndpointAddress())
 					return ep;
 			}
 		}
 
-		throw new UsbRuntimeException( "No UsbEndpoint with address 0x" + UsbUtil.toHexString( address ) );
+		return null;
 	}
 
 	/**
@@ -189,10 +164,10 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 */
 	public boolean containsUsbEndpoint( byte address )
 	{
-		try { getUsbEndpoint(address); }
-		catch ( UsbRuntimeException urE ) { return false; }
-
-		return true;
+		if (null != getUsbEndpoint(address))
+			return true;
+		else
+			return false;
 	}
 
 	/** @return The parent config */
@@ -217,31 +192,19 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 			config.addUsbInterfaceImp(this);
 	}
 
-	/** @return the UsbDevice that this interface belongs to */
-	public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
-
-	/** @return the UsbDeviceImp that this interface belongs to */
-	public UsbDeviceImp getUsbDeviceImp() { return getUsbConfigImp().getUsbDeviceImp(); }
-
 	/** @return the number of alternate settings */
-	public byte getNumAlternateSettings() { return (byte)getAlternateSettings().size(); }
-
-	/**
-	 * Get the number of this alternate setting
-	 * @return this interface's alternate setting
-	 */
-	public byte getAlternateSettingNumber() { return getInterfaceDescriptor().getAlternateSetting(); }
+	public int getNumSettings() { return getSettings().size(); }
 
 	/**
 	 * Get the number of the active alternate setting for this interface
 	 * @return the active setting for this interface
-	 * @throws javax.usb.NotActiveException if the interface is inactive.
+	 * @exception NotActiveException if the interface is inactive.
 	 */
-	public byte getActiveAlternateSettingNumber()
+	public byte getActiveSettingNumber() throws NotActiveException
 	{
 		checkActive();
 
-		return ((UsbInterfaceImp)getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceNumber()).get(0)).getAlternateSettingNumber();
+		return ((UsbInterfaceImp)getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceDescriptor().bInterfaceNumber()).get(0)).getInterfaceDescriptor().bAlternateSetting();
 	}
 
 	/**
@@ -249,100 +212,75 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 * @return the active setting UsbInterface object for this interface
 	 * @throws javax.usb.NotActiveException if the interface (not setting) is inactive.
 	 */
-	public UsbInterface getActiveAlternateSetting() { return getActiveAlternateSettingImp(); }
+	public UsbInterface getActiveSetting() throws NotActiveException { return getActiveSettingImp(); }
 
 	/**
 	 * Get the active alternate setting.
 	 * @return the active setting UsbInterface object for this interface
 	 * @throws javax.usb.NotActiveException if the interface (not setting) is inactive.
 	 */
-	public UsbInterfaceImp getActiveAlternateSettingImp()
+	public UsbInterfaceImp getActiveSettingImp() throws NotActiveException
 	{
-		/* Active check done in getActiveAlternateSettingNumber() */
+		/* Active check done in getActiveSettingNumber() */
 
-		return getAlternateSettingImp( getActiveAlternateSettingNumber() );
+		return getSettingImp( getActiveSettingNumber() );
 	}
 
 	/**
 	 * Get the alternate setting with the specified number.
 	 * @return the alternate setting with the specified number.
 	 */
-	public UsbInterface getAlternateSetting( byte number ) { return getAlternateSettingImp(number); }
+	public UsbInterface getSetting( byte number ) { return getSettingImp(number); }
 
 	/**
 	 * Get the alternate setting with the specified number.
-	 * @return the alternate setting with the specified number.
+	 * @return the alternate setting with the specified number, or null.
 	 */
-	public UsbInterfaceImp getAlternateSettingImp( byte number )
+	public UsbInterfaceImp getSettingImp( byte number )
 	{
-		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceNumber());
+		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceDescriptor().bInterfaceNumber());
 
 		synchronized (list) {
 			for (int i=0; i<list.size(); i++) {
 				UsbInterfaceImp setting = (UsbInterfaceImp)list.get(i);
 
-				if (number == setting.getAlternateSettingNumber())
+				if (number == setting.getInterfaceDescriptor().bAlternateSetting())
 					return setting;
 			}
 		}
 
-		throw new UsbRuntimeException( "No Alternate Setting with number " + UsbUtil.unsignedInt(number) );
+		return null;
 	}
 
 	/**
 	 * @param number the number of the alternate setting to check.
 	 * @return if the alternate setting exists.
 	 */
-	public boolean containsAlternateSetting( byte number )
+	public boolean containsSetting( byte number )
 	{
-		try { getAlternateSetting(number); }
-		catch ( UsbRuntimeException urE ) { return false; }
-
-		return true;
+		if (null != getSetting(number))
+			return true;
+		else
+			return false;
 	}
 
 	/**
-	 * Get an iteration of all alternate settings for this interface
-	 * @return an iteration of this interface's other alternate settings
+	 * Get all alternate settings for this interface.
+	 * @return All of this interface's alternate settings (including this setting).
 	 */
-	public UsbInfoListIterator getAlternateSettings()
+	public List getSettings()
 	{
-		UsbInfoList usbInfoList = new DefaultUsbInfoList();
-		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceNumber());
-
-		synchronized (list) {
-			for (int i=0; i<list.size(); i++)
-				usbInfoList.addUsbInfo((UsbInfo)list.get(i));
-		}
-
-		return usbInfoList.usbInfoListIterator();
-	}
-
-	/** @return the bundle of UsbPipes contained in this interface setting. */
-	public UsbPipeBundle getUsbPipes()
-	{
-		return new UsbPipeBundleImp(endpoints);
+		return Collections.unmodifiableList( getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceDescriptor().bInterfaceNumber()) );
 	}
 
 	/** @return the interface descriptor for this interface */
-	public InterfaceDescriptor getInterfaceDescriptor() { return (InterfaceDescriptor)getDescriptor(); }
+	public InterfaceDescriptor getInterfaceDescriptor() { return interfaceDescriptor; }
 
 	/** @return the String description of this interface */
-	public String getInterfaceString()
+	public String getInterfaceString() throws UsbException,UnsupportedEncodingException
 	{
-		try {
-			return getUsbDeviceImp().getString( getInterfaceDescriptor().getInterfaceIndex() );
-		} catch ( UsbException uE ) {
-//FIXME - this method should throw UsbException
-			return null;
-		}
+		return getUsbConfigImp().getUsbDeviceImp().getString( getInterfaceDescriptor().iInterface() );
 	}
-
-	/**
-	 * Visitor.accept method
-	 * @param visitor the UsbInfoVisitor visiting this UsbInfo
-	 */
-	public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbInterface( this ); }
 
 	/** @return the associated UsbInterfaceOsImp */
 	public UsbInterfaceOsImp getUsbInterfaceOsImp() { return usbInterfaceOsImp; }
@@ -351,24 +289,24 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	public void setUsbInterfaceOsImp( UsbInterfaceOsImp iface ) { usbInterfaceOsImp = iface; }
 
 	/** @param desc the new interface descriptor */
-	public void setInterfaceDescriptor( InterfaceDescriptor desc ) { setDescriptor( desc ); }
+	public void setInterfaceDescriptor( InterfaceDescriptor desc ) { interfaceDescriptor = desc; }
 
 	/**
 	 * Set the active alternate setting number for ALL UsbInterfaces
 	 * on the AlternateSettings list
-	 * @param number the number of the active alternate setting
-	 * @throws javax.usb.UsbRuntimeException if the specified setting does not exist in this interface.
+	 * @param number The number of the active alternate setting
+	 * @throws IllegalArgumentException If the specified setting does not exist in this interface.
 	 */
-	public void setActiveAlternateSettingNumber( byte number )
+	public void setActiveSettingNumber( byte number ) throws IllegalArgumentException
 	{
-		getUsbConfigImp().setActiveUsbInterfaceImpSetting(getAlternateSettingImp(number));
+		getUsbConfigImp().setActiveUsbInterfaceImpSetting(getSettingImp(number));
 	}
 
 	/** @param ep the endpoint to add */
 	public void addUsbEndpointImp( UsbEndpointImp ep )
 	{
 		if (!endpoints.contains(ep))
-			endpoints.addUsbInfo( ep );
+			endpoints.add( ep );
 	}
 
 	//**************************************************************************
@@ -386,20 +324,20 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	// Private methods
 
 	/** check if interface itself is active */
-	private void checkActive()
+	private void checkActive() throws NotActiveException
 	{
 		if (!getUsbConfig().isActive())
-			throw new NotActiveException( "Configuration is not active", UsbInfoConst.USB_INFO_ERR_INACTIVE_CONFIGURATION );
+			throw new NotActiveException( "Configuration is not active" );
 	}
 
 	/** check if this specific interface setting is active */
-	private void checkSettingActive()
+	private void checkSettingActive() throws NotActiveException
 	{
 		/* If the interface (i.e. parent config) is not active, neither are any interface settings */
 		checkActive();
 
 		if (!isActive())
-			throw new NotActiveException( "Interface setting is not active", UsbInfoConst.USB_INFO_ERR_INACTIVE_INTERFACE_SETTING );
+			throw new NotActiveException( "Interface setting is not active" );
 	}
 
 	/**
@@ -408,7 +346,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 */
 	private void setClaimed(boolean c)
 	{
-		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceNumber());
+		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceDescriptor().bInterfaceNumber());
 		for (int i=0; i<list.size(); i++)
 			((UsbInterfaceImp)list.get(i)).claimed = c;
 	}
@@ -419,53 +357,10 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	private UsbConfigImp usbConfigImp = null;
 	private UsbInterfaceOsImp usbInterfaceOsImp = new AbstractUsbInterfaceOsImp();
 
-	private UsbInfoList endpoints = new DefaultUsbInfoList();
+	private InterfaceDescriptor interfaceDescriptor = null;
+
+	private List endpoints = new ArrayList();
 
 	protected boolean claimed = false;
-
-	//**************************************************************************
-	// Class constants
-
-	public static final String USB_INTERFACE_NAME_STRING = "interface";
-	public static final String USB_INTERFACE_SETTING_NAME_STRING = " setting";
-
-	//**************************************************************************
-	// Inner classes
-
-	public static class UsbPipeBundleImp implements UsbPipeBundle
-	{
-		public UsbPipeBundleImp(UsbInfoList infoList)
-		{
-			for (int i=0; i<infoList.size(); i++)
-				list.add(infoList.getUsbInfo(i));
-		}
-
-		public UsbPipe getUsbPipe(byte epAddress)
-		{
-			for (int i=0; i<list.size(); i++)
-				if (epAddress == ((UsbPipe)list.get(i)).getEndpointAddress())
-					return (UsbPipe)list.get(i);
-
-			throw new UsbRuntimeException("UsbPipeBundle does not contain UsbPipe with address " + UsbUtil.toHexString(epAddress));
-		}
-
-		public boolean containsUsbPipe(byte epAddress)
-		{
-			try {
-				getUsbPipe(epAddress);
-				return true;
-			} catch ( UsbRuntimeException urE ) {
-				return false;
-			}
-		}
-
-		public int size() { return list.size(); }
-
-		public boolean isEmpty() { return list.isEmpty(); }
-
-		public Enumeration elements() { return Collections.enumeration(list); }
-
-		private List list = new ArrayList();
-	}
 
 }

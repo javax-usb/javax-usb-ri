@@ -9,6 +9,7 @@ package com.ibm.jusb.tools.swing;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -18,7 +19,6 @@ import javax.swing.tree.*;
 import javax.swing.event.*;
 
 import javax.usb.*;
-import javax.usb.os.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
@@ -48,7 +48,6 @@ public class UsbPipePanel extends UsbPanel
 	{
 		appendln("Is Active : " + usbPipe.isActive());
 		appendln("Is Open : " + usbPipe.isOpen());
-		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbPipe.getMaxPacketSize()));
 	}
 
 	protected void initPanels()
@@ -160,6 +159,8 @@ public class UsbPipePanel extends UsbPanel
 			refresh();
 		} catch ( UsbException uE ) {
 			JOptionPane.showMessageDialog(null, "Could not open UsbPipe : " + uE.getMessage());
+		} catch ( NotActiveException naE ) {
+			JOptionPane.showMessageDialog(null, "Could not open UsbPipe : " + naE.getMessage());
 		}
 	}
 
@@ -174,6 +175,8 @@ public class UsbPipePanel extends UsbPanel
 			refresh();
 		} catch ( UsbException uE ) {
 			JOptionPane.showMessageDialog(null, "Could not close UsbPipe : " + uE.getMessage());
+		} catch ( NotActiveException naE ) {
+			JOptionPane.showMessageDialog(null, "Could not close UsbPipe : " + naE.getMessage());
 		}
 	}
 
@@ -259,18 +262,18 @@ public class UsbPipePanel extends UsbPanel
 		refreshButtons();
 	}
 
-	protected void gotData(byte[] data, int len)
+	protected void gotData(byte[] data)
 	{
-		for (int i=0; i<len && i<data.length; i++)
+		for (int i=0; i<data.length; i++)
 			outputTextArea.append(UsbUtil.toHexString(data[i]) + " ");
 		outputTextArea.append("\n");
 		outputTextArea.setCaretPosition(outputTextArea.getText().length());
 		validate();
 	}
 
-	protected void gotError(int error, UsbException uE)
+	protected void gotError(UsbException uE)
 	{
-		JOptionPane.showMessageDialog(null, "Got UsbPipeErrorEvent code " + error + " : " + uE.getMessage());
+		JOptionPane.showMessageDialog(null, "Got UsbPipeErrorEvent : " + uE.getMessage());
 	}
 
 	private JPanel buttonsPanel = new JPanel( new GridLayout(3,2,2,2));
@@ -313,8 +316,8 @@ public class UsbPipePanel extends UsbPanel
 		new ListSelectionListener() { public void valueChanged(ListSelectionEvent lsE) { updateSelection(); } };
 
 	private UsbPipeListener pipeListener = new UsbPipeListener() {
-			public void dataEventOccurred(UsbPipeDataEvent updE) { gotData(updE.getData(), updE.getDataLength()); }
-			public void errorEventOccurred(UsbPipeErrorEvent upeE) { gotError(upeE.getErrorCode(), upeE.getUsbException()); }
+			public void dataEventOccurred(UsbPipeDataEvent updE) { gotData(updE.getData()); }
+			public void errorEventOccurred(UsbPipeErrorEvent upeE) { gotError(upeE.getUsbException()); }
 		};
 
 	private UsbPipe usbPipe = null;

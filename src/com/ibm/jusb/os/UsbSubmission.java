@@ -21,13 +21,13 @@ public interface UsbSubmission
 	 * Get the length of transferred data.
 	 * @return The length of transferred data.
 	 */
-	public int getDataLength();
+	public int getLength();
 
 	/**
 	 * Set the length of transferred data.
 	 * @param len The length of transferred data.
 	 */
-	public void setDataLength(int len);
+	public void setLength(int len);
 
 	/**
 	 * Get the UsbException.

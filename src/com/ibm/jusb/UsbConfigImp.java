@@ -9,6 +9,7 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
+import java.io.*;
 import java.util.*;
 
 import javax.usb.*;
@@ -24,9 +25,8 @@ import javax.usb.util.*;
  * <li>All UsbInterfaceImp settings (active and inactive) must be {@link #addUsbInterfaceImp(UsbInterfaceImp) added}.</li>
  * </ul>
  * @author Dan Streetman
- * @author E. Michael Maximilien
  */
-public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
+public class UsbConfigImp implements UsbConfig
 {
 	/**
 	 * Constructor.
@@ -42,41 +42,20 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	//**************************************************************************
 	// Public methods
 
-	/** @return name of this UsbInfo object */
-	public String getName() 
-	{
-		if( super.getName().equals( "" ) )
-			setName( USB_CONFIG_NAME_STRING + getConfigNumber() );
-        
-		return super.getName();
-	}
-
-	/** @return this configuration's number */
-	public byte getConfigNumber() { return getConfigDescriptor().getConfigValue(); }
-
-	/** @return this configuration's number of UsbInterface */
-	public byte getNumInterfaces() { return getConfigDescriptor().getNumInterfaces(); }
-
-	/** @return the attributes code for this configuration */
-	public byte getAttributes() { return getConfigDescriptor().getAttributes(); }
-
-	/** @return the maximum power needed for this configuration */
-	public byte getMaxPower() { return getConfigDescriptor().getMaxPower(); }
-
 	/** @return if this UsbConfig is active */
-	public boolean isActive() { return getUsbDevice().getActiveUsbConfigNumber() == getConfigNumber(); }
+	public boolean isActive() { return getUsbDevice().getActiveUsbConfigNumber() == getConfigDescriptor().bConfigurationValue(); }
 
-	/** @return an iteration of USB device interfaces for this configuration */
-	public UsbInfoListIterator getUsbInterfaces()
+	/** @return All interfaces. */
+	public List getUsbInterfaces()
 	{
 		synchronized ( interfaces ) {
-			UsbInfoList list = new DefaultUsbInfoList();
+			List list = new LinkedList();
 			Iterator iterator = interfaces.values().iterator();
 
 			while (iterator.hasNext())
-				list.addUsbInfo((UsbInfo)((List)iterator.next()).get(0));
+				list.add(((List)iterator.next()).get(0));
 
-			return list.usbInfoListIterator();
+			return Collections.unmodifiableList(list);
 		}
 	}
 
@@ -93,12 +72,12 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	public UsbInterfaceImp getUsbInterfaceImp( byte number )
 	{
 		synchronized ( interfaces ) {
-			Byte key = new Byte(number);
+			String key = new Byte(number).toString();
 
 			if (!interfaces.containsKey(key))
-				throw new UsbRuntimeException( "No UsbInterface with number " + UsbUtil.unsignedInt( number ) );
+				return null;
 
-			return (UsbInterfaceImp)((List)interfaces.get(new Byte(number))).get(0);
+			return (UsbInterfaceImp)((List)interfaces.get(key)).get(0);
 		}
 	}
 
@@ -108,10 +87,10 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	 */
 	public boolean containsUsbInterface( byte number )
 	{
-		try { getUsbInterface(number); }
-		catch ( UsbRuntimeException urE ) { return false; }
-
-		return true;
+		if (null != getUsbInterface(number))
+			return true;
+		else
+			return false;
 	}
 
 	/**
@@ -125,7 +104,7 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	public void addUsbInterfaceImp( UsbInterfaceImp setting )
 	{
 		synchronized ( interfaces ) {
-			Byte key = new Byte(setting.getInterfaceNumber());
+			String key = new Byte(setting.getInterfaceDescriptor().bInterfaceNumber()).toString();
 
 			if (!interfaces.containsKey(key))
 				interfaces.put(key, new ArrayList());
@@ -159,7 +138,7 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	public List getUsbInterfaceSettingList(byte number)
 	{
 		synchronized (interfaces) {
-			return (List)interfaces.get(new Byte(number));
+			return (List)interfaces.get(new Byte(number).toString());
 		}
 	}
 
@@ -184,37 +163,24 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	}
 
 	/** @return the config descriptor for this config */
-	public ConfigDescriptor getConfigDescriptor() { return (ConfigDescriptor)getDescriptor(); }
+	public ConfigDescriptor getConfigDescriptor() { return configDescriptor; }
 
 	/** @return the String description of this config */
-	public String getConfigString()
+	public String getConfigString() throws UsbException,UnsupportedEncodingException
 	{
-		try {
-			return getUsbDeviceImp().getString( getConfigDescriptor().getConfigIndex() );
-		} catch ( UsbException uE ) {
-//FIXME - this method should throw UsbException
-			return null;
-		}
+		return getUsbDeviceImp().getString( getConfigDescriptor().iConfiguration() );
 	}
 
-	/**
-	 * Visitor.accept method
-	 * @param visitor the UsbInfoVisitor visiting this UsbInfo
-	 */
-	public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbConfig( this ); }
-
 	/** @param desc the new config descriptor */
-	public void setConfigDescriptor( ConfigDescriptor desc ) { setDescriptor( desc ); }
+	public void setConfigDescriptor( ConfigDescriptor desc ) { configDescriptor = desc; }
 
 	//**************************************************************************
 	// Instance variables
 
 	private UsbDeviceImp usbDeviceImp = null;
 
+	private ConfigDescriptor configDescriptor = null;
+
 	private HashMap interfaces = new HashMap();
 
-	//**************************************************************************
-	// Class constants
-
-	public static final String USB_CONFIG_NAME_STRING = "config";
 }
