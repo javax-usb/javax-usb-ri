@@ -22,7 +22,7 @@ import com.ibm.jusb.util.*;
  * <p>
  * This must be set up before use.
  * <ul>
- * <li>The UsbConfigImp must be set either in the constructor or by its {@link #setUsbConfigImp(UsbConfigImp) setter}.</li>
+ * <li>The UsbConfigImp must be set in the constructor or by its {@link #setUsbConfigImp(UsbConfigImp) setter}.</li>
  * <li>The InterfaceDescriptor must be set either in the constructor or by its {@link #setInterfaceDescriptor(InterfaceDescriptor) setter}.</li>
  * <li>The UsbInterfaceOsImp may optionally be set either in the constructor or by its
  *     {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) setter}.
@@ -44,7 +44,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 {
 	/**
 	 * Constructor.
-	 * @param config The parent config.
+	 * @param config The parent config.  If this is not null, the InterfaceDescriptor <i>cannot</i> be null.
 	 * @param desc This interface's descriptor.
 	 */
 	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc )
@@ -55,7 +55,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 
 	/**
 	 * Constructor.
-	 * @param config The parent config.
+	 * @param config The parent config.  If this is not null, the InterfaceDescriptor <i>cannot</i> be null.
 	 * @param desc This interface's descriptor.
 	 * @param osImp The UsbInterfaceOsImp.  Do not set this to null, use the other constructor.
 	 */
