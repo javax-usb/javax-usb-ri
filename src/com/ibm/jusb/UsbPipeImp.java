@@ -131,7 +131,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	{
 		checkOpen();
 
-		if (0 < submissionCount)
+		if (0 < submissionList.size())
 			throw new UsbException("Cannot close pipe with pending submissions");
 
 		getUsbPipeOsImp().close();
@@ -186,8 +186,13 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 				if (usbIrpImp.isUsbException())
 					throw usbIrpImp.getUsbException();
 			} else {
-				submissionCount++;
-				getUsbPipeOsImp().syncSubmit( usbIrpImp );
+				submissionList.add(usbIrpImp);
+				try {
+					getUsbPipeOsImp().syncSubmit( usbIrpImp );
+				} catch ( UsbException uE ) {
+					submissionList.remove(usbIrpImp);
+					throw uE;
+				}
 			}
 		}
 	}
@@ -205,8 +210,13 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			if ( queueSubmissions ) {
 				queueUsbIrpImp( usbIrpImp );
 			} else {
-				submissionCount++;
-				getUsbPipeOsImp().asyncSubmit( usbIrpImp );
+				submissionList.add(usbIrpImp);
+				try {
+					getUsbPipeOsImp().asyncSubmit( usbIrpImp );
+				} catch ( UsbException uE ) {
+					submissionList.remove(usbIrpImp);
+					throw uE;
+				}
 			}
 		}
 	}
@@ -228,8 +238,13 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 				queueList( usbIrpImpList );
 				((UsbIrp)usbIrpImpList.get(usbIrpImpList.size()-1)).waitUntilComplete();
 			} else {
-				submissionCount += usbIrpImpList.size();
-				getUsbPipeOsImp().syncSubmit( usbIrpImpList );
+				submissionList.addAll(usbIrpImpList);
+				try {
+					getUsbPipeOsImp().syncSubmit( usbIrpImpList );
+				} catch ( UsbException uE ) {
+					submissionList.removeAll(usbIrpImpList);
+					throw uE;
+				}
 			}
 		}
 	}
@@ -250,8 +265,13 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			if ( queueSubmissions ) {
 				queueList( usbIrpImpList );
 			} else {
-				submissionCount += usbIrpImpList.size();
-				getUsbPipeOsImp().asyncSubmit( usbIrpImpList );
+				submissionList.addAll(usbIrpImpList);
+				try {
+					getUsbPipeOsImp().asyncSubmit( usbIrpImpList );
+				} catch ( UsbException uE ) {
+					submissionList.removeAll(usbIrpImpList);
+					throw uE;
+				}
 			}
 		}
 	}
@@ -323,7 +343,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	public void usbIrpImpComplete( UsbIrpImp irp )
 	{
 		synchronized (completeLock) {
-			submissionCount--;
+			submissionList.remove(irp);
 
 			if (listTable.containsKey(irp)) {
 				List list = (List)listTable.get(irp);
@@ -520,9 +540,10 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			}
 		}
 		try {
-			submissionCount++;
+			submissionList.add(usbIrpImp);
 			getUsbPipeOsImp().syncSubmit(usbIrpImp);
 		} catch ( UsbException uE ) {
+			submissionList.remove(usbIrpImp);
 			/* ignore this, as the UsbIrp's UsbException will be set and this is handled elsewhere. */
 		}
 	}
@@ -642,7 +663,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 
 	protected Hashtable listTable = new Hashtable();
 
-	protected int submissionCount = 0;
+	protected List submissionList = new Vector();
 
 	private Object submitLock = new Object();
 	private Object completeLock = new Object();
