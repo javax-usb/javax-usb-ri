@@ -108,7 +108,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Opens this UsbPipe.
 	 */
-	public void open() throws UsbException,UsbNotActiveException,UsbNotClaimedException
+	public void open() throws UsbException,UsbNotActiveException,UsbNotClaimedException,UsbDisconnectedException
 	{
 		checkActive();
 
@@ -127,7 +127,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	}
 
 	/** Closes this UsbPipe. */
-	public void close() throws UsbException,UsbNotActiveException,UsbNotOpenException
+	public void close() throws UsbException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
 		checkOpen();
 
@@ -141,7 +141,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Synchonously submits this byte[] array to the UsbPipe.
 	 */
-	public int syncSubmit( byte[] data ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
+	public int syncSubmit( byte[] data ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
 		checkOpen();
 
@@ -155,7 +155,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Asynchonously submits this byte[] array to the UsbPipe.
 	 */
-	public UsbIrp asyncSubmit( byte[] data ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
+	public UsbIrp asyncSubmit( byte[] data ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
 		checkOpen();
 
@@ -169,7 +169,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Synchronous submission using a UsbIrp.
 	 */
-	public void syncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
+	public void syncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
 		checkOpen();
 
@@ -189,7 +189,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Asynchronous submission using a UsbIrp.
 	 */
-	public void asyncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
+	public void asyncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
 		checkOpen();
 
@@ -206,7 +206,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Synchronous submission using a List of UsbIrps.
 	 */
-	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
+	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
 		checkOpen();
 
@@ -227,7 +227,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Asynchronous submission using a List of UsbIrps.
 	 */
-	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException
+	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
 		checkOpen();
 
@@ -247,7 +247,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/**
 	 * Stop all submissions in progress.
 	 */
-	public void abortAllSubmissions() throws UsbNotActiveException,UsbNotOpenException
+	public void abortAllSubmissions() throws UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
 		checkOpen();
 
@@ -417,11 +417,23 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	}
 
 	/**
+	 * Check if this device is disconnected.
+	 * @exception UsbDisconnectedException If this device is disconnected.
+	 */
+	protected void checkDisconnected() throws UsbDisconnectedException
+	{
+		getUsbEndpointImp().checkDisconnected();
+	}
+
+	/**
 	 * Check if this pipe is active.
 	 * @throws UsbNotActiveException If the pipe is not active.
+	 * @exception UsbDisconnectedException If this device is disconnected.
 	 */
-	protected void checkActive() throws UsbNotActiveException
+	protected void checkActive() throws UsbNotActiveException,UsbDisconnectedException
 	{
+		checkDisconnected();
+
 		if (!isActive())
 			throw new UsbNotActiveException("UsbPipe not active");
 	}
@@ -430,10 +442,11 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 * Check if this pipe is open.
 	 * <p>
 	 * A pipe must be active to be open.
-	 * @throws UsbNotActiveException If the pipe is not active.
-	 * @throws UsbNotOpenException If the pipe is not open.
+	 * @exception UsbNotActiveException If the pipe is not active.
+	 * @exception UsbNotOpenException If the pipe is not open.
+	 * @exception UsbDisconnectedException If this device is disconnected.
 	 */
-	protected void checkOpen() throws UsbNotActiveException,UsbNotOpenException
+	protected void checkOpen() throws UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
 		checkActive();
 
@@ -542,6 +555,21 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 		}
 		if (null != policy)
 			queueSubmissions = Boolean.valueOf(policy).booleanValue();
+	}
+
+	//**************************************************************************
+	// Package methods
+
+	/** Disconnect this. */
+	void disconnect()
+	{
+		try {
+			abortAllSubmissions();
+		} catch ( Exception e ) {
+			/* Ignore */
+		} catch ( Error e ) {
+			/* Ignore */
+		}
 	}
 
 	//**************************************************************************

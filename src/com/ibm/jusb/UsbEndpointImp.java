@@ -84,6 +84,18 @@ public class UsbEndpointImp implements UsbEndpoint
 	public void setUsbEndpointDescriptor( UsbEndpointDescriptor desc ) { usbEndpointDescriptor = desc; }
 
 	//**************************************************************************
+    // Package methods
+
+	/** Disconnect this and close its pipe. */
+	void disconnect() { getUsbPipeImp().disconnect(); }
+
+	/**
+	 * Check if this device is disconnected.
+	 * @exception UsbDisconnectedException If the device is disconnected.
+	 */
+	void checkDisconnected() { getUsbInterfaceImp().checkDisconnected(); }
+
+	//**************************************************************************
     // Instance variables
 
     private UsbInterfaceImp usbInterfaceImp = null;

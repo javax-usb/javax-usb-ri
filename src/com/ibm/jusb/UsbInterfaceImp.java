@@ -76,8 +76,9 @@ public class UsbInterfaceImp implements UsbInterface
 	 * @exception UsbClaimException If the interface is already claimed.
 	 * @exception UsbException if the interface could not be claimed.
 	 * @exception UsbNotActiveException if the interface setting is not active.
+	 * @exception UsbDisconnectedException If this device has been disconnected.
 	 */
-	public void claim() throws UsbClaimException,UsbException,UsbNotActiveException
+	public void claim() throws UsbClaimException,UsbException,UsbNotActiveException,UsbDisconnectedException
 	{
 		claim(defaultUsbInterfacePolicy);
 	}
@@ -94,9 +95,12 @@ public class UsbInterfaceImp implements UsbInterface
 	 * @exception UsbClaimException If the interface is already claimed.
 	 * @exception UsbException if the interface could not be claimed.
 	 * @exception UsbNotActiveException if the interface setting is not active.
+	 * @exception UsbDisconnectedException If this device has been disconnected.
 	 */
-	public synchronized void claim(UsbInterfacePolicy policy) throws UsbClaimException,UsbException,UsbNotActiveException
+	public synchronized void claim(UsbInterfacePolicy policy) throws UsbClaimException,UsbException,UsbNotActiveException,UsbDisconnectedException
 	{
+		checkDisconnected();
+
 		checkSettingActive();
 
 		if (hasUsbInterfacePolicy())
@@ -112,9 +116,12 @@ public class UsbInterfaceImp implements UsbInterface
 	 * @exception UsbClaimException If the interface is already claimed.
 	 * @exception UsbException if the interface could not be released.
 	 * @exception UsbNotActiveException if the interface setting is not active.
+	 * @exception UsbDisconnectedException If this device has been disconnected.
 	 */
-	public void release() throws UsbClaimException,UsbException,UsbNotActiveException
+	public void release() throws UsbClaimException,UsbException,UsbNotActiveException,UsbDisconnectedException
 	{
+		checkDisconnected();
+
 		checkSettingActive();
 
 		if (!hasUsbInterfacePolicy())
@@ -300,7 +307,7 @@ public class UsbInterfaceImp implements UsbInterface
 	public UsbInterfaceDescriptor getUsbInterfaceDescriptor() { return usbInterfaceDescriptor; }
 
 	/** @return the String description of this interface */
-	public String getInterfaceString() throws UsbException,UnsupportedEncodingException
+	public String getInterfaceString() throws UsbException,UnsupportedEncodingException,UsbDisconnectedException
 	{
 		return getUsbConfigurationImp().getUsbDeviceImp().getString( getUsbInterfaceDescriptor().iInterface() );
 	}
@@ -336,6 +343,23 @@ public class UsbInterfaceImp implements UsbInterface
 	{
 		if (!endpoints.contains(ep))
 			endpoints.add( ep );
+	}
+
+	//**************************************************************************
+	// Package methods
+
+	/** Disconnect this and all subcomponents. */
+	void disconnect()
+	{
+		Iterator i = getUsbEndpoints().iterator();
+		while (i.hasNext())
+			((UsbEndpointImp)i.next()).disconnect();
+	}
+
+	/** Check if this device is disconnected. */
+	void checkDisconnected() throws UsbDisconnectedException
+	{
+		getUsbConfigurationImp().checkDisconnected();
 	}
 
 	//**************************************************************************
@@ -399,5 +423,7 @@ public class UsbInterfaceImp implements UsbInterface
 
 	protected UsbInterfacePolicy usbClaimPolicy = null;
 	protected UsbInterfacePolicy defaultUsbInterfacePolicy = new DefaultUsbInterfacePolicy();
+
+	protected boolean disconnected = false;
 
 }

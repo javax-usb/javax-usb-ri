@@ -86,10 +86,15 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	}
 
 	/** @return The port that this device is attached to */
-	public UsbPort getParentUsbPort() { return getParentUsbPortImp(); }
+	public UsbPort getParentUsbPort() throws UsbDisconnectedException { return getParentUsbPortImp(); }
 
 	/** @return The port that this device is attached to */
-	public UsbPortImp getParentUsbPortImp() { return usbPortImp; }
+	public UsbPortImp getParentUsbPortImp() throws UsbDisconnectedException
+	{
+		checkDisconnected();
+
+		return usbPortImp;
+	}
 
 	/** @param port The parent port */
 	public void setParentUsbPortImp( UsbPortImp port ) { usbPortImp = port; }
@@ -98,19 +103,19 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	public boolean isUsbHub() { return false; }
 
 	/** @return The manufacturer string. */
-	public String getManufacturerString() throws UsbException,UnsupportedEncodingException
+	public String getManufacturerString() throws UsbException,UnsupportedEncodingException,UsbDisconnectedException
 	{
 		return getString( getUsbDeviceDescriptor().iManufacturer() );
 	}
 
 	/** @return The serial number string. */
-	public String getSerialNumberString() throws UsbException,UnsupportedEncodingException
+	public String getSerialNumberString() throws UsbException,UnsupportedEncodingException,UsbDisconnectedException
 	{
 		return getString( getUsbDeviceDescriptor().iSerialNumber() );
 	}
 
 	/** @return The product string. */
-	public String getProductString() throws UsbException,UnsupportedEncodingException
+	public String getProductString() throws UsbException,UnsupportedEncodingException,UsbDisconnectedException
 	{
 		return getString( getUsbDeviceDescriptor().iProduct() );
 	}
@@ -166,10 +171,13 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	/*
 	 * @return the specified string descriptor
 	 * @param the index of the string descriptor to get
-	 * @throws javax.usb.UsbException if an error occurrs while getting the UsbStringDescriptor.
+	 * @exception javax.usb.UsbException if an error occurrs while getting the UsbStringDescriptor.
+	 * @exception UsbDisconnectedException If the device has been disconnected.
 	 */
-	public UsbStringDescriptor getUsbStringDescriptor( byte index ) throws UsbException
+	public UsbStringDescriptor getUsbStringDescriptor( byte index ) throws UsbException,UsbDisconnectedException
 	{
+		checkDisconnected();
+
 		/* There is no UsbStringDescriptor for index 0 */
 		if (0 == index)
 			return null;
@@ -188,8 +196,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 * @return the String from the specified STringDescriptor
 	 * @exception UsbException if an error occurrs while getting the UsbStringDescriptor.
 	 * @exception UnsupportedEncodingException If the string encoding is not supported.
+	 * @exception UsbDisconnectedException If the device has been disconnected.
 	 */
-	public String getString( byte index ) throws UsbException,UnsupportedEncodingException
+	public String getString( byte index ) throws UsbException,UnsupportedEncodingException,UsbDisconnectedException
 	{
 		UsbStringDescriptor desc = getUsbStringDescriptor( index );
 
@@ -330,21 +339,23 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 * {@link javax.usb.event.UsbDeviceListener#usbDeviceDetached(UsbDeviceEvent) usbDeviceDetached}
 	 * events to all listeners.
 	 * <p>
-	 * The implementation does not have to call this method, it is only a convienience method
-	 * to disconnect this device and fire events to listeners; the implementation can do those
-	 * things itself instead of this method, if desired.
+	 * This method must be called when a device is disconnected.
 	 */
 	public void disconnect()
 	{
 		try {
 			getParentUsbPortImp().detachUsbDeviceImp( this );
 		} catch ( IllegalArgumentException iaE ) {
-			/* log, handle? */
+			/* FIXME - log, handle? */
 		}
 
-		listenerImp.usbDeviceDetached(new UsbDeviceEvent(this));
+		Iterator i = getUsbConfigurations().iterator();
+		while (i.hasNext())
+			((UsbConfigurationImp)i.next()).disconnect();
 
-//FIXME - turn off all subcomponents; close pipes, release ifaces, etc.
+		disconnected = true;
+
+		listenerImp.usbDeviceDetached(new UsbDeviceEvent(this));
 	}
 
 	/**
@@ -352,12 +363,15 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 * @param irp The UsbControlIrp.
 	 * @exception UsbException If an error occurrs.
 	 * @exception IllegalArgumentException If the UsbControlIrp is invalid.
+	 * @exception UsbDisconnectedException If the device has been disconnected.
 	 */
-	public void syncSubmit( UsbControlIrp irp ) throws UsbException,IllegalArgumentException
+	public void syncSubmit( UsbControlIrp irp ) throws UsbException,IllegalArgumentException,UsbDisconnectedException
 	{
-		UsbControlIrpImp usbControlIrpImp = usbControlIrpToUsbControlIrpImp( irp );
-
 		synchronized (submitLock) {
+			checkDisconnected();
+
+			UsbControlIrpImp usbControlIrpImp = usbControlIrpToUsbControlIrpImp( irp );
+
 			if (queueSubmissions) {
 				queueUsbControlIrpImp(usbControlIrpImp);
 				usbControlIrpImp.waitUntilComplete();
@@ -375,12 +389,15 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 * @param irp The UsbControlIrp.
 	 * @exception UsbException If an error occurrs.
 	 * @exception IllegalArgumentException If the UsbControlIrp is invalid.
+	 * @exception UsbDisconnectedException If the device has been disconnected.
 	 */
-	public void asyncSubmit( UsbControlIrp irp ) throws UsbException,IllegalArgumentException
+	public void asyncSubmit( UsbControlIrp irp ) throws UsbException,IllegalArgumentException,UsbDisconnectedException
 	{
-		UsbControlIrpImp usbControlIrpImp = usbControlIrpToUsbControlIrpImp( irp );
-
 		synchronized (submitLock) {
+			checkDisconnected();
+
+			UsbControlIrpImp usbControlIrpImp = usbControlIrpToUsbControlIrpImp( irp );
+
 			if (queueSubmissions) {
 				queueUsbControlIrpImp(usbControlIrpImp);
 			} else {
@@ -399,15 +416,18 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 * @param list The List of UsbControlIrps.
 	 * @exception UsbException If an error occurrs.
 	 * @exception IllegalArgumentException If one of the UsbControlIrps is invalid.
+	 * @exception UsbDisconnectedException If the device has been disconnected.
 	 */
-	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException
+	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbDisconnectedException
 	{
-		if (list.isEmpty())
-			return;
-
-		List usbControlIrpImpList = usbControlIrpListToUsbControlIrpImpList( list );
-
 		synchronized (submitLock) {
+			checkDisconnected();
+
+			if (list.isEmpty())
+				return;
+
+			List usbControlIrpImpList = usbControlIrpListToUsbControlIrpImpList( list );
+
 			if (queueSubmissions) {
 				queueList(usbControlIrpImpList);
 				((UsbControlIrp)usbControlIrpImpList.get(usbControlIrpImpList.size()-1)).waitUntilComplete();
@@ -427,15 +447,18 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 * @param list The List of UsbControlIrps.
 	 * @exception UsbException If an error occurrs.
 	 * @exception IllegalArgumentException If one of the UsbControlIrps is invalid.
+	 * @exception UsbDisconnectedException If the device has been disconnected.
 	 */
-	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException
+	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbDisconnectedException
 	{
-		if (list.isEmpty())
-			return;
-
-		List usbControlIrpImpList = usbControlIrpListToUsbControlIrpImpList( list );
-
 		synchronized (submitLock) {
+			checkDisconnected();
+
+			if (list.isEmpty())
+				return;
+
+			List usbControlIrpImpList = usbControlIrpListToUsbControlIrpImpList( list );
+
 			if (queueSubmissions) {
 				queueList(usbControlIrpImpList);
 			} else {
@@ -650,6 +673,19 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	}
 
 	//**************************************************************************
+	// Package methods
+
+	/**
+	 * Check if the device is disconnected.
+	 * @exception UsbDisconnectedException If this device has been disconnected.
+	 */
+	void checkDisconnected() throws UsbDisconnectedException
+	{
+		if (disconnected)
+			throw new UsbDisconnectedException("This device has been disconnected");
+	}
+
+	//**************************************************************************
 	// Instance variables
 
 	private UsbDeviceOsImp usbDeviceOsImp = null;
@@ -686,6 +722,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	protected Hashtable listTable = new Hashtable();
 
 	protected int submissionCount = 0;
+
+	protected boolean disconnected = false;
 
 	//**************************************************************************
 	// Class constants

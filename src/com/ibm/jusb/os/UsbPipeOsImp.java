@@ -101,6 +101,12 @@ public interface UsbPipeOsImp
 	 * <p>
 	 * This should not return until all submissions have been aborted
 	 * and <i>are no longer in progress</i> (i.e., the pipe is in a non-busy state).
+	 * Note that aborted UsbIrps still must be completed; they should have their UsbException
+	 * set to UsbAbortException.
+	 * <p>
+	 * Obviously, this method must not hang while waiting for submissions to complete,
+	 * so if submission(s) cannot be aborted natively, the native component must be abandoned
+	 * and the UsbIrp must be completed (with UsbAbortException).
 	 * <p>
 	 * The implementation may assume no more submissions will occur while this is executing.
 	 */

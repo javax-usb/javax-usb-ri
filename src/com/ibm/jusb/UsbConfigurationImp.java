@@ -168,13 +168,32 @@ public class UsbConfigurationImp implements UsbConfiguration
 	public UsbConfigurationDescriptor getUsbConfigurationDescriptor() { return usbConfigurationDescriptor; }
 
 	/** @return the String description of this configuration */
-	public String getConfigurationString() throws UsbException,UnsupportedEncodingException
+	public String getConfigurationString() throws UsbException,UnsupportedEncodingException,UsbDisconnectedException
 	{
 		return getUsbDeviceImp().getString( getUsbConfigurationDescriptor().iConfiguration() );
 	}
 
 	/** @param desc the new configuration descriptor */
 	public void setUsbConfigurationDescriptor( UsbConfigurationDescriptor desc ) { usbConfigurationDescriptor = desc; }
+
+	//**************************************************************************
+	// Package methods
+
+	/**
+	 * Disconnect this and all subcomponents.
+	 */
+	void disconnect()
+	{
+		Iterator i = getUsbInterfaces().iterator();
+		while (i.hasNext()) {
+			Iterator as = ((UsbInterfaceImp)i.next()).getSettings().iterator();
+			while (as.hasNext())
+				((UsbInterfaceImp)as.next()).disconnect();
+		}
+	}
+
+	/** Check if this device is disconnected. */
+	void checkDisconnected() { getUsbDeviceImp().checkDisconnected(); }
 
 	//**************************************************************************
 	// Instance variables
@@ -184,5 +203,4 @@ public class UsbConfigurationImp implements UsbConfiguration
 	private UsbConfigurationDescriptor usbConfigurationDescriptor = null;
 
 	private HashMap interfaces = new HashMap();
-
 }
