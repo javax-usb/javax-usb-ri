@@ -47,17 +47,17 @@ public class SwingUsbView
 			DefaultMutableTreeNode child = null;
 
 			if (port.isUsbDeviceAttached()) {
-				child = new DefaultMutableTreeNode("UsbPort " + port.getPortNumber());
-			} else {
 				UsbDevice device = port.getUsbDevice();
 
 				if (device.isUsbHub()) {
-					child = new DefaultMutableTreeNode("UsbHub");
+					child = getHubNode((UsbHub)device);
 					createTree((UsbHub)device, child);
 				} else {
-					child = new DefaultMutableTreeNode("UsbDevice");
+					child = getDeviceNode(device);
 					createDevice(device, child);
 				}
+			} else {
+				child = getPortNode(port);
 			}
 
 			node.add(child);
@@ -70,7 +70,7 @@ public class SwingUsbView
 
 		while (iterator.hasNext()) {
 			UsbConfig config = (UsbConfig)iterator.nextUsbInfo();
-			DefaultMutableTreeNode child = new DefaultMutableTreeNode("UsbConfig " + config.getConfigNumber());
+			DefaultMutableTreeNode child = getConfigNode(config);
 
 			createConfig(config, child);
 
@@ -84,7 +84,7 @@ public class SwingUsbView
 
 		while (iterator.hasNext()) {
 			UsbInterface iface = (UsbInterface)iterator.nextUsbInfo();
-			DefaultMutableTreeNode child = new DefaultMutableTreeNode("UsbInterface " + iface.getInterfaceNumber());
+			DefaultMutableTreeNode child = getInterfaceNode(iface);
 
 			createInterface(iface, child);
 
@@ -98,7 +98,7 @@ public class SwingUsbView
 
 		while (iterator.hasNext()) {
 			UsbEndpoint ep = (UsbEndpoint)iterator.nextUsbInfo();
-			DefaultMutableTreeNode child = new DefaultMutableTreeNode("UsbEndpoint 0x" + UsbUtil.toHexString( ep.getEndpointAddress() ));
+			DefaultMutableTreeNode child = getEndpointNode(ep);
 
 			createEndpoint(ep, child);
 
@@ -111,6 +111,36 @@ public class SwingUsbView
 		DefaultMutableTreeNode child = new DefaultMutableTreeNode("UsbPipe");
 
 		node.add(child);
+	}
+
+	protected DefaultMutableTreeNode getHubNode(UsbHub hub)
+	{
+		return new DefaultMutableTreeNode("UsbHub");
+	}
+
+	protected DefaultMutableTreeNode getPortNode(UsbPort port)
+	{
+		return new DefaultMutableTreeNode("UsbPort " + port.getPortNumber());
+	}
+
+	protected DefaultMutableTreeNode getDeviceNode(UsbDevice device)
+	{
+		return new DefaultMutableTreeNode("UsbDevice");
+	}
+
+	protected DefaultMutableTreeNode getConfigNode(UsbConfig config)
+	{
+		return new DefaultMutableTreeNode("UsbConfig " + config.getConfigNumber());
+	}
+
+	protected DefaultMutableTreeNode getInterfaceNode(UsbInterface iface)
+	{
+		return new DefaultMutableTreeNode("UsbInterface " + iface.getInterfaceNumber());
+	}
+
+	protected DefaultMutableTreeNode getEndpointNode(UsbEndpoint ep)
+	{
+		return new DefaultMutableTreeNode("UsbEndpoint 0x" + UsbUtil.toHexString(ep.getEndpointAddress()));
 	}
 
 	private UsbRootHub rootHub = null;
