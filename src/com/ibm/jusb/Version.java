@@ -23,14 +23,14 @@ public class Version
 	 * <p>
 	 * The text that will be printed is:
 	 * <pre>
-	 * javax.usb API version %lt;getApiVersion()>
+	 * javax.usb API required version %lt;getApiVersion()> (or later)
 	 * javax.usb Platform-Independent RI version &lt;getRiVersion()>
 	 * </pre>
 	 * @param args a String[] of arguments.
 	 */
 	public static void main( String[] args )
 	{
-		System.out.println( "javax.usb API version " + getApiVersion() );
+		System.out.println( "javax.usb API required version " + getApiVersion() + " (or later)" );
 		System.out.println( "javax.usb Platform-Independent RI version " + getRiVersion() );
 	}
 
@@ -54,6 +54,6 @@ public class Version
 	 */
 	public static String getRiVersion() { return VERSION_PLATFORM_INDEPENDENT_RI; }
 
-	private static final String VERSION_API = "0.10.1";
+	private static final String VERSION_API = "0.10.2";
 	private static final String VERSION_PLATFORM_INDEPENDENT_RI = "0.10.2";
 }
