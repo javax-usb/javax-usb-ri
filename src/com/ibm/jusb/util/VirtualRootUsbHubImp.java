@@ -15,15 +15,15 @@ import com.ibm.jusb.*;
 import com.ibm.jusb.os.*;
 
 /**
- * Virtual UsbRootHub implementation.
+ * Virtual root UsbHub implementation.
  * @author Dan Streetman
  */
-public class VirtualUsbRootHubImp extends UsbRootHubImp implements UsbRootHub
+public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 {
-	public VirtualUsbRootHubImp()
+	public VirtualRootUsbHubImp()
 	{
 		super(virtualDeviceDescriptor, new VirtualUsbDeviceOsImp());
-		setSpeedString(SPEED_STRING);
+		setSpeed(UsbConst.SPEED_FULL);
 		init();
 	}
 
@@ -44,25 +44,25 @@ public class VirtualUsbRootHubImp extends UsbRootHubImp implements UsbRootHub
 	/** No connect operation */
 	public void connect(UsbHubImp hub, byte portNumber) throws UsbException
 	{
-		throw new UsbException("Cannot connect Virtual UsbRootHub");
+		throw new UsbException("Cannot connect Virtual Root UsbHub");
 	}
 
 	/** No disconnect */
 	public void disconnect()
 	{
-		throw new UsbRuntimeException("Cannot disconnect Virtual UsbRootHub");
+		throw new UsbRuntimeException("Cannot disconnect Virtual Root UsbHub");
 	}
 
 	/** No UsbPort use */
 	public void setUsbPortImp(UsbPortImp port)
 	{
-		throw new UsbRuntimeException("Virtual UsbRootHub cannot have parent UsbPort");
+		throw new UsbRuntimeException("Virtual Root UsbHub cannot have parent UsbPort");
 	}
 
 	/** No UsbPort use */
 	public UsbPortImp getUsbPortImp()
 	{
-		throw new UsbRuntimeException("Virtual UsbRootHub has no parent UsbPort");
+		throw new UsbRuntimeException("Virtual Root UsbHub has no parent UsbPort");
 	}
 
 	//**************************************************************************
@@ -72,7 +72,6 @@ public class VirtualUsbRootHubImp extends UsbRootHubImp implements UsbRootHub
 	public static final short PRODUCT_ID = (short)0xffff;
 	public static final short DEVICE_BCD = (short)0x0000;
 	public static final short USB_BCD = (short)0x0101;
-	public static final String SPEED_STRING = "1.5 Mbps";
 
 	public static final byte CONFIG_NUM = (byte)0x01;
 	public static final short CONFIG_TOTAL_LEN = (short)0x00ff;
