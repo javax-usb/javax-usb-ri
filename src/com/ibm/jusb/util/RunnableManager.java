@@ -232,8 +232,15 @@ public class RunnableManager
 						size = array.length;
 					}
 
-					for (int i=0; i<array.length; i++,size--)
-						((Runnable)array[i]).run();
+					for (int i=0; i<array.length; i++) {
+						try { ((Runnable)array[i]).run(); }
+						catch ( Exception e ) { e.printStackTrace(); /* Print it out but keep going */ }
+						catch ( Error e ) { e.printStackTrace(); /* Print it out but keep going */ }
+						size--;
+					}
+
+					/* Release the reference so it can be garbage collected */
+					array = null;
 				}
 
 				synchronized (lock) {
