@@ -10,7 +10,6 @@ package com.ibm.jusb;
  */
 
 import javax.usb.*;
-import javax.usb.util.UsbInfoToStringV;
 
 /**
  * Abstract class implementing the UsbInfo interface
@@ -55,22 +54,6 @@ public abstract class AbstractUsbInfo implements UsbInfo
 	 * @param descriptor the new Descriptor
 	 */
 	void setDescriptor( Descriptor descriptor ) { this.descriptor = descriptor; }
-
-    //-------------------------------------------------------------------------
-    // Overridden method
-    //
-
-    /**
-     * @return a String representation for this UsbInfo object
-     * NOTE: using the UsbInfoToStringV visitor class so subclasses do
-     * not need to override toString.  Trust the Visitor :-)
-     */
-    public String toString()
-    {
-        accept( toStringV );
-
-        return toStringV.getString();
-    }
 
     //-------------------------------------------------------------------------
     // Instance variables
