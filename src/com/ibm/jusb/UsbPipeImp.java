@@ -350,7 +350,15 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 * Register's the listener object for UsbPipeEvent
 	 * @param listener the UsbPipeListener instance
 	 */
-	public void addUsbPipeListener( UsbPipeListener listener ) { listenerImp.addEventListener( listener ); }
+	public void addUsbPipeListener( UsbPipeListener listener )
+	{
+		if (!listenerNameSet) {
+			listenerImp.setName(getName() + " UsbPipeListenerImp");
+			listenerNameSet = true;
+		}
+
+		listenerImp.addEventListener( listener );
+	}
 
 	/**
 	 * Removes the listener object from the listener list
@@ -616,12 +624,12 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	// Instance variables
 
 	private boolean open = false;
-
 	private UsbPipeOsImp usbPipeOsImp = new DefaultUsbPipeOsImp();
 
 	private UsbEndpointImp usbEndpointImp = null;
 
 	protected UsbPipeListenerImp listenerImp = new UsbPipeListenerImp();
+	private boolean listenerNameSet = false;
 
 	/* If the queue policy is set to true for this pipe, all submissions will be queued and
 	 * submitted via the UsbPipeOsImp.syncSubmit() method, so the OS will not have to queue.

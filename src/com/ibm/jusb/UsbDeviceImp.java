@@ -260,6 +260,11 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	/** @param listener The listener to add */
 	public void addUsbDeviceListener( UsbDeviceListener listener ) 
 	{
+		if (!listenerNameSet) {
+			listenerImp.setName(getName() + " UsbDeviceListenerImp");
+			listenerNameSet = true;
+		}
+
 		listenerImp.addEventListener(listener);
 	}
 
@@ -730,6 +735,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	private UsbPortImp usbPortImp = null;
 
 	private UsbDeviceListenerImp listenerImp = new UsbDeviceListenerImp();
+	private boolean listenerNameSet = false;
 
 	/* If the queue policy is set to true for this DCP, all submissions will be queued and
 	 * submitted via the UsbDeviceOsImp.syncSubmit() method, so the OS will not have to queue.

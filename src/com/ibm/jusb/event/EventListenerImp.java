@@ -28,7 +28,7 @@ public class EventListenerImp implements EventListener
 		synchronized (listeners) {
 			if (!listeners.containsKey(listener)) {
 				EventListenerRunnableManager elrM = new EventListenerRunnableManager(listener);
-				elrM.setName(getClass() + " " + hashCode() + " RunnableManager");
+				elrM.setName(getName() + " RunnableManager");
 				elrM.setMaxSize(RunnableManager.SIZE_UNLIMITED);
 				listeners.put(listener, elrM);
 			}
@@ -56,9 +56,9 @@ public class EventListenerImp implements EventListener
 	public void clear()
 	{
 		synchronized (listeners) {
-			Iterator i = listeners.keySet().iterator();
-			while (i.hasNext())
-				removeEventListener((EventListener)i.next());
+			Object[] o = listeners.keySet().toArray();
+			for (int i=0; i<o.length; i++)
+				removeEventListener((EventListener)o[i]);
 		}
 	}
 
@@ -67,7 +67,15 @@ public class EventListenerImp implements EventListener
 	 */
 	public boolean isEmpty() { return listeners.isEmpty(); }
 
+	/** @param n The name to use. */
+	public void setName(String n) { name = n; }
+
+	/** @return The name in use. */
+	public String getName() { return name; }
+
 	protected HashMap listeners = new HashMap();
+
+	protected String name = getClass().toString();
 
 	protected class EventListenerRunnableManager extends RunnableManager
 	{
