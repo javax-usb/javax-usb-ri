@@ -71,7 +71,7 @@ public class UsbInterfaceImp implements UsbInterface
 	/**
 	 * Claim this interface.
 	 * <p>
-	 * This calls the {@link claim(UsbInterfacePolicy) other claim}
+	 * This calls the {@link #claim(UsbInterfacePolicy) other claim}
 	 * with a {@link com.ibm.jusb.DefaultUsbInterfacePolicy default policy}.
 	 * @exception UsbClaimException If the interface is already claimed.
 	 * @exception UsbException if the interface could not be claimed.
@@ -110,7 +110,7 @@ public class UsbInterfaceImp implements UsbInterface
 	/**
 	 * Release this interface using a key.
 	 * <p>
-	 * This calls the {@link release(Object) other release}
+	 * This calls the {@link #release(Object) other release}
 	 * with a null key.
 	 * @exception UsbPolicyDenied If the policy prevented release.
 	 * @exception UsbClaimException If the interface is already claimed.
