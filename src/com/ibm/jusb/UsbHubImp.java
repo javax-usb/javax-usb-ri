@@ -31,13 +31,25 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 {
 	/**
 	 * Constructor
+	 * <p>
+	 * This creates a hub with a initial number of ports set to 1.
+	 * The the number of ports is adjustable at runtime via the
+	 * {@link #resize(int) resize} method.
 	 * @param desc This device's descriptor.
 	 * @param device The platform device implementaiton.
 	 */
-	public UsbHubImp(DeviceDescriptor desc, UsbDeviceOsImp device) { this( 1, desc, device ); }
+	public UsbHubImp(DeviceDescriptor desc, UsbDeviceOsImp device)
+	{
+		this( 1, desc, device );
+		resizingAllowed = true;
+	}
 
 	/**
-	 * Constructor
+	 * Constructor.
+	 * <p>
+	 * This creates a hub with the specified number of ports.
+	 * The number of ports is <i>not</i> adjustable at runtime via the
+	 * {@link #resize(int) resize} method; it will throw UnsupportedOperationException.
 	 * @param ports The initial number of ports.
 	 * @param desc This device's descriptor.
 	 * @param device The platform device implementation.
@@ -46,12 +58,11 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	{
 		super(desc, device);
 		resize( ports );
+		resizingAllowed = false;
 	}
 
 	//**************************************************************************
 	// Public methods
-
-//FIXME - should resizing be used for all hubs?
 
 	/**
 	 * Resizes to the specified number of ports.
@@ -61,8 +72,11 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	 * port with a device attached.  The device(s) need to be removed before the port(s)!
 	 * @param ports The total number of ports to resize to.
 	 */
-	public synchronized void resize( int ports )
+	public synchronized void resize( int ports ) throws UnsupportedOperationException
 	{
+		if (!resizingAllowed)
+			throw new UnsupportedOperationException("Resizing is not allowed on this hub");
+
 		int oldports = UsbUtil.unsignedInt( getNumberOfPorts() );
 
 		if ( ports == oldports )
@@ -131,8 +145,6 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	/** @return true if this is the virtual root hub */
 	public boolean isRootUsbHub() { return false;  }
 
-//FIXME - get the hub descriptor, use that value for #ports and other values!
-
 	/** @return the number of ports for this hub */
 	public byte getNumberOfPorts() { return (byte)portList.size(); }
 
@@ -180,6 +192,8 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	// Instance variables
 
 	protected List portList = new LinkedList();
+
+	protected boolean resizingAllowed = true;
 
 	//**************************************************************************
 	// Class constants
