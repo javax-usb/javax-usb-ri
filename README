@@ -9,12 +9,17 @@ The JSR80 web site is: http://javax-usb.org
 Java      Standard Edition version 1.2 or greater - Micro Edition has not been tested but may work
 ANT       http://jakarta.apache.org/ant
 
+JSR80 API You must have the API classfiles/jar in your CLASSPATH.
+
 *********
 * Build *
 *********
 
 The ANT tool uses XML buildfiles to create the project.  Run ant in
 the toplevel directory to list all available targets.
+
+To create JavaDOC with the API source as well, set your environement variable
+JSR80_RI_JDOC_PATH to the src/ directory from the API package.
 
 ****************
 * Installation *

@@ -34,14 +34,14 @@
 	<property name="Jsr80Env.JSR80_RI_JDOC_AUTHOR" value="no"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_NODEPRECATED" value="no"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_NODEPRECATEDLIST" value="no"/>
-	<property name="Jsr80Env.JSR80_RI_JDOC_FAILONERROR" value="yes"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_FAILONERROR" value="no"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_PUBLIC" value="no"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_PROTECTED" value="no"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_PACKAGE" value="yes"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_PRIVATE" value="no"/>
 
-	<!-- If all the packages are located in the same directory, this will pick up the API source files. -->
-	<property name="Jsr80Env.JSR80_RI_JDOC_PATH" value="${Jsr80Env.JSR80_RI_BASE_DIR}/../javax-usb/src"/>
+	<!-- This should be set to the source directory from the API package. -->
+	<property name="Jsr80Env.JSR80_RI_JDOC_PATH" value=""/>
 
 	<!-- Variable defaults -->
 	<property name="jsr80.ri.version" value="${Jsr80Env.JSR80_RI_VERSION}"/>
