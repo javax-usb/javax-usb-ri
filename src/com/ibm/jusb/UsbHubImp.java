@@ -212,18 +212,18 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	 * Remove the device from this hub at the specified port.
 	 * @param usbDeviceImp The UsbDeviceImp to remove.
 	 * @param portNumber The number (1-based) of the port the device is attached to.
-	 * @exception javax.usb.UsbException if the device is not already attached
-	 * to the port it is being removed from.
+	 * @exception IllegalArgumentException if the device is not already attached
+	 * to the port it is being removed from, or the port number is invalid.
 	 */
-	public synchronized void removeUsbDeviceImp( UsbDeviceImp usbDeviceImp, byte portNumber ) throws UsbException
+	public synchronized void removeUsbDeviceImp( UsbDeviceImp usbDeviceImp, byte portNumber ) throws IllegalArgumentException
 	{
 		UsbPortImp usbPortImp = getUsbPortImp( portNumber );
 
-		/* UsbPortImp does checking */
+		/* UsbPortImp does checking and may throw IllegalArgumentException */
 		try {
 			usbPortImp.detachUsbDeviceImp( usbDeviceImp );
 		} catch ( NullPointerException npE ) {
-			throw new UsbException(USB_HUB_PORT_OUT_OF_RANGE + UsbUtil.unsignedInt(portNumber));
+			throw new IllegalArgumentException(USB_HUB_PORT_OUT_OF_RANGE + UsbUtil.unsignedInt(portNumber));
 		}
 	}
 
