@@ -226,9 +226,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		}
 
 		if (irp.isUsbException())
-			listenerImp.errorEventOccurred(new UsbDeviceErrorEvent(this,irp.getUsbException()));
+			listenerImp.errorEventOccurred(new UsbDeviceErrorEvent(this,irp));
 		else
-			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp,irp.getData(),irp.getOffset(),irp.getActualLength()));
+			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp));
 	}
 
 	/** @param the listener to add */
