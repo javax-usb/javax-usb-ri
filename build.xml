@@ -4,7 +4,6 @@
 	XML Ant (http://www.apache.org/ant) build file for JSR80 (javax.usb) RI
 	@author E. Michael Maximilien
 	@author Dan Streetman
-	@version 1.0.0-beta1
 -->
 
 <project name="javax.usb" default="help">
@@ -16,22 +15,15 @@
 	<!-- User overrides from environment -->
 	<property environment="Jsr80Env"/>
 	
-	<property name="Jsr80Env.JSR80_RI_BUILDFILE" value="build_ri.xml"/>
-
 	<property name="Jsr80Env.JSR80_RI_VERSION" value="1.0.0-beta2"/>
-
-	<property name="Jsr80Env.JSR80_RI_DIST_NAME" value="jsr80-ri-${Jsr80Env.JSR80_RI_VERSION}"/>
-	<property name="Jsr80Env.JSR80_RI_DIST_ZIP_FILE" value="${Jsr80Env.JSR80_RI_DIST_NAME}.zip"/>
-	<property name="Jsr80Env.JSR80_RI_DIST_TAR_FILE" value="${Jsr80Env.JSR80_RI_DIST_NAME}.tar"/>
 
 	<property name="Jsr80Env.JSR80_RI_SRC_JARFILE" value="jsr80_ri_src.jar"/>
 	<property name="Jsr80Env.JSR80_RI_CLASS_JARFILE" value="jsr80_ri.jar"/>
 
-	<property name="Jsr80Env.JSR80_RI_DIST_DIR" value="dist"/>
 	<property name="Jsr80Env.JSR80_RI_SRC_DIR" value="src"/>
 	<property name="Jsr80Env.JSR80_RI_DEST_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
 	<property name="Jsr80Env.JSR80_RI_LIB_DIR" value="lib"/>
-	<property name="Jsr80Env.JSR80_RI_JNI_SRC_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}/jni/linux"/>
+	<property name="Jsr80Env.JSR80_RI_JNI_SRC_DIR" value="jni/linux"/>
 	<property name="Jsr80Env.JSR80_RI_SRC_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
 	<property name="Jsr80Env.JSR80_RI_CLASS_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
 	<property name="Jsr80Env.JSR80_RI_DOCS_DIR" value="docs"/>
@@ -52,21 +44,10 @@
 	<property name="Jsr80Env.JSR80_RI_JDOC_API_SRC_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
 
 	<!-- Variable defaults -->
-	<property name="jsr80.ri.buildfile" value="${Jsr80Env.JSR80_RI_BUILDFILE}"/>
-	
-	<property name="jsr80.ri.tmp.dir" value="RI-TMP-DIR"/>
-	<property name="jsr80.ri.dist.name.dir" value="${Jsr80Env.JSR80_RI_DIST_NAME}"/>
-	<property name="jsr80.ri.dist.zip.file" value="${Jsr80Env.JSR80_RI_DIST_ZIP_FILE}"/>
-	<property name="jsr80.ri.dist.tar.file" value="${Jsr80Env.JSR80_RI_DIST_TAR_FILE}"/>
 	<property name="jsr80.ri.manifest.file" value="jsr80_ri.mf"/>
-
-	<property name="jsr80.ri.readme.file" value="README-RI"/>
-	<property name="jsr80.ri.license.file" value="LICENSE-RI"/>
-	<property name="jsr80.ri.whatsnew.file" value="WHATSNEW-RI"/>
 
 	<property name="jsr80.ri.version" value="${Jsr80Env.JSR80_RI_VERSION}"/>
 	
-	<property name="jsr80.ri.dist.dir" value="${Jsr80Env.JSR80_RI_DIST_DIR}"/>
 	<property name="jsr80.ri.dest.dir" value="${Jsr80Env.JSR80_RI_DEST_DIR}"/>
 	<property name="jsr80.ri.src.dir" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
 	<property name="jsr80.ri.lib.dir" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
@@ -106,9 +87,7 @@
 	<property name="jsr80.ri.jdoc.private" value="no"/>
 	<property name="jsr80.ri.jdoc.api.src.dir" value="${Jsr80Env.JSR80_RI_JDOC_API_SRC_DIR}"/>
 
-	<!--
-		 This task shows the various options to run this build file
-	-->
+	<!-- Show help -->
 	<target name="help">
 		<echo message="Buildfile for JSR80 (javax.usb) RI"/>
 		<echo message=""/>
@@ -146,7 +125,7 @@
 			deprecation="${jsr80.ri.deprecation}"
 			verbose="${jsr80.ri.verbose}"
 			failonerror="yes"
-			includes="com/ibm/jusb/**"/>
+			includes="com/ibm/jusb/**/*.java"/>
 
 		<echo message="Compiling JSR80 (javax.usb) JNI header and library"/>
 		<javah
@@ -160,9 +139,7 @@
 		</exec>
 	</target>
 
-	<!-- 
-		Cleans the .class files
-	-->
+	<!-- Cleans the .class files -->
 	<target name="clean" depends="init">
 		<echo message="Cleaning JSR80 (javax.usb) RI classes and JNI object files" />
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
@@ -174,7 +151,7 @@
 		</exec>
 	</target>
 
-	<!-- Mr. Clean -->
+	<!-- Clean everything (Mr. Clean) -->
 	<target name="mrproper" depends="init,clean">
 		<echo message="Cleaning everything in JSR80 RI!"/>
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
@@ -185,15 +162,9 @@
 
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false"
 			dir="${jsr80.ri.jdoc.dir}"/>
-		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false"
-			file="${jsr80.ri.dist.zip.file}"/> 
-		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false"
-			file="${jsr80.ri.dist.tar.file}.gz"/> 
 	</target>
 
-	<!--
-		Creates the source and class JAR files and moves JNI library
-	-->
+	<!-- Creates the source and class JAR files and moves JNI library -->
 	<target name="jars" depends="init,compile">
 		<mkdir dir="${jsr80.ri.src.jarfile.dir}"/>
 		<jar
@@ -247,65 +218,14 @@
 		/>
 	</target>
 
-	<!--
-		Display the version information for RI
-	-->
+	<!-- Display the version information for RI -->
 	<target name="version" depends="init">
 		<!-- No runnable version class for the RI yet -->
 		<fail message="No runnable Version class for RI (yet)."/>
 	</target>
 
-	<!-- 
-		Builds a release distribution and Zip for this RI version 
-	-->
-	<target name="dist" depends="init,all">
-		<!-- Creating distribution directories -->
-		<mkdir dir="${jsr80.ri.dist.dir}"/>
-		<mkdir dir="${jsr80.ri.dist.dir}/src"/>
-		<mkdir dir="${jsr80.ri.dist.dir}/lib"/>
-		<mkdir dir="${jsr80.ri.dist.dir}/docs"/>
-
-		<!-- Copying main project files -->
-		<copy file="${jsr80.ri.buildfile}" todir="${jsr80.ri.dist.dir}"/>
-		<copy file="${jsr80.ri.readme.file}" todir="${jsr80.ri.dist.dir}"/>
-		<copy file="${jsr80.ri.license.file}" todir="${jsr80.ri.dist.dir}"/>
-		<copy file="${jsr80.ri.whatsnew.file}" todir="${jsr80.ri.dist.dir}"/>
-
-		<!-- Copying docs files (directories) -->
-		<copy todir="${jsr80.ri.dist.dir}/docs">
-			<fileset dir="${jsr80.ri.docs.dir}"/>
-		</copy>
-
-		<!-- Copying src files -->
-		<copy todir="${jsr80.ri.dist.dir}/src">
-			<fileset dir="${jsr80.ri.src.dir}" includes="com/ibm/jusb/**,jni/**" excludes="**/*.class"/>
-		</copy>
-
-		<!-- Creating Zip distribution file -->
-		<echo message="Creating temp directory ${jsr80.ri.tmp.dir}/${jsr80.ri.dist.name.dir}"/>
-		<mkdir dir="${jsr80.ri.tmp.dir}/${jsr80.ri.dist.name.dir}"/>
-		<copy todir="${jsr80.ri.tmp.dir}/${jsr80.ri.dist.name.dir}">
-			<fileset dir="${jsr80.ri.dist.dir}"/>
-		</copy>
-
-		<zip zipfile="${jsr80.ri.dist.zip.file}" basedir="${jsr80.ri.tmp.dir}"/>
-		<echo message="Zip distribution file ${jsr80.ri.dist.zip.file} created sucessfully"/>
-
-		<tar tarfile="${jsr80.ri.dist.tar.file}" basedir="${jsr80.ri.tmp.dir}"/>
-		<gzip zipfile="${jsr80.ri.dist.tar.file}.gz" src="${jsr80.ri.dist.tar.file}"/>
-		<delete file="${jsr80.ri.dist.tar.file}"/>
-		<echo message="Tar distribution file ${jsr80.ri.dist.tar.file}.gz created sucessfully"/>
-
-		<echo message="Cleaning temp directory ${jsr80.ri.tmp.dir}"/>
-		<delete dir="${jsr80.ri.tmp.dir}"/>
-		<echo message="Cleaing distribution directory ${jsr80.ri.dist.dir}"/>
-		<delete dir="${jsr80.ri.dist.dir}"/>
-	</target>
-
-	<!--
-		clean, compile, jars, jdoc
-	-->
-	<target name="all" depends="init,clean,compile,jars,jdoc"/>
+	<!-- compile, jars, jdoc -->
+	<target name="all" depends="init,compile,jars,jdoc"/>
 
 </project>
 
