@@ -116,11 +116,17 @@ public class SwingUsbView
 
 		while (iterator.hasNext()) {
 			UsbInterface iface = (UsbInterface)iterator.nextUsbInfo();
-			DefaultMutableTreeNode child = getInterfaceNode(iface);
+			UsbInfoListIterator altIterator = iface.getAlternateSettings();
 
-			createInterface(iface, child);
+			while (altIterator.hasNext()) {
+					UsbInterface setting = (UsbInterface)altIterator.nextUsbInfo();
 
-			node.add(child);
+					DefaultMutableTreeNode child = getInterfaceNode(setting);
+
+					createInterface(setting, child);
+
+					node.add(child);
+			}
 		}
 	}
 
