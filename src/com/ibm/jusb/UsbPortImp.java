@@ -75,7 +75,7 @@ public class UsbPortImp implements UsbPort
     public synchronized void detachUsbDeviceImp( UsbDeviceImp device ) throws IllegalArgumentException
 	{
 		try {
-			if (getUsbDeviceImp() != device)
+			if (!getUsbDeviceImp().equals(device))
 				throw new IllegalArgumentException( USB_PORT_DEVICE_NOT_ATTACHED );
 		} catch ( NullPointerException npE ) {
 			throw new IllegalArgumentException( USB_PORT_DEVICE_NOT_ATTACHED );
