@@ -16,12 +16,10 @@ package com.ibm.jusb;
  * The RI version number does not have to match the API version number.
  * @author Dan Streetman
  */
-public final class Version
+public class Version
 {
 	/**
-	 * Main entry point for the Version application.
-	 * <p>
-	 * This prints out this text to stdout (with appropriate version numbers):
+	 * Print this text to stdout (with appropriate version numbers):
 	 * <p>
 	 * javax.usb API version %lt;getApiVersion()><br>
 	 * javax.usb Platform-Independent RI version &lt;getRiVersion()><br>
@@ -54,5 +52,5 @@ public final class Version
 	public static String getRiVersion() { return VERSION_PLATFORM_INDEPENDENT_RI; }
 
 	private static final String VERSION_API = "0.9.1";
-	private static final String VERSION_PLATFORM_INDEPENDENT_RI = "0.9.2";
+	private static final String VERSION_PLATFORM_INDEPENDENT_RI = "0.9.3";
 }
