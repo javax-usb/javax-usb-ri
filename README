@@ -1,6 +1,6 @@
 
 The JCP web site is: http://jcp.org
-The location of this modification is http://javax-usb.org
+The JSR80 web site is: http://javax-usb.org
 
 ****************
 * Requirements *
@@ -22,7 +22,5 @@ the "all" target creates everything.
 * Installation *
 ****************
 
-Create the .class jarfile and add it to your CLASSPATH.
-
-The .class jarfile is called "jsr80_ri.jar" and is located in the lib/ directory.
+Add the lib/jsr80_ri.jar to your CLASSPATH.
 
