@@ -11,10 +11,12 @@ package com.ibm.jusb.tools;
 
 import javax.swing.*;
 import javax.swing.tree.*;
+import javax.swing.event.*;
 
 import javax.usb.*;
 import javax.usb.os.*;
 import javax.usb.util.*;
+import javax.usb.event.*;
 
 /**
  * Class to display the USB device topology tree using a Swing Frame.
@@ -22,21 +24,36 @@ import javax.usb.util.*;
  */
 public class SwingUsbView
 {
+	public SwingUsbView(UsbServices services, UsbRootHub hub)
+	{
+		rootHub = hub;
+		rootNode = new DefaultMutableTreeNode(new UsbPanel.UsbHubPanel(rootHub));
+		treeModel = new DefaultTreeModel(rootNode);
+		tree = new JTree(treeModel);
+		treeScroll = new JScrollPane(tree);
+		splitPane.setLeftComponent(treeScroll);
+
+		frame.getContentPane().add(splitPane);
+
+		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		tree.setEditable(false);
+		tree.addTreeSelectionListener(selectionListener);
+
+		createTree(rootHub, rootNode);
+
+		treeModel.reload();
+		frame.pack();
+
+		services.addUsbServicesListener(topologyListener);
+	}
+
 	/** Main */
 	public static void main( String[] argv ) throws Exception
 	{
-		SwingUsbView s = new SwingUsbView();
-
-		s.frame.getContentPane().add(s.scrollPane);
-		s.frame.pack();
+		UsbServices services = UsbHostManager.getInstance().getUsbServices();
+		SwingUsbView s = new SwingUsbView(services, services.getUsbRootHub());
+		
 		s.frame.setVisible(true);
-
-		s.rootHub = UsbHostManager.getInstance().getUsbServices().getUsbRootHub();
-
-		s.createTree(s.rootHub, s.rootNode);
-
-		s.treeModel.reload();
-		s.frame.pack();
 	}
 
 	protected void createTree(UsbHub hub, DefaultMutableTreeNode node)
@@ -108,47 +125,69 @@ public class SwingUsbView
 
 	protected void createEndpoint(UsbEndpoint ep, DefaultMutableTreeNode node)
 	{
-		DefaultMutableTreeNode child = new DefaultMutableTreeNode("UsbPipe");
+		DefaultMutableTreeNode child = new DefaultMutableTreeNode(new UsbPanel.UsbPipePanel(ep.getUsbPipe()));
 
 		node.add(child);
 	}
 
 	protected DefaultMutableTreeNode getHubNode(UsbHub hub)
 	{
-		return new DefaultMutableTreeNode("UsbHub");
+		return new DefaultMutableTreeNode(new UsbPanel.UsbHubPanel(hub));
 	}
 
 	protected DefaultMutableTreeNode getPortNode(UsbPort port)
 	{
-		return new DefaultMutableTreeNode("UsbPort " + port.getPortNumber());
+		return new DefaultMutableTreeNode(new UsbPanel.UsbPortPanel(port));
 	}
 
 	protected DefaultMutableTreeNode getDeviceNode(UsbDevice device)
 	{
-		return new DefaultMutableTreeNode("UsbDevice");
+		return new DefaultMutableTreeNode(new UsbPanel.UsbDevicePanel(device));
 	}
 
 	protected DefaultMutableTreeNode getConfigNode(UsbConfig config)
 	{
-		return new DefaultMutableTreeNode("UsbConfig " + config.getConfigNumber());
+		return new DefaultMutableTreeNode(new UsbPanel.UsbConfigPanel(config));
 	}
 
 	protected DefaultMutableTreeNode getInterfaceNode(UsbInterface iface)
 	{
-		return new DefaultMutableTreeNode("UsbInterface " + iface.getInterfaceNumber());
+		return new DefaultMutableTreeNode(new UsbPanel.UsbInterfacePanel(iface));
 	}
 
 	protected DefaultMutableTreeNode getEndpointNode(UsbEndpoint ep)
 	{
-		return new DefaultMutableTreeNode("UsbEndpoint 0x" + UsbUtil.toHexString(ep.getEndpointAddress()));
+		return new DefaultMutableTreeNode(new UsbPanel.UsbEndpointPanel(ep));
 	}
 
 	private UsbRootHub rootHub = null;
 
 	private JFrame frame = new JFrame("UsbView");
 
-	private DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("UsbRootHub");
-	private DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
-	private JTree tree = new JTree(treeModel);
-	private JScrollPane scrollPane = new JScrollPane(tree);
+	private DefaultMutableTreeNode rootNode = null;
+	private DefaultTreeModel treeModel = null;
+	private JTree tree = null;
+	private JScrollPane treeScroll = null;
+
+	private JScrollPane infoScroll = new JScrollPane();
+
+	private JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, null, infoScroll);
+
+	private UsbServicesListener topologyListener = new UsbServicesListener() {
+			public void usbDeviceAttached(UsbServicesEvent usE)
+			{ 
+/*FIXME - implement*/ }
+			public void usbDeviceDetached(UsbServicesEvent usE)
+			{ 
+/*FIXME - implement*/ }
+		};
+
+	private TreeSelectionListener selectionListener = new TreeSelectionListener() {
+			public void valueChanged(TreeSelectionEvent tsE)
+			{
+				if (tsE.isAddedPath())
+					infoScroll.getViewport().setView((UsbPanel)((DefaultMutableTreeNode)tsE.getPath().getLastPathComponent()).getUserObject());
+			}
+		};
+
 }
