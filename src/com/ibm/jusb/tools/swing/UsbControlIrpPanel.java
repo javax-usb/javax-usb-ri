@@ -189,7 +189,6 @@ public class UsbControlIrpPanel extends JPanel implements Cloneable
 	protected void lengthSelectionChanged()
 	{
 		lengthField.setEnabled(lengthCheckBox.isSelected());
-//FIXME - implement!
 	}
 
 	private JPanel packetOptionsPanel = new JPanel();
