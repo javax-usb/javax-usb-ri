@@ -188,6 +188,7 @@ public static class UsbInterfacePanel extends UsbPanel
 	{
 		super();
 		usbInterface = iface;
+		createClaimPanel();
 		string = "UsbInterface " + iface.getInterfaceNumber();
 		refresh();
 	}
@@ -197,7 +198,6 @@ public static class UsbInterfacePanel extends UsbPanel
 		clear();
 		appendln(string);
 		initText();
-		createClaimPanel();
 	}
 
 	protected void initText()
