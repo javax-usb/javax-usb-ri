@@ -87,6 +87,8 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	 * <p>
 	 * This can only be called from an
 	 * {@link #isActive() active} alternate setting.
+	 * <p>
+	 * All alternate settings will be claimed.
 	 * @throws javax.usb.UsbException if the interface could not be claimed.
 	 * @throws javax.usb.NotActiveException if the interface setting is not active.
 	 */
@@ -96,7 +98,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 
 		getUsbInterfaceOsImp().claim();
 
-		claimed = true;
+		setClaimed(true);
 	}
 
 	/**
@@ -113,13 +115,14 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 
 		getUsbInterfaceOsImp().release();
 
-		claimed = false;
+		setClaimed(false);
 	}
 
-	/** @return if this interface is claimed (in Java). */
+	/** @return if this interface is claimed. */
 	public boolean isClaimed()
 	{
-		checkSettingActive();
+		try { checkSettingActive(); }
+		catch ( NotActiveException naE ) { return false; }
 
 		if (claimed)
 			return true;
@@ -398,6 +401,17 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 			throw new NotActiveException( "Interface setting is not active", UsbInfoConst.USB_INFO_ERR_INACTIVE_INTERFACE_SETTING );
 	}
 
+	/**
+	 * Set all alternate settings' claimed state.
+	 * @param c If this interface is claimed or not.
+	 */
+	private void setClaimed(boolean c)
+	{
+		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceNumber());
+		for (int i=0; i<list.size(); i++)
+			((UsbInterfaceImp)list.get(i)).claimed = c;
+	}
+
 	//**************************************************************************
 	// Instance variables
 
@@ -406,7 +420,7 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 
 	private UsbInfoList endpoints = new DefaultUsbInfoList();
 
-	private boolean claimed = false;
+	protected boolean claimed = false;
 
 	//**************************************************************************
 	// Class constants
