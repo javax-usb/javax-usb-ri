@@ -349,7 +349,7 @@ public class UsbInterfaceImp implements UsbInterface
 				return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	//**************************************************************************
