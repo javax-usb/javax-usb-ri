@@ -116,9 +116,7 @@
 	<target name="mrproper" depends="clean">
 		<echo message="Cleaning everything."/>
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
-			<fileset dir="${jsr80.ri.src.jarfile.dir}" includes="${jsr80.ri.src.jarfile}"/>
-			<fileset dir="${jsr80.ri.class.jarfile.dir}" includes="${jsr80.ri.class.jarfile}"/>
-			<fileset dir="${jsr80.ri.lib.dir}" includes="${jsr80.ri.jni.library}"/>
+			<fileset dir="${jsr80.ri.jarfile.dir}" includes="${jsr80.ri.jarfile}"/>
 		</delete>
 
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false"
