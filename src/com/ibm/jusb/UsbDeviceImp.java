@@ -180,6 +180,10 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	 */
 	public StringDescriptor getStringDescriptor( byte index ) throws UsbException
 	{
+		/* There is no StringDescriptor for index 0 */
+		if (0 == index)
+			return null;
+
 		StringDescriptor desc = getCachedStringDescriptor( index );
 
 		if ( null == desc ) {
