@@ -26,6 +26,9 @@ public class UsbViewApp extends Object
      */
     public static void main( String[] args ) 
 	{ 
+System.err.println("This does not work yet.  Sorry!");
+System.exit(1);
+
 		mainFrame.setDefaultCloseOperation( javax.swing.JFrame.EXIT_ON_CLOSE );
 		mainFrame.setVisible( true ); 
 	}
@@ -34,5 +37,5 @@ public class UsbViewApp extends Object
     // Class variables
     //
 
-    private static MainFrame mainFrame = new MainFrame();
+    private static MainFrame mainFrame = null;//new MainFrame();
 }

@@ -23,9 +23,12 @@ public class PipeViewApp {
 
     public static void main( String[] argv ) 
 	{
+System.err.println("This does not work yet.  Sorry!");
+System.exit(1);
+
         mainFrame.setDefaultCloseOperation( javax.swing.JFrame.EXIT_ON_CLOSE );	
         mainFrame.setVisible( true );
     }
 
-    private static MainFrame mainFrame = new MainFrame( "USB Pipe View" );
+    private static MainFrame mainFrame = null;//new MainFrame( "USB Pipe View" );
 }
