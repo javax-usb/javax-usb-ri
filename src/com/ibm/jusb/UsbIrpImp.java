@@ -96,7 +96,14 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 	 * Set the UsbIrp to wrap.
 	 * @param irp The UsbIrp.
 	 */
-	public void setUsbIrp(UsbIrp irp) { usbIrp = irp; }
+	public void setUsbIrp(UsbIrp irp)
+	{
+		usbIrp = irp;
+		setData(irp.getData());
+		setOffset(irp.getOffset());
+		setLength(irp.getLength());
+		setAcceptShortPacket(irp.getAcceptShortPacket());
+	}
 
 	/**
 	 * Get the UsbIrp this is wrapping.
