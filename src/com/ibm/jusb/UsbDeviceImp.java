@@ -348,6 +348,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void disconnect()
 	{
+		disconnected = true;
+
 		try {
 			getParentUsbPortImp().detachUsbDeviceImp( this );
 		} catch ( IllegalArgumentException iaE ) {
@@ -358,13 +360,18 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		while (i.hasNext())
 			((UsbConfigurationImp)i.next()).disconnect();
 
-		disconnected = true;
-
 		listenerImp.usbDeviceDetached(new UsbDeviceEvent(this));
 
-		queueManager.stop();
+		if (queueSubmissions) {
+			Runnable r = new Runnable() {
+					public void run() { listenerImp.clear(); }
+				};
 
-		listenerImp.clear();
+			addRunnable(r);
+			queueManager.stop();
+		} else {
+			listenerImp.clear();
+		}
 	}
 
 	/**
@@ -490,10 +497,15 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		if (null == irp)
 			irp = usbControlIrpImp;
 
-		if (irp.isUsbException())
+		if (irp.isUsbException()) {
+			/* If the device was disconnected, replace the error with a UsbAbortException. */
+			if (isDisconnected())
+				irp.setUsbException(new UsbAbortException("The device was disconnected"));
+
 			listenerImp.errorEventOccurred(new UsbDeviceErrorEvent(this,irp));
-		else
+		} else {
 			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp));
+		}
 	}
 
 	/** @return the device's default langID */
