@@ -10,7 +10,7 @@ package com.ibm.jusb.util;
  */
 
 import javax.usb.Request;
-import com.ibm.jusb.os.RequestVisitor;
+import com.ibm.jusb.*;
 
 /**
  * Defines a default class implementing the RequestVisitor interface

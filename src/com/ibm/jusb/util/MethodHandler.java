@@ -14,7 +14,7 @@ import java.lang.reflect.*;
 import javax.usb.*;
 import javax.usb.event.*;
 
-import com.ibm.jusb.os.*;
+import com.ibm.jusb.*;
 
 /**
  * MethodHandler object - executes Methods in a seperate Thread

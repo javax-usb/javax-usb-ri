@@ -12,7 +12,7 @@ package com.ibm.jusb.os.linux;
 import javax.usb.*;
 import javax.usb.util.*;
 
-import com.ibm.jusb.os.*;
+import com.ibm.jusb.*;
 
 /**
  * Control parameters to pass to native code

@@ -9,7 +9,7 @@ package com.ibm.jusb.os.linux;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import com.ibm.jusb.os.*;
+import com.ibm.jusb.*;
 
 /**
  * Bulk parameters to pass to native code

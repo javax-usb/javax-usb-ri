@@ -11,7 +11,7 @@ package com.ibm.jusb.os.linux;
 
 import javax.usb.UsbException;
 
-import com.ibm.jusb.os.UsbIrpImp;
+import com.ibm.jusb.*;
 import com.ibm.jusb.util.*;
 
 /**

@@ -14,7 +14,7 @@ import java.util.*;
 import javax.usb.*;
 import javax.usb.util.*;
 
-import com.ibm.jusb.os.*;
+import com.ibm.jusb.*;
 import com.ibm.jusb.util.*;
 
 /**

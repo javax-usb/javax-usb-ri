@@ -10,7 +10,7 @@ package com.ibm.jusb.os.linux;
  */
 
 import javax.usb.*;
-import com.ibm.jusb.os.*;
+import com.ibm.jusb.*;
 
 /**
  * Linux implementation of UsbPipeImpFactory

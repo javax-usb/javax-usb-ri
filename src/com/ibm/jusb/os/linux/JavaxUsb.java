@@ -12,6 +12,7 @@ package com.ibm.jusb.os.linux;
 import java.util.*;
 
 import javax.usb.*;
+import com.ibm.jusb.*;
 import com.ibm.jusb.os.*;
 import javax.usb.util.*;
 

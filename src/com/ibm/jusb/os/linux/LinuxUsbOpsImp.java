@@ -12,9 +12,7 @@ package com.ibm.jusb.os.linux;
 import javax.usb.*;
 import javax.usb.util.*;
 
-import com.ibm.jusb.os.UsbOpsImp;
-import com.ibm.jusb.os.AbstractRequest;
-import com.ibm.jusb.os.DefaultRequestFactory;
+import com.ibm.jusb.*;
 import com.ibm.jusb.util.DefaultRequestV;
 
 /**

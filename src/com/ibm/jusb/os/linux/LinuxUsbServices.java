@@ -17,7 +17,7 @@ import javax.usb.event.*;
 import javax.usb.util.UsbInfoList;
 import javax.usb.util.DefaultUsbInfoList;
 
-import com.ibm.jusb.os.*;
+import com.ibm.jusb.*;
 import com.ibm.jusb.util.*;
 
 /**

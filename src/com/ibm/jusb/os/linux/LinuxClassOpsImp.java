@@ -9,7 +9,7 @@ package com.ibm.jusb.os.linux;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import com.ibm.jusb.os.ClassOpsImp;
+import com.ibm.jusb.ClassOpsImp;
 
 /**
  * Linux implementation of the ClassOpsImp interface
