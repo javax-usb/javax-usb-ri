@@ -67,6 +67,32 @@ public class StringDescriptorImp extends DescriptorImp implements StringDescript
 	}
 
 	/**
+	 * Compare this to an Object.
+	 * @param object The Object to compare to.
+	 * @return If this is equal to the Object.
+	 */
+	public boolean equals(Object object)
+	{
+		if (!super.equals(object))
+			return false;
+
+		StringDescriptorImp desc = null;
+
+		try { desc = (StringDescriptorImp)object; }
+		catch ( ClassCastException ccE ) { return false; }
+
+		try {
+			if (getString() != desc.getString())
+				return false;
+		} catch ( UnsupportedEncodingException ueE ) {
+			/* This doesn't mean they're not equal... */
+		}
+
+		return
+			bString() == desc.bString();
+	}
+
+	/**
 	 * Create a String for the bString.
 	 * @return A String for the bString.
 	 * @exception UnsupportedEncodingException If no encodings are available.

@@ -92,6 +92,31 @@ public class InterfaceDescriptorImp extends DescriptorImp implements InterfaceDe
 	 */
     public byte iInterface() { return iInterface; }
 
+	/**
+	 * Compare this to an Object.
+	 * @param object The Object to compare to.
+	 * @return If this is equal to the Object.
+	 */
+	public boolean equals(Object object)
+	{
+		if (!super.equals(object))
+			return false;
+
+		InterfaceDescriptorImp desc = null;
+
+		try { desc = (InterfaceDescriptorImp)object; }
+		catch ( ClassCastException ccE ) { return false; }
+
+		return
+			bInterfaceNumber() == desc.bInterfaceNumber() &&
+			bAlternateSetting() == desc.bAlternateSetting() &&
+			bNumEndpoints() == desc.bNumEndpoints() &&
+			bInterfaceClass() == desc.bInterfaceClass() &&
+			bInterfaceSubClass() == desc.bInterfaceSubClass() &&
+			bInterfaceProtocol() == desc.bInterfaceProtocol() &&
+			iInterface() == desc.iInterface();
+	}
+
     private byte bInterfaceNumber = 0x00;
     private byte bAlternateSetting = 0x00;
     private byte bNumEndpoints = 0x00;

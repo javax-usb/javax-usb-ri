@@ -85,6 +85,30 @@ public class ConfigDescriptorImp extends DescriptorImp implements ConfigDescript
 	 */
     public byte bMaxPower() { return bMaxPower; }
 
+	/**
+	 * Compare this to an Object.
+	 * @param object The Object to compare to.
+	 * @return If this is equal to the Object.
+	 */
+	public boolean equals(Object object)
+	{
+		if (!super.equals(object))
+			return false;
+
+		ConfigDescriptorImp desc = null;
+
+		try { desc = (ConfigDescriptorImp)object; }
+		catch ( ClassCastException ccE ) { return false; }
+
+		return
+			wTotalLength() == desc.wTotalLength() &&
+			bNumInterfaces() == desc.bNumInterfaces() &&
+			bConfigurationValue() == desc.bConfigurationValue() &&
+			iConfiguration() == iConfiguration() &&
+			bmAttributes() == bmAttributes() &&
+			bMaxPower() == bMaxPower();
+	}
+
 	private short wTotalLength = 0x0000;
 	private byte bNumInterfaces = 0x00;
 	private byte bConfigurationValue = 0x00;

@@ -138,9 +138,16 @@ public class DeviceDescriptorImp extends DescriptorImp implements DeviceDescript
 	 */
     public byte bNumConfigurations() { return bNumConfigurations; }
 
-	/** Compare this to another Object */
+	/**
+	 * Compare this to an Object.
+	 * @param object The Object.
+	 * @return If this is equal to the Object.
+	 */
 	public boolean equals(Object object)
 	{
+		if (!super.equals(object))
+			return false;
+
 		DeviceDescriptorImp desc = null;
 
 		try { desc = (DeviceDescriptorImp)object; }

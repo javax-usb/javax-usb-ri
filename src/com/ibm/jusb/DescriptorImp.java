@@ -37,6 +37,26 @@ public class DescriptorImp implements Descriptor
 	 */
     public byte bDescriptorType() { return bDescriptorType; }
 
+	/**
+	 * Compare this to an Object.
+	 * @param object The Object to compare to.
+	 * @return If this is equal to the Object.
+	 */
+	public boolean equals(Object object)
+	{
+		if (null == object)
+			return false;
+
+		DescriptorImp desc = null;
+
+		try { desc = (DescriptorImp)object; }
+		catch ( ClassCastException ccE ) { return false; }
+
+		return
+			bLength() == desc.bLength() &&
+			bDescriptorType() == desc.bDescriptorType();
+	}
+
 	private byte bLength = 0x00;
 	private byte bDescriptorType = 0x00;
 }

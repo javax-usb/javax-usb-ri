@@ -174,6 +174,38 @@ public class UsbConfigImp implements UsbConfig
 	/** @param desc the new config descriptor */
 	public void setConfigDescriptor( ConfigDescriptor desc ) { configDescriptor = desc; }
 
+	/**
+	 * Compare this to another Object.
+	 * @param object The Object to compare to.
+	 * @return If this equals the Object.
+	 */
+	public boolean equals(Object object)
+	{
+		if (null == object)
+			return false;
+
+		UsbConfigImp config = null;
+
+		try { config = (UsbConfigImp)object; }
+		catch ( ClassCastException ccE ) { return false; }
+
+		if (!getConfigDescriptor().equals(config.getConfigDescriptor()))
+			return false;
+
+		List ifs = getUsbInterfaces();
+
+		for (int i=0; i<ifs.size(); i++) {
+			UsbInterfaceImp usbInterfaceImp = (UsbInterfaceImp)ifs.get(i);
+			byte ifaceNumber = usbInterfaceImp.getInterfaceDescriptor().bInterfaceNumber();
+			if (!config.containsUsbInterface(ifaceNumber))
+				return false;
+			else if (!usbInterfaceImp.equals(config.getUsbInterface(ifaceNumber)))
+				return false;
+		}
+
+		return true;
+	}
+
 	//**************************************************************************
 	// Instance variables
 

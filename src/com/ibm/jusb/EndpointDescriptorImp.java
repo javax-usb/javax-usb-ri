@@ -63,6 +63,28 @@ public class EndpointDescriptorImp extends DescriptorImp implements EndpointDesc
 	 */
 	public byte bInterval() { return bInterval; }
 
+	/**
+	 * Compare this to an Object.
+	 * @param object The Object to compare to.
+	 * @return If this is equal to the Object.
+	 */
+	public boolean equals(Object object)
+	{
+		if (!super.equals(object))
+			return false;
+
+		EndpointDescriptorImp desc = null;
+
+		try { desc = (EndpointDescriptorImp)object; }
+		catch ( ClassCastException ccE ) { return false; }
+
+		return
+			bEndpointAddress() == desc.bEndpointAddress() &&
+			bmAttributes() == desc.bmAttributes() &&
+			wMaxPacketSize() == desc.wMaxPacketSize() &&
+			bInterval() == desc.bInterval();
+	}
+
 	private byte bEndpointAddress = 0x00;
 	private byte bmAttributes = 0x00;
 	private short wMaxPacketSize = 0x0000;

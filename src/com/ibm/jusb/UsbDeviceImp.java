@@ -313,6 +313,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	/** Compare this to another UsbDeviceImp */
 	public boolean equals(Object object)
 	{
+		if (null == object)
+			return false;
+
 		UsbDeviceImp device = null;
 
 		try { device = (UsbDeviceImp)object; }
@@ -324,7 +327,17 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 		if (!getDeviceDescriptor().equals(device.getDeviceDescriptor()))
 			return false;
 
-//FIXME - check config/interface/endpoints too
+		List cfgs = getUsbConfigs();
+
+		for (int i=0; i<cfgs.size(); i++) {
+			UsbConfigImp usbConfigImp = (UsbConfigImp)cfgs.get(i);
+			byte configValue = usbConfigImp.getConfigDescriptor().bConfigurationValue();
+			if (!device.containsUsbConfig(configValue))
+				return false;
+			else if (!usbConfigImp.equals(device.getUsbConfig(configValue)))
+				return false;
+		}
+
 		return true;
 	}
 
