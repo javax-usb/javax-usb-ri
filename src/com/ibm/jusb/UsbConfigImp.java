@@ -13,29 +13,28 @@ import javax.usb.*;
 import javax.usb.util.*;
 
 /**
- * Concrete class implementing the UsbConfig interface
- * @author E. Michael Maximilien
+ * UsbConfig implementation.
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
+ * @author E. Michael Maximilien
  */
-class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
+public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 {
-	//-------------------------------------------------------------------------
-	// Ctor(s)
-	//
-
-	/** 
-	 * Creates a configuration for the UsbDevice specified
-	 * @param usbDevice the UsbDevice that this config belongs to
+	/**
+	 * Constructor.
+	 * <p>
+	 * The UsbDeviceImp must be {@link #setUsbDeviceImp(UsbDeviceImp) set}
+	 * before use.
 	 */
-	UsbConfigImp( UsbDevice usbDevice ) 
-	{
-		setUsbDevice( usbDevice );
-	}
+	public UsbConfigImp() { }
 
-	//-------------------------------------------------------------------------
-	// Public overridden interface methods
-	//
+	/**
+	 * Constructor.
+	 * @param device The parent device.
+	 */
+	public UsbConfigImp( UsbDeviceImp device ) { setUsbDeviceImp( device ); }
+
+	//**************************************************************************
+	// Public methods
 
 	/** @return name of this UsbInfo object */
 	public String getName() 
@@ -45,10 +44,6 @@ class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
         
 		return super.getName();
 	}
-
-	//-------------------------------------------------------------------------
-	// Public interface methods
-	//
 
 	/** @return this configuration's number */
 	public byte getConfigNumber() { return getConfigDescriptor().getConfigValue(); }
@@ -69,18 +64,24 @@ class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	public UsbInfoListIterator getUsbInterfaces() { return interfaces.usbInfoListIterator(); }
 
 	/**
-	 * @param the number of the interface to get
-	 * @return a UsbInterface with the given number
+	 * @param The number of the interface to get
+	 * @return A UsbInterface with the given number
 	 */
-	public UsbInterface getUsbInterface( byte number )
+	public UsbInterface getUsbInterface( byte number ) { return getUsbInterfaceImp(number); }
+
+	/**
+	 * @param The number of the interface to get.
+	 * @return A UsbInterfaceImp with the given number.
+	 */
+	public UsbInterfaceImp getUsbInterfaceImp( byte number )
 	{
-		UsbInfoIterator iterator = getUsbInterfaces();
+		synchronized ( interfaces ) {
+			for (int i=0; i<interfaces.size(); i++) {
+				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.get(i);
 
-		while ( iterator.hasNext() ) {
-			UsbInterface iface = (UsbInterface)iterator.nextUsbInfo();
-
-			if (number == iface.getInterfaceNumber())
-				return iface;
+				if (number == iface.getInterfaceNumber())
+					return iface;
+			}
 		}
 
 		throw new UsbRuntimeException( "No UsbInterface with number " + UsbUtil.unsignedInt( number ) );
@@ -92,20 +93,20 @@ class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	 */
 	public boolean containsUsbInterface( byte number )
 	{
-		UsbInfoIterator iterator = getUsbInterfaces();
+		try { getUsbInterface(number); }
+		catch ( UsbRuntimeException urE ) { return false; }
 
-		while ( iterator.hasNext() ) {
-			UsbInterface iface = (UsbInterface)iterator.nextUsbInfo();
-
-			if (number == iface.getInterfaceNumber())
-				return true;
-		}
-
-		return false;
+		return true;
 	}
 
-	/** @return the UsbDevice that has this config */
-	public UsbDevice getUsbDevice() { return usbDevice; }
+	/** @return The parent UsbDevice */
+	public UsbDevice getUsbDevice() { return getUsbDeviceImp(); }
+
+	/** @return The parent UsbDeviceImp */
+	public UsbDeviceImp getUsbDeviceImp() { return usbDeviceImp; }
+
+	/** @param device The parent UsbDeviceImp */
+	public void setUsbDeviceImp(UsbDeviceImp device) { usbDeviceImp = device; }
 
 	/** @return the config descriptor for this config */
 	public ConfigDescriptor getConfigDescriptor() { return (ConfigDescriptor)getDescriptor(); }
@@ -113,12 +114,8 @@ class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	/** @return the String description of this config */
 	public String getConfigString()
 	{
-		return ((UsbDeviceAbstraction)getUsbDevice()).getCachedString( getConfigDescriptor().getConfigIndex() );
+		return getUsbDeviceImp().getCachedString( getConfigDescriptor().getConfigIndex() );
 	}
-
-	//-------------------------------------------------------------------------
-	// Public accept method for the Visitor pattern
-	//
 
 	/**
 	 * Visitor.accept method
@@ -126,56 +123,43 @@ class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	 */
 	public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbConfig( this ); }
 
-	//-------------------------------------------------------------------------
-	// Protected and package methods
-	//
-
 	/** @param desc the new config descriptor */
-	void setConfigDescriptor( ConfigDescriptor desc ) { setDescriptor( desc ); }
+	public void setConfigDescriptor( ConfigDescriptor desc ) { setDescriptor( desc ); }
 
-	/** @param setting the new active alternate setting */
-	void setActiveAlternateSetting( UsbInterface setting )
+	/**
+	 * Replace a UsbInterface with a new alternate setting.
+	 * <p>
+	 * When an interface's setting changes, this config's list of interfaces
+	 * must also change - since the {@link #getUsbInterface(byte) getUsbInterface}
+	 * method always should return the active alternate setting of a particular interface.
+	 * This method should be called to keep the alternate setting correct.
+	 * @param setting The new active alternate setting.
+	 */
+	public void setActiveAlternateSetting( UsbInterfaceImp setting )
 	{
 		synchronized ( interfaces ) {
-			UsbInfoIterator iterator = getUsbInterfaces();
+			for (int i=0; i<interfaces.size(); i++) {
+				UsbInterfaceImp iface = (UsbInterfaceImp)interfaces.get(i);
 
-			while ( iterator.hasNext() ) {
-				UsbInterface iface = (UsbInterface)iterator.nextUsbInfo();
-
-				if (setting.getInterfaceNumber() == iface.getInterfaceNumber())
+				if (setting.getInterfaceNumber() == iface.getInterfaceNumber()) {
 					interfaces.removeUsbInfo( iface );
+					break;
+				}
 			}
 
 			interfaces.addUsbInfo( setting );
 		}
 	}
 
-	//-------------------------------------------------------------------------
-	// Private helper methods
-	//
-
-	/**
-	 * Sets this config to its UsbDevice
-	 * @param device the UsbDevice
-	 */
-	private void setUsbDevice( UsbDevice device )
-	{
-		usbDevice = device;
-
-		((UsbDeviceAbstraction)usbDevice).addUsbConfig( this );
-	}
-
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Instance variables
-	//
+
+	private UsbDeviceImp usbDeviceImp = null;
 
 	private UsbInfoList interfaces = new DefaultUsbInfoList();
 
-	private UsbDevice usbDevice = null;
-
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Class constants
-	//
 
 	public static final String USB_CONFIG_NAME_STRING = "config";
 }

@@ -18,22 +18,43 @@ import javax.usb.util.*;
 import com.ibm.jusb.os.*;
 
 /**
- * Platform-independent implementation of UsbDevice.
- * @author E. Michael Maximilien
+ * UsbDevice platform-independent implementation.
  * @author Dan Streetman
+ * @author E. Michael Maximilien
  */
 public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 {
+	/**
+	 * Constructor.
+	 * <p>
+	 * The UsbDeviceOsImp must be {@link #setUsbDeviceOsImp(UsbDeviceOsImp) set} before
+	 * connecting this device to the topology tree.
+	 */
 	public UsbDeviceImp() {}
 
-	public UsbDeviceImp(UsbDeviceOsImp osImp) { usbDeviceOsImp = osImp; }
+	/**
+	 * Constructor.
+	 * @param device The UsbDeviceOsImp.
+	 */
+	public UsbDeviceImp(UsbDeviceOsImp device) { setUsbDeviceOsImp(device); }
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Public methods
-	//
+
+	/** @return the associated UsbDeviceImp */
+	public UsbDeviceOsImp getUsbDeviceOsImp() { return usbDeviceOsImp; }
+
+	/** @param the UsbDeviceOsImp to use */
+	public void setUsbDeviceOsImp( UsbDeviceOsImp deviceImp ) { usbDeviceOsImp = deviceImp; }
 
 	/** @return the port that this device is attached to */
-	public UsbPort getUsbPort() { return usbPort; }
+	public UsbPort getUsbPort() { return getUsbPortImp(); }
+
+	/** @return the port that this device is attached to */
+	public UsbPortImp getUsbPortImp() { return usbPortImp; }
+
+	/** @param The parent port */
+	public void setUsbPortImp( UsbPortImp port ) { usbPortImp = port; }
 
 	/** @return true if this is a UsbHub and false otherwise */
 	public boolean isUsbHub() { return false; }
@@ -84,15 +105,18 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	public UsbInfoListIterator getUsbConfigs() { return configs.usbInfoListIterator(); }
 
 	/** @return the UsbConfig with the specified number as reported by getConfigNumber() */
-	public UsbConfig getUsbConfig( byte number )
+	public UsbConfig getUsbConfig( byte number ) { return getUsbConfigImp(number); }
+
+	/** @return the UsbConfigImp with the specified number as reported by getConfigNumber() */
+	public UsbConfigImp getUsbConfigImp( byte number )
 	{
-		UsbInfoIterator iterator = getUsbConfigs();
+		synchronized ( configs ) {
+			for (int i=0; i<configs.size(); i++) {
+				UsbConfigImp config = (UsbConfigImp)configs.get(i);
 
-		while (iterator.hasNext()) {
-			UsbConfig config = (UsbConfig)iterator.nextUsbInfo();
-
-			if (number == config.getConfigNumber())
-				return config;
+				if (number == config.getConfigNumber())
+					return config;
+			}
 		}
 
 		throw new UsbRuntimeException( "No UsbConfig with number " + UsbUtil.unsignedInt( number ) );
@@ -101,16 +125,10 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/** @return if the specified UsbConfig is contained in this UsbDevice */
 	public boolean containsUsbConfig( byte number )
 	{
-		UsbInfoIterator iterator = getUsbConfigs();
+		try { getUsbConfig( number ); }
+		catch ( UsbRuntimeException urE ) { return false; }
 
-		while (iterator.hasNext()) {
-			UsbConfig config = (UsbConfig)iterator.nextUsbInfo();
-
-			if (number == config.getConfigNumber())
-				return true;
-		}
-
-		return false;
+		return true;
 	}
 
 	/** @return if this device is configured */
@@ -153,62 +171,26 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		return ( null == desc ? null : desc.getString() );
 	}
 
-	/**
-	 * Returns a StandardOperations object that can be used to submit
-	 * standard USB Request objects to this device.
-	 * @return a StandardOperations object to use with this UsbDevice
-	 * @see javax.usb.Request
-	 * @see javax.usb.os.UsbServices#getRequestFactory
-	 * @throw javax.usb.UsbException if the StandardOperations could not be created
-	 */
-	public StandardOperations getStandardOperations() throws UsbException
-	{
-		if( standardOperations == null )
-			standardOperations = new DefaultStandardOperations( this, getUsbDeviceImp().getOpsImp() );
+	/** @return A UsbOperationsImp object */
+	public UsbOperationsImp getUsbOperationsImp() { return usbOperationsImp; }
 
-		return standardOperations;
-	}
+	/** @return A StandardOperations object */
+	public StandardOperations getStandardOperations() { return getUsbOperationsImp(); }
 
-	/**
-	 * Returns a ClassOperations object that can be used to submit
-	 * standard USB class Request objects to this device.
-	 * @return a ClassOperations object to use with this UsbDevice
-	 * @see javax.usb.Request
-	 * @see javax.usb.os.UsbServices#getRequestFactory
-	 * @throw javax.usb.UsbException if the ClassOperations could not be created
-	 */
-	public ClassOperations getClassOperations() throws UsbException
-	{
-		if( classOperations == null )
-			classOperations = new DefaultClassOperations( this, getUsbDeviceImp().getOpsImp() );
+	/** @return A ClassOperations object */
+	public ClassOperations getClassOperations() { return getUsbOperationsImp(); }
 
-		return classOperations;
-	}
-
-	/**
-	 * Returns a VendorOperations object that can be used to submit
-	 * standard USB vendor Request objects to this device.
-	 * @return a VendorOperations object to use with this UsbDevice
-	 * @see javax.usb.Request
-	 * @see javax.usb.os.UsbServices#getRequestFactory
-	 * @throw javax.usb.UsbException if the VendorOperations could not be created
-	 */
-	public VendorOperations getVendorOperations() throws UsbException
-	{
-		if( vendorOperations == null )
-			vendorOperations = new DefaultVendorOperations( this, getUsbDeviceImp().getOpsImp() );
-
-		return vendorOperations;
-	}
+	/** @return A VendorOperations object */
+	public VendorOperations getVendorOperations() { return getUsbOperationsImp(); }
 
 	/** @param the listener to add */
-	public synchronized void addUsbDeviceListener( UsbDeviceListener listener ) 
+	public void addUsbDeviceListener( UsbDeviceListener listener ) 
 	{
 		listenerList.add( listener );
 	}
 
 	/** @param the listener to remove */
-	public synchronized void removeUsbDeviceListener( UsbDeviceListener listener )
+	public void removeUsbDeviceListener( UsbDeviceListener listener )
 	{
 		listenerList.remove( listener );
 	}
@@ -218,12 +200,6 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	 * @param visitor the UsbInfoVisitor visiting this UsbInfo
 	 */
 	public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbDevice( this ); }
-
-	/** @return the associated UsbDeviceImp */
-	public UsbDeviceOsImp getUsbDeviceOsImp() { return usbDeviceOsImp; }
-
-	/** @param the UsbDeviceOsImp to use */
-	public void setUsbDeviceOsImp( UsbDeviceOsImp deviceImp ) { usbDeviceOsImp = deviceImp; }
 
 	/** @param desc the new device descriptor */
 	public void setDeviceDescriptor( DeviceDescriptor desc ) { setDescriptor( desc ); }
@@ -240,6 +216,7 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/** Update the StringDescriptor at the specified index. */
 	public void requestStringDescriptor( byte index )
 	{
+//FIXME!!
 		/* Do a StringDescriptor Request here, and update the cache */
 	}
 
@@ -273,33 +250,28 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	 */
 	public void setActiveUsbConfigNumber( byte num ) { activeConfigNumber = num; }
 
-	/**
-	 * @param usbHub the parent UsbHub
-	 * @param port the parent port index the UsbDevice is attached to
-	 */
-	public void connect( UsbHubImp usbHub, byte port ) throws UsbException
-	{
-		usbHub.addDevice( this, port );
-		usbPort = usbHub.getUsbPort( port );
-	}
-
 	/** @param the configuration to add */
 	public void addUsbConfig( UsbConfig config ) { configs.addUsbInfo( config ); }
 
 	/**
-	 * Disconnect UsbDevice
-	 * @exception javax.usb.UsbException if there was a problem removing the device
+	 * Disconnect UsbDeviceImp.
+	 * <p>
+	 * Only call this if the device was connected to the topology tree;
+	 * i.e. the UsbPortImp has been {@link #setUsbPortImp(UsbPortImp) set}.
+	 * This will fire
+	 * {@link javax.usb.event.UsbDeviceListener#usbDeviceDetached(UsbDeviceEvent) usbDeviceDetached}
+	 * events to all listeners.
+	 * <p>
+	 * The implementation does not have to call this method, it is only a convienience method
+	 * to disconnect this device and fire events to listeners; the implementation can do those
+	 * things itself instead of this method, if desired.
 	 */
-	public void disconnect() throws UsbException
+	public void disconnect()
 	{
-		try {
-			((UsbHubImp)getUsbPort().getUsbHub()).removeDevice( this, getUsbPort().getPortNumber() );
-		} catch ( NullPointerException npE ) {
-			throw new UsbException( "Cannot disconnect, not connected!" );
-		} finally {
-			/* Choose parallel or series notification */
-			fireDetachEventsParallel();
-		}
+		getUsbPortImp().detachUsbDeviceImp( this );
+
+		/* Choose parallel or series notification */
+		fireDetachEventsParallel();
 	}
 
 	/** Fire detach events on all listeners in parallel */
@@ -365,11 +337,9 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	private UsbInfoList configs = new DefaultUsbInfoList();
 	private byte activeConfigNumber = 0;
 
-	private UsbPort usbPort = null;
+	private UsbPortImp usbPortImp = null;
 
-	private StandardOperations standardOperations = null;
-	private VendorOperations vendorOperations = null;
-	private ClassOperations classOperations = null;
+	private UsbOperationsImp usbOperationsImp = new UsbOperationsImp();
 
 	//-------------------------------------------------------------------------
 	// Class constants

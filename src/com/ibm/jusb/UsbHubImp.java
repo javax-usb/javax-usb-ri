@@ -14,8 +14,10 @@ import javax.usb.util.*;
 
 /**
  * UsbHub implementation.
- * @author E. Michael Maximilien
+ * <p>
+ * The port numbering is 1-based, not 0-based.
  * @author Dan Streetman
+ * @author E. Michael Maximilien
  */
 public class UsbHubImp extends UsbDeviceImp implements UsbHub
 {
@@ -150,20 +152,8 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 		return attachedDevices.usbInfoListIterator();
 	}
 
-	/**
-	 * Returns a HubClassOperations object that can be used to submit
-	 * standard USB hub class Request objects to this hub.
-	 * @return a HubClassOperations object to use with this UsbHub
-	 * @see javax.usb.Request
-	 * @see javax.usb.os.UsbServices#getRequestFactory
-	 */
-	public HubClassOperations getHubClassOperations()
-	{
-//FIXME!!
-//<temp>
-throw new RuntimeException( "Not yet implemented!" );
-//</temp>
-	}
+	/** @return A HubClassOperations object */
+	public HubClassOperations getHubClassOperations() { return getUsbOperationsImp(); }
 
 	/**
 	 * Visitor.accept method
