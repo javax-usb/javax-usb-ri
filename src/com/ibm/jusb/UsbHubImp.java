@@ -77,12 +77,12 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 				if ( getUsbPortImp((byte)i).isUsbDeviceAttached() )
 					return; /* Cannot remove in-use port */
 				else
-					portList.removeUsbInfo(i-1);
+					portList.remove(i-1);
 			}
 		} else {
 			/* Add ports */
 			for (int i = oldports; i < ports; i++)
-				portList.addUsbInfo( new UsbPortImp( this, (byte)(i+1) ) );
+				portList.add( new UsbPortImp( this, (byte)(i+1) ) );
 		}
 
 	}
@@ -95,7 +95,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	 */
 	public synchronized void addUsbDeviceImp( UsbDeviceImp usbDeviceImp, byte portNumber ) throws UsbException
 	{
-		if ( UsbUtil.unsignedInt( portNumber ) >= UsbUtil.unsignedInt( getNumberOfPorts() ) )
+		if ( UsbUtil.unsignedInt( portNumber ) > UsbUtil.unsignedInt( getNumberOfPorts() ) )
 			resize( portNumber );
 
 		UsbPortImp usbPortImp = getUsbPortImp( portNumber );
@@ -115,82 +115,72 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 		UsbPortImp usbPortImp = getUsbPortImp( portNumber );
 
 		/* UsbPortImp does checking */
-		usbPortImp.detachUsbDeviceImp( usbDeviceImp );
+		try {
+			usbPortImp.detachUsbDeviceImp( usbDeviceImp );
+		} catch ( NullPointerException npE ) {
+			throw new UsbException(USB_HUB_PORT_OUT_OF_RANGE + UsbUtil.unsignedInt(portNumber));
+		}
 	}
 
 	/** @return true if this is a UsbHub and false otherwise */
 	public boolean isUsbHub() { return true; }
 
-	/** @return true if this is the root hub */
-	public boolean isUsbRootHub() { return false;  }
+	/** @return true if this is the virtual root hub */
+	public boolean isRootUsbHub() { return false;  }
 
 	/** @return the number of ports for this hub */
 	public byte getNumberOfPorts() { return (byte)portList.size(); }
 
 	/** @return an iteration of UsbPort objects attached to this hub */
-	public UsbInfoListIterator getUsbPorts() { return portList.usbInfoListIterator(); }
+	public List getUsbPorts() { return Collections.unmodifiableList(portList); }
 
 	/**
 	 * Get the specified port.
 	 * @param number The number (1-based) of the port to get.
-	 * @return The port with the specified number.
-	 * @throws UsbRuntimeException If the port number if not valid.
+	 * @return The port with the specified number, or null.
 	 */
 	public UsbPort getUsbPort( byte number ) { return getUsbPortImp( number ); }
 
 	/**
 	 * Get the specified port.
 	 * @param number The number (1-based) of the port to get.
-	 * @return The port with the specified number.
-	 * @throws UsbRuntimeException If the port number if not valid.
+	 * @return The port with the specified number, or null.
 	 */
 	public synchronized UsbPortImp getUsbPortImp( byte number )
 	{
 		int num = UsbUtil.unsignedInt(number);
 
 		if (0 >= num || num > UsbUtil.unsignedInt(getNumberOfPorts()))
-			throw new UsbRuntimeException( USB_HUB_PORT_OUT_OF_RANGE + num );
+			return null;
 
-		return (UsbPortImp)portList.getUsbInfo(num - 1);
+		return (UsbPortImp)portList.get(num - 1);
 	}
 
 	/** @return an iteration of devices currently attached to this hub */
-	public synchronized UsbInfoListIterator getAttachedUsbDevices()
+	public synchronized List getAttachedUsbDevices()
 	{
-		UsbInfoList attachedDevices = new DefaultUsbInfoList();
+		List attachedDevices = new ArrayList();
 
 		for (int i=0; i<portList.size(); i++) {
-			UsbPortImp portImp = (UsbPortImp)portList.getUsbInfo(i);
+			UsbPortImp portImp = (UsbPortImp)portList.get(i);
 			UsbDeviceImp device = portImp.getUsbDeviceImp();
 			if (null != device)
-				attachedDevices.addUsbInfo(device);
+				attachedDevices.add(device);
 		}
 
-		return attachedDevices.usbInfoListIterator();
+		return Collections.unmodifiableList(attachedDevices);
 	}
-
-	/** @return A HubClassOperations object */
-	public HubClassOperations getHubClassOperations() { return getUsbOperationsImp(); }
-
-	/**
-	 * Visitor.accept method
-	 * @param visitor the UsbInfoVisitor visiting this UsbInfo
-	 */
-	public void accept( UsbInfoVisitor visitor ) { visitor.visitUsbHub( this ); }
 
 	//**************************************************************************
 	// Instance variables
 
-	protected UsbInfoList portList = new DefaultUsbInfoList();
+	protected List portList = new LinkedList();
 
 	//**************************************************************************
 	// Class constants
 
 	public static final int USB_HUB_MIN_PORTS = 0x01;
-	public static final int USB_HUB_MAX_PORTS = 0xff - 1; /* USB 1.1 spec table 11.8 - max of 255 ports, but 1-based numbering makes it 254! */
-
-	public static final String USB_HUB_NAME = "hub";
+	public static final int USB_HUB_MAX_PORTS = 0xff; /* USB 1.1 spec table 11.8 - max of 255 ports (1-based numbering) */
 
 	private static final String USB_HUB_PORT_OUT_OF_RANGE = "No such port number on this hub : ";
-	private static final String USB_DEVICE_NOT_ATTACHED = "The UsbDevice is not attached on the specified port";
 }

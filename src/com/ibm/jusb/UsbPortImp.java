@@ -16,7 +16,7 @@ import javax.usb.*;
  * @author E. Michael Maximilien
  * @author Dan Streetman
  */
-public class UsbPortImp extends AbstractUsbInfo implements UsbPort
+public class UsbPortImp implements UsbPort
 {
     /**
 	 * Constructor.
@@ -32,20 +32,10 @@ public class UsbPortImp extends AbstractUsbInfo implements UsbPort
 	//**************************************************************************
 	// Public methods
 
-    /** @return name of this UsbInfo object */
-    public String getName() 
-    {
-        if( super.getName().equals( "" ) )
-            setName( USB_PORT_NAME_STRING + getPortNumber() );
-        
-        return super.getName();
-    }
-
 	/**
 	 * Return the number of this port.
 	 * <p>
-	 * The port number is 1-based, so it is one greater than its index
-	 * in {@link com.ibm.jusb.UsbHubImp#getUsbPortImp(byte) UsbHubImp.getUsbPortImp(number)}.
+	 * The port number is 1-based.
 	 * @return The number of this port.
 	 */
     public byte getPortNumber() { return portNumber; }
