@@ -25,13 +25,21 @@ import com.ibm.jusb.util.*;
  * {@link #asyncSubmit(UsbIrpImp) asyncSubmit(UsbIrpImp)} method; this method,
  * at a minimum, must be implemented in order to provide any actual functionality.
  * <p>
- * The default action for this class is to throw a UsbException for all accesses,
- * except for Standard requests.
+ * The default action for this class is to throw a UsbException for all submission methods.
  * @author Dan Streetman
  */
 public class DefaultUsbDeviceOsImp implements UsbDeviceOsImp
 {
+	/**
+	 * Constructor.
+	 */
 	public DefaultUsbDeviceOsImp() { }
+
+	/**
+	 * Constructor.
+	 * @param submitString The String to be used in UsbExceptions thrown from a submission method.
+	 */
+	public DefaultUsbDeviceOsImp(String submitString) { this.submitString = submitString; }
 
 	/**
 	 * Synchronously submit a UsbControlIrpImp.
@@ -53,17 +61,14 @@ public class DefaultUsbDeviceOsImp implements UsbDeviceOsImp
 	/**
 	 * Asynchronously submit a UsbControlIrpImp.
 	 * <p>
-	 * This is implemented to fail with a generic UsbException, except for Standard requests.
+	 * This throws a UsbException with the specified {@link #getSubmitString() string}.
 	 * The implementation should override (at least) this method.
 	 * @param usbControlIrpImp The UsbControlIrpImp.
 	 * @exception UsbException If the submission is unsucessful.
 	 */
 	public void asyncSubmit(UsbControlIrpImp usbControlIrpImp) throws UsbException
 	{
-		if (null == runnableManager)
-			runnableManager = new RunnableManager();
-
-		runnableManager.add(new AsyncRunnable(usbControlIrpImp));
+		throw new UsbException(getSubmitString());
 	}
 
 	/**
@@ -92,38 +97,13 @@ public class DefaultUsbDeviceOsImp implements UsbDeviceOsImp
 			asyncSubmit((UsbControlIrpImp)list.get(i));
 	}
 
-	/**
-	 * Internally handle a submission.
-	 * <p>
-	 * This is the default action, which handles Standard requests but
-	 * throws UsbException for all other requests.
-	 * @param usbControlIrpImp The UsbControlIrpImp.
-	 * @exception UsbException If the request is not a Standard request.
-	 */
-	protected void internalSubmit(UsbControlIrpImp usbControlIrpImp) throws UsbException
-	{
-//FIXME - implement standard requests
-throw new UsbException("Not implemented yet");
-	}
+	/** @return The String to be used in UsbExceptions thrown from submit methods. */
+	protected String getSubmitString() { return submitString; }
 
 	protected RunnableManager runnableManager = null;
+	protected String submitString = SUBMIT_STRING;
 
-	private class AsyncRunnable implements Runnable
-	{
-		public AsyncRunnable(UsbControlIrpImp r) { usbControlIrpImp = r; }
+	public static final String SUBMIT_STRING = "Cannot use the default control pipe for this device.";
 
-		public void run()
-		{
-			try {
-				internalSubmit(usbControlIrpImp);
-			} catch ( UsbException uE ) {
-				usbControlIrpImp.setActualLength(0);
-				usbControlIrpImp.setUsbException(uE);
-				usbControlIrpImp.complete();
-			}
-		}
-
-		private UsbControlIrpImp usbControlIrpImp = null;
-	}
-
+	public static final String HOST_CONTROLLER_SUBMIT_STRING = "Cannot use the default control pipe on a host controller device.";
 }
