@@ -69,6 +69,7 @@ public class UsbControlPipeImp extends UsbPipeImp implements UsbPipe
 	 * Convert a UsbControlIrp to UsbControlIrpImp.
 	 * <p>
 	 * If the UsbIrp is not a UsbControlIrp, a UsbException is thrown.
+	 * This does not use the superclass method.
 	 * @param irp The UsbControlIrp to convert.
 	 */
 	protected UsbIrpImp usbIrpToUsbIrpImp(UsbIrp irp) throws UsbException
@@ -87,6 +88,7 @@ public class UsbControlPipeImp extends UsbPipeImp implements UsbPipe
 			usbControlIrpImp = new UsbControlIrpImp(usbControlIrp);
 		}
 
+		usbControlIrpImp.setUsbDeviceImp(getUsbEndpointImp().getUsbInterfaceImp().getUsbConfigurationImp().getUsbDeviceImp());
 		setupUsbIrpImp(usbControlIrpImp);
 
 		return usbControlIrpImp;

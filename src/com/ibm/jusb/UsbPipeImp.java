@@ -32,7 +32,7 @@ import com.ibm.jusb.event.*;
  * </ul>
  * @author Dan Streetman
  */
-public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
+public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 {
 	/** Constructor. */
 	public UsbPipeImp() { }
@@ -227,8 +227,6 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 
 	/**
 	 * Indicate that a specific UsbIrpImp has completed.
-	 * <p>
-	 * This will be called during the UsbIrpImp's complete() method.
 	 * @param irp The UsbIrpImp that completed.
 	 */
 	public void usbIrpImpComplete( UsbIrpImp irp )
@@ -253,7 +251,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 
 	public void setupUsbIrpImp(UsbIrpImp irp)
 	{
-		irp.setCompletion( this );
+		irp.setUsbIrpImpListener(this);
 	}
 
 	//**************************************************************************

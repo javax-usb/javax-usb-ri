@@ -89,6 +89,30 @@ public class UsbControlIrpImp extends UsbIrpImp implements UsbControlIrp
 	public short wLength() { return (short)getLength(); }
 
 	/**
+	 * Complete this submission.
+	 * <p>
+	 * If this is a successful {@link #isSetConfiguration() set configuration} request,
+	 * this will {@link com.ibm.jusb.UsbDeviceImp#setActiveUsbConfigurationNumber(byte) set the active configuration number}.
+	 * If this is a successful {@link #isSetInterface() set interface} request,
+	 * this will {@link com.ibm.jusb.UsbInterfaceImp#setActiveSettingNumber(byte) set the active setting number}.
+	 * Then, it will perform the {@link com.ibm.jusb.UsbIrpImp#complete() superclass's complete}.
+	 */
+	public void complete()
+	{
+		if (!isUsbException()) {
+			if (isSetConfiguration()) {
+				try { getUsbDeviceImp().setActiveUsbConfigurationNumber((byte)wValue()); }
+				catch ( Exception e ) { /* FIXME - log? */ }
+			} else if (isSetInterface()) {
+				try { getUsbDeviceImp().getActiveUsbConfigurationImp().getUsbInterfaceImp((byte)wIndex()).setActiveSettingNumber((byte)wValue()); }
+				catch ( Exception e ) { /* FIXME - log? */ }
+			}
+		}
+
+		super.complete();
+	}
+
+	/**
 	 * If this is a SET_CONFIGURATION UsbIrp.
 	 * @return If this is a SET_CONFIGURATION UsbIrp.
 	 */
@@ -141,6 +165,18 @@ public class UsbControlIrpImp extends UsbIrpImp implements UsbControlIrp
 	}
 
 	/**
+	 * Get the UsbDeviceImp.
+	 * @return The UsbDeviceImp.
+	 */
+	public UsbDeviceImp getUsbDeviceImp() { return usbDeviceImp; }
+
+	/**
+	 * Set the UsbDeviceImp.
+	 * @param device The UsbDeviceImp.
+	 */
+	public void setUsbDeviceImp(UsbDeviceImp device) { usbDeviceImp = device; }
+
+	/**
 	 * Check the specified UsbControlIrp.
 	 * <p>
 	 * This may be used to check the validity of an UsbControlIrp.
@@ -162,6 +198,8 @@ public class UsbControlIrpImp extends UsbIrpImp implements UsbControlIrp
 	protected byte bRequest = 0x00;
 	protected short wValue = 0x0000;
 	protected short wIndex = 0x0000;
+
+	protected UsbDeviceImp usbDeviceImp = null;
 
 	private static final byte REQUESTTYPE_SET_CONFIGURATION =
 		UsbConst.REQUESTTYPE_DIRECTION_OUT | UsbConst.REQUESTTYPE_TYPE_STANDARD | UsbConst.REQUESTTYPE_RECIPIENT_DEVICE;

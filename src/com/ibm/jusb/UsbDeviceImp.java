@@ -41,7 +41,7 @@ import com.ibm.jusb.event.*;
  * </ul>
  * @author Dan Streetman
  */
-public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
+public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 {
 	/** Constructor. */
 	public UsbDeviceImp() { }
@@ -212,34 +212,23 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 
 	/**
 	 * Indicate that a specific UsbIrpImp has completed.
-	 * @param irp The UsbIrpImp that completed.
+	 * @param usbIrpImp The UsbIrpImp that completed.
 	 */
-	public void usbIrpImpComplete( UsbIrpImp irp )
+	public void usbIrpImpComplete( UsbIrpImp usbIrpImp )
 	{
-		try { usbIrpImpComplete( (UsbControlIrpImp)irp ); }
-		catch ( ClassCastException ccE ) { /* shouldn't happen */ }
-	}
+		UsbControlIrpImp irp = null;
 
-	/**
-	 * Indicate that a specific UsbControlIrpImp has completed.
-	 * <p>
-	 * This will be called during the UsbControlIrpImp's complete() method.
-	 * @param irp The UsbControlIrpImp that completed.
-	 */
-	public void usbIrpImpComplete( UsbControlIrpImp irp )
-	{
-		if (irp.isUsbException()) {
-			listenerImp.errorEventOccurred(new UsbDeviceErrorEvent(this,irp.getUsbException()));
-		} else {
-			if (irp.isSetConfiguration()) {
-				try { setActiveUsbConfigurationNumber((byte)irp.wValue()); }
-				catch ( Exception e ) { /* FIXME - log? */ }
-			} else if (irp.isSetInterface()) {
-				try { getActiveUsbConfigurationImp().getUsbInterfaceImp((byte)irp.wIndex()).setActiveSettingNumber((byte)irp.wValue()); }
-				catch ( Exception e ) { /* FIXME - log? */ }
-			}
-			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp,irp.getData(),irp.getOffset(),irp.getActualLength()));
+		try {
+			irp = (UsbControlIrpImp)usbIrpImp;
+		} catch ( ClassCastException ccE ) {
+			//FIXME - log?  this shouldn't happen.
+			//FIXME - this method should accept a UsbControlIrpImp...!
 		}
+
+		if (irp.isUsbException())
+			listenerImp.errorEventOccurred(new UsbDeviceErrorEvent(this,irp.getUsbException()));
+		else
+			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp,irp.getData(),irp.getOffset(),irp.getActualLength()));
 	}
 
 	/** @param the listener to add */
@@ -452,9 +441,10 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 * Setup a UsbControlIrpImp.
 	 * @param usbControlIrpImp The UsbControlIrpImp to setup.
 	 */
-	protected void setupUsbControlIrpImp( UsbControlIrpImp usbControlIrpImp )
+	protected void setupUsbControlIrpImp( UsbControlIrpImp irp )
 	{
-		usbControlIrpImp.setCompletion( this );
+		irp.setUsbIrpImpListener(this);
+		irp.setUsbDeviceImp(this);
 	}
 
 	/**

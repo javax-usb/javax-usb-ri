@@ -48,24 +48,27 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 	/**
 	 * Complete this submission.
 	 * <p>
-	 * This calls the superclass's complete().
-	 * Then, if there is a {@link #getUsbIrp() UsbIrp},
-	 * the UsbException and actual length are set, and its complete method is called.
-	 * Then if there is a {@link #getCompletion() completion}, execute it.
+	 * The order of events must be as follows:
+	 * <ol>
+	 * <li>If there is a 'wrapped' UsbIrp, its fields must be set, and it should be completed.</li>
+	 * <li>This UsbIrpImp should be completed.</li>
+	 * <li>The UsbIrpImpListener should be notified (which will fire events on the device or pipe).</li>
+	 * </ol>
 	 */
 	public void complete()
 	{
-		/* Set wrapped UsbIrp fields before completing ourself */
+		/* Complete wrapped UsbIrp fields before completing ourself */
 		completeUsbIrp();
 
-		/* set wrapper as complete and notify waiters */
+		/* Set this UsbIrpImp as complete and notify waiting Threads. */
 		super.complete();
 
-		/* Let device or pipe fire event(s) */
-		executeCompletion();
+		/* Notify UsbIrpImpListener (should be either a UsbDeviceImp or UsbPipeImp) */
+		try { getUsbIrpImpListener().usbIrpImpComplete(this); }
+		catch ( NullPointerException npE ) { }
 	}
 
-	/** If there is a wrapped UsbIrp, set its fields. */
+	/** If there is a wrapped UsbIrp, set its fields and complete it. */
 	protected void completeUsbIrp()
 	{
 //FIXME - the user's UsbIrp methods could block or generate Exception/Error which will cause problems
@@ -76,26 +79,6 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 			irp.complete();
 		} catch ( NullPointerException npE ) { }
 	}
-
-	/** Execute the Completion, if there is one. */
-	protected void executeCompletion()
-	{
-		try { getCompletion().usbIrpImpComplete(this); }
-		catch ( NullPointerException npE ) { /* No completion Runnable. */ }
-		catch ( Exception e ) { /* FIXME - should ignore all completion exceptions...? */ }
-	}
-
-	/**
-	 * Get the Completion to execute on {@link #complete() completion}.
-	 * @return The Completion, or null if there is none.
-	 */
-	public UsbIrpImp.Completion getCompletion() { return completion; }
-
-	/**
-	 * Set the Completion to execute on {@link #complete() completion}.
-	 * @param c The Completion.
-	 */
-	public void setCompletion( UsbIrpImp.Completion c ) { completion = c; }
 
 	/**
 	 * Set the UsbIrp to wrap.
@@ -115,6 +98,23 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 	 * @return The UsbIrp or null.
 	 */
 	public UsbIrp getUsbIrp() { return usbIrp; }
+
+	/**
+	 * Set the UsbIrpImpListener.
+	 * <p>
+	 * If there is already a Listener, this will clobber it!
+	 */
+	public synchronized void setUsbIrpImpListener(UsbIrpImpListener listener)
+	{
+		//FIXME - log if there is already a listener?
+		usbIrpImpListener = listener;
+	}
+
+	/**
+	 * Get the UsbIrpImpListener.
+	 * @return The UsbIrpImpListener.
+	 */
+	public UsbIrpImpListener getUsbIrpImpListener() { return usbIrpImpListener; }
 
 	/**
 	 * Check the specified UsbIrp.
@@ -155,10 +155,10 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 	}
 
 	protected UsbIrp usbIrp = null;
-	protected UsbIrpImp.Completion completion = null;
 
-	public static interface Completion
-	{
-		public void usbIrpImpComplete(UsbIrpImp usbIrpImp);
-	}
+	protected UsbIrpImpListener usbIrpImpListener = null;
+
+	public static interface UsbIrpImpListener extends EventListener
+	{ public void usbIrpImpComplete(UsbIrpImp usbIrpImp); }
+
 }
