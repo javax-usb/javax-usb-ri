@@ -55,5 +55,5 @@ public class Version
 	public static String getRiVersion() { return VERSION_PLATFORM_INDEPENDENT_RI; }
 
 	private static final String VERSION_API = "0.10.3";
-	private static final String VERSION_PLATFORM_INDEPENDENT_RI = "0.10.4-CVS";
+	private static final String VERSION_PLATFORM_INDEPENDENT_RI = "0.10.4";
 }
