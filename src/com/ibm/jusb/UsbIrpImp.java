@@ -66,19 +66,37 @@ public class UsbIrpImp implements UsbIrp
 	public int getOffset() { return offset; }
 
 	/** @param o The offset. */
-	public void setOffset(int o) { offset = o; }
+	public void setOffset(int o) throws IllegalArgumentException
+	{
+		if (0 > o)
+			throw new IllegalArgumentException("Offset cannot be negative.");
+
+		offset = o;
+	}
 
 	/** @return The length. */
 	public int getLength() { return length; }
 
 	/** @param l The length. */
-	public void setLength(int l) { length = l; }
+	public void setLength(int l) throws IllegalArgumentException
+	{
+		if (0 > l)
+			throw new IllegalArgumentException("Length cannot be negative.");
+
+		length = l;
+	}
 
 	/** @return The actual length. */
 	public int getActualLength() { return actualLength; }
 
 	/** @param l The actual length. */
-	public void setActualLength(int l) { actualLength = l; }
+	public void setActualLength(int l) throws IllegalArgumentException
+	{
+		if (0 > l)
+			throw new IllegalArgumentException("Actual length cannot be negative.");
+
+		actualLength = l;
+	}
 
 	/** @return if a UsbException occured during submission */
 	public boolean isUsbException() { return ( null != getUsbException() ); }

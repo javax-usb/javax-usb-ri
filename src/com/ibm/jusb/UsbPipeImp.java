@@ -208,8 +208,11 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	 */
 	public void removeUsbPipeListener( UsbPipeListener listener ) { listenerImp.removeEventListener( listener ); }
 
-	public void setupUsbIrpImp(UsbIrpImp irp)
+	public void setupUsbIrpImp(UsbIrpImp irp) throws UsbException
 	{
+		if (irp.getData().length < (irp.getOffset() + irp.getLength()))
+			throw new UsbException("Data buffer is smaller than offset + length");
+
 		irp.setUsbException( null );
 		irp.setActualLength( 0 );
 		irp.setComplete( false );
