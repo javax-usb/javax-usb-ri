@@ -7,10 +7,12 @@
 	<!-- Note this depends on ANT's not overwriting preset variables -->
 	<property environment="Jsr80Env"/>
 	
-	<property name="Jsr80Env.JSR80_RI_SRC_DIR" value="src"/>
+	<property name="Jsr80Env.JSR80_RI_BASE_DIR" value="."/>
+
+	<property name="Jsr80Env.JSR80_RI_SRC_DIR" value="${Jsr80Env.JSR80_RI_BASE_DIR}/src"/>
 	<property name="Jsr80Env.JSR80_RI_DEST_DIR" value="${Jsr80Env.JSR80_RI_SRC_DIR}"/>
-	<property name="Jsr80Env.JSR80_RI_LIB_DIR" value="lib"/>
-	<property name="Jsr80Env.JSR80_RI_JDOC_DIR" value="docs/jdoc"/>
+	<property name="Jsr80Env.JSR80_RI_LIB_DIR" value="${Jsr80Env.JSR80_RI_BASE_DIR}/lib"/>
+	<property name="Jsr80Env.JSR80_RI_JDOC_DIR" value="${Jsr80Env.JSR80_RI_BASE_DIR}/docs/jdoc"/>
 
 	<property name="Jsr80Env.JSR80_RI_JARFILE" value="jsr80_ri.jar"/>
 	<property name="Jsr80Env.JSR80_RI_JARFILE_DIR" value="${Jsr80Env.JSR80_RI_LIB_DIR}"/>
@@ -38,7 +40,8 @@
 	<property name="Jsr80Env.JSR80_RI_JDOC_PACKAGE" value="yes"/>
 	<property name="Jsr80Env.JSR80_RI_JDOC_PRIVATE" value="no"/>
 
-	<property name="Jsr80Env.JSR80_RI_JDOC_PATH" value=""/>
+	<!-- If all the packages are located in the same directory, this will pick up the API source files. -->
+	<property name="Jsr80Env.JSR80_RI_JDOC_PATH" value="${Jsr80Env.JSR80_RI_BASE_DIR}/../javax-usb/src"/>
 
 	<!-- Variable defaults -->
 	<property name="jsr80.ri.version" value="${Jsr80Env.JSR80_RI_VERSION}"/>
