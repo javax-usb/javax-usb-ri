@@ -338,8 +338,17 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void syncSubmit( UsbControlIrp irp ) throws UsbException,IllegalArgumentException
 	{
+		UsbControlIrpImp usbControlIrpImp = usbControlIrpToUsbControlIrpImp( irp );
+
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().syncSubmit( usbControlIrpToUsbControlIrpImp( irp ) );
+			if (queueSubmissions) {
+				queueUsbControlIrpImp(usbControlIrpImp);
+				usbControlIrpImp.waitUntilComplete();
+				if (usbControlIrpImp.isUsbException())
+					throw usbControlIrpImp.getUsbException();
+			} else {
+				getUsbDeviceOsImp().syncSubmit( usbControlIrpImp );
+			}
 		}
 	}
 
@@ -351,8 +360,14 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void asyncSubmit( UsbControlIrp irp ) throws UsbException,IllegalArgumentException
 	{
+		UsbControlIrpImp usbControlIrpImp = usbControlIrpToUsbControlIrpImp( irp );
+
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().asyncSubmit( usbControlIrpToUsbControlIrpImp( irp ) );
+			if (queueSubmissions) {
+				queueUsbControlIrpImp(usbControlIrpImp);
+			} else {
+				getUsbDeviceOsImp().asyncSubmit( usbControlIrpImp );
+			}
 		}
 	}
 
@@ -368,8 +383,18 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException
 	{
+		if (list.isEmpty())
+			return;
+
+		List usbControlIrpImpList = usbControlIrpListToUsbControlIrpImpList( list );
+
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().syncSubmit( usbControlIrpListToUsbControlIrpImpList( list ) );
+			if (queueSubmissions) {
+				queueList(usbControlIrpImpList);
+				((UsbControlIrp)usbControlIrpImpList.get(usbControlIrpImpList.size()-1)).waitUntilComplete();
+			} else {
+				getUsbDeviceOsImp().syncSubmit( usbControlIrpImpList );
+			}
 		}
 	}
 
@@ -385,8 +410,17 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException
 	{
+		if (list.isEmpty())
+			return;
+
+		List usbControlIrpImpList = usbControlIrpListToUsbControlIrpImpList( list );
+
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().asyncSubmit( usbControlIrpListToUsbControlIrpImpList( list ) );
+			if (queueSubmissions) {
+				queueList(usbControlIrpImpList);
+			} else {
+				getUsbDeviceOsImp().asyncSubmit( usbControlIrpImpList );
+			}
 		}
 	}
 
@@ -489,6 +523,88 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		return newList;
 	}
 
+	/**
+	 * Add a Runnable to the queueManager.
+	 * @param r The Runnable to add.
+	 */
+	protected void addRunnable(Runnable r)
+	{
+		if (!queueManager.isRunning()) {
+			queueManager.setMaxSize(RunnableManager.SIZE_UNLIMITED);
+			queueManager.start();
+		}
+
+		queueManager.add(r);
+	}
+
+	/**
+	 * Submit a UsbControlIrpImp from the queueManager.
+	 * @param usbControlIrpImp The UsbControlIrpImp to submit.
+	 */
+	protected void submitUsbControlIrpImpFromQueue(UsbControlIrpImp usbControlIrpImp)
+	{
+		/* This is needed if the DCP supports aborting submissions
+		 *		synchronized (abortLock) {
+		 *			if (abortInProgress) {
+		 *				usbIrpImp.setUsbException(new UsbAbortException());
+		 *				usbIrpImp.complete();
+		 *				return;
+		 *			}
+		 *		}
+		 */
+		try {
+			/* NOTE: no need to synchronize on the submitLock as queueing gaurantees serialized, synchronized submission */
+			getUsbDeviceOsImp().syncSubmit(usbControlIrpImp);
+		} catch ( UsbException uE ) {
+			/* ignore this, as the UsbControlIrp's UsbException will be set and this is handled elsewhere. */
+		}
+	}
+
+	/**
+	 * Queue a UsbControlIrpImp
+	 * @param usbControlIrpImp The UsbControlIrpImp to queue.
+	 */
+	protected void queueUsbControlIrpImp(final UsbControlIrpImp usbControlIrpImp)
+	{
+		Runnable r = new Runnable()	{ public void run() { submitUsbControlIrpImpFromQueue(usbControlIrpImp); } };
+
+		addRunnable(r);
+	}
+
+	/**
+	 * Queue a List of UsbControlIrpImps.
+	 * @param list The List of UsbControlIrpImps to queue.
+	 */
+	protected void queueList(final List list)
+	{
+		Runnable r = new Runnable()
+			{
+				public void run() {
+					for (int i=0; i<list.size(); i++)
+						submitUsbControlIrpImpFromQueue((UsbControlIrpImp)list.get(i));
+				}
+			};
+
+		addRunnable(r);
+	}
+
+	/** Set the queueing policy, if defined */
+	protected void setQueuePolicy()
+	{
+		Properties p = null;
+		try {
+			p = UsbHostManager.getProperties();
+		} catch ( Exception e ) {
+/* FIXME - change UsbHostManager.getProperties() into throwing only RuntimeExcepiton */
+			e.printStackTrace();
+			throw new RuntimeException("Unexpected Exception while calling UsbHostManager.getProperties() : " + e.getMessage());
+		}
+
+		String policy = p.getProperty(DCP_QUEUE_POLICY_KEY);
+		if (null != policy)
+			queueSubmissions = Boolean.valueOf(policy).booleanValue();
+	}
+
 	//**************************************************************************
 	// Instance variables
 
@@ -509,4 +625,23 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	private UsbPortImp usbPortImp = null;
 
 	private UsbDeviceListenerImp listenerImp = new UsbDeviceListenerImp();
+
+	/* If the queue policy is set to true for this DCP, all submissions will be queued and
+	 * submitted via the UsbDeviceOsImp.syncSubmit() method, so the OS will not have to queue.
+	 * The OS is most likely much more efficient at queueing, so if it supports it,
+	 * OS queueing should be used.
+	 */
+	protected RunnableManager queueManager = new RunnableManager(false);
+	protected boolean queueSubmissions = false;
+
+	/* FIXME - should the DCP have an abortAllSubmissions() method?  If so these would be needed
+	 *	protected Object abortLock = new Object();
+	 *	protected boolean abortInProgress = false;
+	 */
+
+	//**************************************************************************
+	// Class constants
+
+	public static final String DCP_QUEUE_POLICY_KEY = "com.ibm.jusb.UsbDeviceImp.queueSubmissions";
+
 }
