@@ -83,30 +83,6 @@ public class UsbEndpointImp implements UsbEndpoint
 	/** @param desc the endpoint descriptor */
 	public void setUsbEndpointDescriptor( UsbEndpointDescriptor desc ) { usbEndpointDescriptor = desc; }
 
-	/**
-	 * Compare this to an Object.
-	 * @param object The Object to compare to.
-	 * @return If this is equal to the Object.
-	 */
-	public boolean equals(Object object)
-	{
-		if (null == object)
-			return false;
-
-		if (this == object)
-			return true;
-
-		UsbEndpointImp ep = null;
-
-		try { ep = (UsbEndpointImp)object; }
-		catch ( ClassCastException ccE ) { return false; }
-
-		if (!getUsbEndpointDescriptor().equals(ep.getUsbEndpointDescriptor()))
-			return false;
-
-		return true;
-	}
-
 	//**************************************************************************
     // Instance variables
 

@@ -317,41 +317,6 @@ public class UsbInterfaceImp implements UsbInterface
 			endpoints.add( ep );
 	}
 
-	/**
-	 * Compare this to an Object.
-	 * @param object The Object to compare to.
-	 * @return If this is equal to the Object.
-	 */
-	public boolean equals(Object object)
-	{
-		if (null == object)
-			return false;
-
-		if (this == object)
-			return true;
-
-		UsbInterfaceImp iface = null;
-
-		try { iface = (UsbInterfaceImp)object; }
-		catch ( ClassCastException ccE ) { return false; }
-
-		if (!getUsbInterfaceDescriptor().equals(iface.getUsbInterfaceDescriptor()))
-			return false;
-
-		List eps = getUsbEndpoints();
-
-		for (int i=0; i<eps.size(); i++) {
-			UsbEndpointImp usbEndpointImp = (UsbEndpointImp)eps.get(i);
-			byte epAddress = usbEndpointImp.getUsbEndpointDescriptor().bEndpointAddress();
-			if (!iface.containsUsbEndpoint(epAddress))
-				return false;
-			else if (!usbEndpointImp.equals(iface.getUsbEndpoint(epAddress)))
-				return false;
-		}
-
-		return true;
-	}
-
 	//**************************************************************************
 	// Protected methods
 

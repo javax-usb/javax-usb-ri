@@ -53,7 +53,7 @@ public class UsbConfigurationImp implements UsbConfiguration
 			Iterator iterator = interfaces.values().iterator();
 
 			while (iterator.hasNext())
-				list.add(((List)iterator.next()).get(0));
+				list.add(0, ((List)iterator.next()).get(0));
 
 			return Collections.unmodifiableList(list);
 		}
@@ -104,7 +104,7 @@ public class UsbConfigurationImp implements UsbConfiguration
 	public void addUsbInterfaceImp( UsbInterfaceImp setting )
 	{
 		synchronized ( interfaces ) {
-			String key = new Byte(setting.getUsbInterfaceDescriptor().bInterfaceNumber()).toString();
+			String key = Byte.toString(setting.getUsbInterfaceDescriptor().bInterfaceNumber());
 
 			if (!interfaces.containsKey(key))
 				interfaces.put(key, new ArrayList());
@@ -173,41 +173,6 @@ public class UsbConfigurationImp implements UsbConfiguration
 
 	/** @param desc the new configuration descriptor */
 	public void setUsbConfigurationDescriptor( UsbConfigurationDescriptor desc ) { usbConfigurationDescriptor = desc; }
-
-	/**
-	 * Compare this to another Object.
-	 * @param object The Object to compare to.
-	 * @return If this equals the Object.
-	 */
-	public boolean equals(Object object)
-	{
-		if (null == object)
-			return false;
-
-		if (this == object)
-			return true;
-
-		UsbConfigurationImp configuration = null;
-
-		try { configuration = (UsbConfigurationImp)object; }
-		catch ( ClassCastException ccE ) { return false; }
-
-		if (!getUsbConfigurationDescriptor().equals(configuration.getUsbConfigurationDescriptor()))
-			return false;
-
-		List ifs = getUsbInterfaces();
-
-		for (int i=0; i<ifs.size(); i++) {
-			UsbInterfaceImp usbInterfaceImp = (UsbInterfaceImp)ifs.get(i);
-			byte ifaceNumber = usbInterfaceImp.getUsbInterfaceDescriptor().bInterfaceNumber();
-			if (!configuration.containsUsbInterface(ifaceNumber))
-				return false;
-			else if (!usbInterfaceImp.equals(configuration.getUsbInterface(ifaceNumber)))
-				return false;
-		}
-
-		return true;
-	}
 
 	//**************************************************************************
 	// Instance variables

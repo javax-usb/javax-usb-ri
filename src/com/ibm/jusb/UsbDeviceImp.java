@@ -344,40 +344,6 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 //FIXME - turn off all subcomponents; close pipes, release ifaces, etc.
 	}
 
-	/** Compare this to another UsbDeviceImp */
-	public boolean equals(Object object)
-	{
-		if (null == object)
-			return false;
-
-		if (this == object)
-			return true;
-
-		UsbDeviceImp device = null;
-
-		try { device = (UsbDeviceImp)object; }
-		catch ( ClassCastException ccE ) { return false; }
-
-		if (!getSpeed().equals(device.getSpeed()))
-			return false;
-
-		if (!getUsbDeviceDescriptor().equals(device.getUsbDeviceDescriptor()))
-			return false;
-
-		List cfgs = getUsbConfigurations();
-
-		for (int i=0; i<cfgs.size(); i++) {
-			UsbConfigurationImp usbConfigurationImp = (UsbConfigurationImp)cfgs.get(i);
-			byte configurationValue = usbConfigurationImp.getUsbConfigurationDescriptor().bConfigurationValue();
-			if (!device.containsUsbConfiguration(configurationValue))
-				return false;
-			else if (!usbConfigurationImp.equals(device.getUsbConfiguration(configurationValue)))
-				return false;
-		}
-
-		return true;
-	}
-
 	/**
 	 * Submit a UsbControlIrp synchronously to the Default Control Pipe.
 	 * @param irp The UsbControlIrp.
