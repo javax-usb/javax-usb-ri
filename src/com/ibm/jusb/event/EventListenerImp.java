@@ -57,7 +57,7 @@ public class EventListenerImp implements EventListener
 	 * Get the listeners.
 	 * @return the listeners.
 	 */
-	protected List getEventListeners() { return Collections.unmodifiableList( listeners ); }
+	protected List getEventListeners() { return listeners; }
 
 	/**
 	 * @return If this has listeners.
