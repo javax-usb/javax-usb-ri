@@ -21,8 +21,6 @@ import javax.usb.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
-import com.ibm.jusb.*;
-
 /**
  * Class to display UsbIrp (or raw byte[]) information.
  * @author Dan Streetman
@@ -69,7 +67,7 @@ public class UsbIrpPanel extends JPanel implements Cloneable
 		lastData = getData();
 
 		if (irpCheckBox.isSelected()) {
-			UsbIrpImp irp = new UsbIrpImp();
+			DefaultUsbIrp irp = new DefaultUsbIrp();
 			irp.setData(lastData);
 			irp.setOffset(0);
 			irp.setLength(lastData.length);

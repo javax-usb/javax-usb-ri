@@ -21,8 +21,6 @@ import javax.usb.*;
 import javax.usb.util.*;
 import javax.usb.event.*;
 
-import com.ibm.jusb.*;
-
 /**
  * Class to display ControlUsbIrp information.
  * @author Dan Streetman
@@ -82,15 +80,15 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 		byte bRequest = (byte)Integer.decode(bRequestField.getText()).intValue();
 		short wValue = (short)Integer.decode(wValueField.getText()).intValue();
 		short wIndex = (short)Integer.decode(wIndexField.getText()).intValue();
-		ControlUsbIrpImp controlUsbIrpImp = new ControlUsbIrpImp(bmRequestType, bRequest, wValue, wIndex);
-		controlUsbIrpImp.setData(lastData);
-		controlUsbIrpImp.setOffset(0);
-		controlUsbIrpImp.setLength(lastData.length);
+		DefaultControlUsbIrp controlUsbIrp = new DefaultControlUsbIrp(bmRequestType, bRequest, wValue, wIndex);
+		controlUsbIrp.setData(lastData);
+		controlUsbIrp.setOffset(0);
+		controlUsbIrp.setLength(lastData.length);
 
 		if (syncCheckBox.isSelected())
-			device.syncSubmit(controlUsbIrpImp);
+			device.syncSubmit(controlUsbIrp);
 		else
-			device.asyncSubmit(controlUsbIrpImp);
+			device.asyncSubmit(controlUsbIrp);
 	}
 
 	protected byte[] getData()
