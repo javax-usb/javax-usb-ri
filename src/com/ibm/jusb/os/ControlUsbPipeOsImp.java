@@ -19,6 +19,14 @@ import com.ibm.jusb.*;
  * Interface for Platform-specific implementation of control-type UsbPipe.
  * <p>
  * This is identical to UsbPipeOsImp with added methods using ControlUsbPipeOsImp parameters.
+ * <p>
+ * If this is driven by a ControlUsbPipeImp, it will always pass only ControlUsbIrpImps,
+ * however it is not guaranteed to pass them to the ControlUsbIrpImp-parameter methods.  The
+ * implementation of this should handle ControlUsbIrpImps being passed (as UsbIrpImps) to
+ * the UsbIrpImp-parameter methods.
+ * <p>
+ * If this is driven by a normal UsbPipeImp, it may pass normal UsbIrpImps (i.e. not ControlUsbIrpImps)
+ * and so the implementation of this must handle throwing a UsbException for non-ControlUsbIrpImps.
  * @author Dan Streetman
  */
 public interface ControlUsbPipeOsImp extends UsbPipeOsImp

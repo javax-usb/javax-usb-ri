@@ -24,8 +24,8 @@ import com.ibm.jusb.util.*;
  * The user must provide some fields:
  * <ul>
  * <li>{@link #getData() data} via its {@link #setData(byte[]) setter}.</li>
- * <li>{@link #getLength() length} via its {@link #setLength(int) setter}.</li>
  * <li>{@link #getOffset() offset} via its {@link #setOffset(int) setter}.</li>
+ * <li>{@link #getLength() length} via its {@link #setLength(int) setter}.</li>
  * <li>{@link #getAcceptShortPacket() short packet policy} via its {@link #setAcceptShortPacket(boolean) setter}.</li>
  * </ul>
  * <p>
@@ -80,11 +80,89 @@ public class UsbIrpImp implements UsbIrp
 	/** @param l The actual length. */
 	public void setActualLength(int l) { actualLength = l; }
 
+	/** @return if a UsbException occured during submission */
+	public boolean isUsbException() { return ( null != getUsbException() ); }
+
+	/** @return The UsbException. */
+	public UsbException getUsbException() { return usbException; }
+
+	/** @param exception The UsbException */
+	public void setUsbException( UsbException exception ) { usbException = exception; }
+
+	/** @return If a short packet during this submission should be accepted. */
+	public boolean getAcceptShortPacket() { return acceptShortPacket; }
+
+	/** @param accept If a short packet during this submission should be accepted. */
+	public void setAcceptShortPacket( boolean accept ) { acceptShortPacket = accept; }
+
 	/** @return true if this submit has complete */
 	public boolean isComplete() { return complete; }
 
-	/** @return if a UsbException occured during submission */
-	public boolean isUsbException() { return ( null != getUsbException() ); }
+	/** @param b If this is complete. */
+	public void setComplete( boolean b ) { complete = b; }
+
+	/**
+	 * Complete this submission.
+	 * <p>
+	 * This will:
+	 * <ul>
+	 * <li>Set this {@link #isComplete() complete}.</li>
+	 * <li>Notify all {@link #waitUntilComplete() waiting Threads}.</li>
+	 * <li>If there is a {@link #getUsbIrp() UsbIrp},
+	 *   <ul>
+	 *   <li>Set its {@link javax.usb.UsbIrp#setUsbException(UsbException) UsbException}.</li>
+	 *   <li>Set its {@link javax.usb.UsbIrp#setActualLength(int) actual length}.</li>
+	 *   <li>Call its {@link javax.usb.UsbIrp#complete() complete} method.</li>
+	 *   </ul>
+	 * </li>
+	 * <li>If there is a {@link #getCompletion() completion}, execute it.</li>
+	 * </ul>
+	 */
+	public void complete()
+	{
+		setComplete(true);
+
+		notifyComplete();
+
+		completeUsbIrp();
+
+		executeCompletion();
+	}
+
+	/** If there is a wrapped UsbIrp, set its fields. */
+	protected void completeUsbIrp()
+	{
+//FIXME - the user's UsbIrp methods could block or generate Exception/Error which will cause problems
+		try {
+			UsbIrp irp = getUsbIrp();
+			irp.setUsbException(getUsbException());
+//FIXME - only set actual length if no UsbException?
+			irp.setActualLength(getActualLength());
+			irp.complete();
+		} catch ( NullPointerException npE ) { }
+	}
+
+	/** Execute the Completion, if there is one. */
+	protected void executeCompletion()
+	{
+		try { getCompletion().usbIrpImpComplete(this); }
+		catch ( NullPointerException npE ) { /* No completion Runnable. */ }
+		catch ( Exception e ) { /* FIXME - should ignore all completion exceptions...? */ }
+	}
+
+	/**
+	 * Notify any Threads {@link #waitUntilComplete() waiting for completion}.
+	 * <p>
+	 * This <b>must</b> be called <i>after</i> setting this as {@link #isComplete() complete}.
+	 */
+	protected void notifyComplete()
+	{
+		if (0 < waitCount) {
+			synchronized ( waitLock ) {
+				waitLock.notifyAll();
+			}
+		}
+	}
 
 	/** Wait (block) until this submission is complete */
 	public void waitUntilComplete()
@@ -122,48 +200,17 @@ public class UsbIrpImp implements UsbIrp
 		}
 	}
 
-	/** @return the UsbException that occured during submission */
-	public UsbException getUsbException() { return usbException; }
+	/**
+	 * Get the Completion to execute on {@link #complete() completion}.
+	 * @return The Completion, or null if there is none.
+	 */
+	public UsbIrpImp.Completion getCompletion() { return completion; }
 
 	/**
-	 * @return if a short packet during this submission should be accepted (no error)
+	 * Set the Completion to execute on {@link #complete() completion}.
+	 * @param c The Completion.
 	 */
-	public boolean getAcceptShortPacket() { return acceptShortPacket; }
-
-	/**
-	 * @param accept if a short packet during this submission should be accepted (no error)
-	 */
-	public void setAcceptShortPacket( boolean accept ) { acceptShortPacket = accept; }
-
-	/** @param b If this is complete. */
-	public void setComplete( boolean b ) { complete = b; }
-
-	/**
-	 * Complete this submission.
-	 */
-	public void complete()
-	{
-		setComplete(true);
-
-		notifyComplete();
-
-//FIXME - the user's UsbIrp methods could block or generate Exception/Error which will cause problems
-		try {
-			UsbIrp irp = getUsbIrp();
-			irp.setUsbException(getUsbException());
-			irp.setLength(getLength());
-			irp.complete();
-		} catch ( NullPointerException npE ) { }
-
-//FIXME - fire event somehow...?
-//getUsbPipeImp().usbIrpImpComplete(this);
-	}
-
-	/**
-	 * Sets the UsbException that occured during submission
-	 * @param exception the UsbException
-	 */
-	public void setUsbException( UsbException exception ) { usbException = exception; }
+	public void setCompletion( UsbIrpImp.Completion c ) { completion = c; }
 
 	/**
 	 * Set the UsbIrp to wrap.
@@ -177,33 +224,22 @@ public class UsbIrpImp implements UsbIrp
 	 */
 	public UsbIrp getUsbIrp() { return usbIrp; }
 
-	//*************************************************************************
-	// Protected methods
-
-	/**
-	 * Notify any Threads {@link #waitUntilComplete() waiting for completion}.
-	 * This <b>must</b> be called <i>after</i> setting this as {@link #isComplete() complete}.
-	 */
-	protected void notifyComplete()
-	{
-		if (0 < waitCount) {
-			synchronized ( waitLock ) {
-				waitLock.notifyAll();
-			}
-		}
-	}
-
 	private UsbIrp usbIrp = null;
 
 	private Object waitLock = new Object();
 	private int waitCount = 0;
 
-	protected byte[] data = null;
-	protected boolean complete = false;
-	protected boolean acceptShortPacket = true;
-	protected int offset = -1;
-	protected int length = -1;
-	protected int actualLength = -1;
-	protected UsbException usbException = null;
+	private byte[] data = null;
+	private boolean complete = false;
+	private boolean acceptShortPacket = true;
+	private int offset = -1;
+	private int length = -1;
+	private int actualLength = -1;
+	private UsbException usbException = null;
+	private UsbIrpImp.Completion completion = null;
 
+	public static interface Completion
+	{
+		public void usbIrpImpComplete(UsbIrpImp usbIrpImp);
+	}
 }

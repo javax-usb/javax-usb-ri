@@ -23,7 +23,7 @@ import com.ibm.jusb.event.*;
  * UsbPipe platform-independent implementation.
  * @author Dan Streetman
  */
-public class UsbPipeImp implements UsbPipe
+public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 {
 	/**
 	 * Constructor.
@@ -136,33 +136,21 @@ public class UsbPipeImp implements UsbPipe
 	/**
 	 * Synchronous submission using a UsbIrp.
 	 */
-	public void syncSubmit( UsbIrp irp ) throws UsbException
+	public void syncSubmit( UsbIrp usbIrp ) throws UsbException
 	{
 		checkOpen();
 
-		UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp(irp);
-
-		setupUsbIrpImp(usbIrpImp);
-
-		submissionCount++;
-
-		getUsbPipeOsImp().syncSubmit( usbIrpImp );
+		getUsbPipeOsImp().syncSubmit( usbIrpToUsbIrpImp( usbIrp ) );
 	}
 
 	/**
 	 * Asynchronous submission using a UsbIrp.
 	 */
-	public void asyncSubmit( UsbIrp irp ) throws UsbException
+	public void asyncSubmit( UsbIrp usbIrp ) throws UsbException
 	{
 		checkOpen();
 
-		UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp(irp);
-
-		setupUsbIrpImp(usbIrpImp);
-
-		submissionCount++;
-
-		getUsbPipeOsImp().asyncSubmit( usbIrpImp );
+		getUsbPipeOsImp().asyncSubmit( usbIrpToUsbIrpImp( usbIrp ) );
 	}
 
 	/**
@@ -172,11 +160,7 @@ public class UsbPipeImp implements UsbPipe
 	{
 		checkOpen();
 
-		List newList = preProcessList(list);
-
-		submissionCount += newList.size();
-
-		getUsbPipeOsImp().syncSubmit( newList );
+		getUsbPipeOsImp().syncSubmit( usbIrpListToUsbIrpImpList( list ) );
 	}
 
 	/**
@@ -186,11 +170,7 @@ public class UsbPipeImp implements UsbPipe
 	{
 		checkOpen();
 
-		List newList = preProcessList(list);
-
-		submissionCount += newList.size();
-
-		getUsbPipeOsImp().asyncSubmit( newList );
+		getUsbPipeOsImp().asyncSubmit( usbIrpListToUsbIrpImpList( list ) );
 	}
 
 	/**
@@ -205,18 +185,15 @@ public class UsbPipeImp implements UsbPipe
 	/**
 	 * Indicate that a specific UsbIrpImp has completed.
 	 * <p>
-	 * This should be called by the UsbIrpImp complete method to indicate
-	 * that the specified UsbIrpImp has completed.
-	 * @param irp the UsbIrpImp that completed.
+	 * This will be called during the UsbIrpImp's complete() method.
+	 * @param irp The UsbIrpImp that completed.
 	 */
-	public void usbIrpImpCompleted( UsbIrpImp irp )
+	public void usbIrpImpComplete( UsbIrpImp irp )
 	{
-		submissionCount--;
-
 		if (irp.isUsbException())
 			listenerImp.errorEventOccurred(new UsbPipeErrorEvent(this,irp.getUsbException()));
 		else
-			listenerImp.dataEventOccurred(new UsbPipeDataEvent(this,irp,irp.getData(),irp.getLength()));
+			listenerImp.dataEventOccurred(new UsbPipeDataEvent(this,irp,irp.getData(),irp.getActualLength()));
 	}
 
 	/**
@@ -234,7 +211,9 @@ public class UsbPipeImp implements UsbPipe
 	public void setupUsbIrpImp(UsbIrpImp irp)
 	{
 		irp.setUsbException( null );
+		irp.setActualLength( 0 );
 		irp.setComplete( false );
+		irp.setCompletion( this );
 	}
 
 	//**************************************************************************
@@ -244,24 +223,26 @@ public class UsbPipeImp implements UsbPipe
 	 * Convert a UsbIrp to UsbIrpImp.
 	 * @param irp The UsbIrp to convert.
 	 */
-	protected UsbIrpImp usbIrpToUsbIrpImp(UsbIrp irp)
+	protected UsbIrpImp usbIrpToUsbIrpImp(UsbIrp irp) throws UsbException
 	{
+		UsbIrpImp usbIrpImp = null;
 		try {
-			return (UsbIrpImp)irp;
+			usbIrpImp = (UsbIrpImp)irp;
 		} catch ( ClassCastException ccE ) {
-			return new UsbIrpImp(irp);
+			usbIrpImp = new UsbIrpImp(irp);
 		}
+
+		setupUsbIrpImp(usbIrpImp);
+
+		return usbIrpImp;
 	}
 
-	protected List preProcessList(List list) throws UsbException
+	protected List usbIrpListToUsbIrpImpList(List list) throws UsbException
 	{
 		List newlist = new ArrayList();
 
-		for (int i=0; i<list.size(); i++) {
-			UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp((UsbIrp)list.get(i));
-			setupUsbIrpImp(usbIrpImp);
-			newlist.add(usbIrpImp);
-		}
+		for (int i=0; i<list.size(); i++)
+			newlist.add(usbIrpToUsbIrpImp((UsbIrp)list.get(i)));
 
 		return newlist;
 	}
@@ -302,10 +283,8 @@ public class UsbPipeImp implements UsbPipe
 
 	private UsbPipeOsImp usbPipeOsImp = null;
 
-	private UsbPipeListenerImp listenerImp = new UsbPipeListenerImp();
-
-	private int submissionCount = 0;
-
 	private UsbEndpointImp usbEndpointImp = null;
-}
 
+	protected UsbPipeListenerImp listenerImp = new UsbPipeListenerImp();
+	protected int submissionCount = 0;
+}

@@ -43,7 +43,7 @@ import com.ibm.jusb.event.*;
  * sets up the UsbPortImp.
  * @author Dan Streetman
  */
-public class UsbDeviceImp implements UsbDevice
+public class UsbDeviceImp implements UsbDevice,ControlUsbIrpImp.Completion
 {
 	/**
 	 * Constructor.
@@ -180,24 +180,36 @@ public class UsbDeviceImp implements UsbDevice
 		}
 	}
 
-//FIXME - fix this
-	/** @param requestImp The RequestImp that completed. */
-	//public void requestImpCompleted(RequestImp requestImp)
-	//{
-	//	if (requestImp.isUsbException()) {
-	//		fireErrorEvent(requestImp.getUsbException());
-	//	} else {
-	//		if (requestImp.isSetConfigurationRequest()) {
-	//			try { setActiveUsbConfigNumber((byte)requestImp.getValue()); }
-	//			catch ( Exception e ) { /* log? */ }
-	//		} else if (requestImp.isSetInterfaceRequest()) {
-	//			try { getActiveUsbConfigImp().getUsbInterfaceImp((byte)requestImp.getIndex()).setActiveAlternateSettingNumber((byte)requestImp.getValue()); }
-	//			catch ( Exception e ) { /* log? */ }
-	//		}
-	//
-	//		fireDataEvent(requestImp.getData(),requestImp.getDataLength());
-	//	}
-	//}
+	/**
+	 * Indicate that a specific UsbIrpImp has completed.
+	 * <p>
+	 * No non-Control UsbIrpImps should be used on this; this method
+	 * should never be called.
+	 * @param irp The UsbIrpImp that completed.
+	 */
+	public void usbIrpImpComplete( UsbIrpImp irp ) { /* Ignore */ }
+
+	/**
+	 * Indicate that a specific ControlUsbIrpImp has completed.
+	 * <p>
+	 * This will be called during the ControlUsbIrpImp's complete() method.
+	 * @param irp The ControlUsbIrpImp that completed.
+	 */
+	public void usbIrpImpComplete( ControlUsbIrpImp irp )
+	{
+		if (irp.isUsbException()) {
+			listenerImp.errorEventOccurred(new UsbDeviceErrorEvent(this,irp.getUsbException()));
+		} else {
+			if (irp.isSetConfiguration()) {
+				try { setActiveUsbConfigNumber((byte)irp.wValue()); }
+				catch ( Exception e ) { /* FIXME - log? */ }
+			} else if (irp.isSetInterface()) {
+				try { getActiveUsbConfigImp().getUsbInterfaceImp((byte)irp.wIndex()).setActiveSettingNumber((byte)irp.wValue()); }
+				catch ( Exception e ) { /* FIXME - log? */ }
+			}
+			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp,irp.getData(),irp.getActualLength()));
+		}
+	}
 
 	/** @param the listener to add */
 	public void addUsbDeviceListener( UsbDeviceListener listener ) 
@@ -310,9 +322,7 @@ public class UsbDeviceImp implements UsbDevice
 	 */
 	public void syncSubmit( ControlUsbIrp irp ) throws UsbException
 	{
-		ControlUsbIrpImp controlUsbIrpImp = controlUsbIrpToControlUsbIrpImp(irp);
-
-		getUsbDeviceOsImp().syncSubmit(controlUsbIrpImp);
+		getUsbDeviceOsImp().syncSubmit( controlUsbIrpToControlUsbIrpImp( irp ) );
 	}
 
 	/**
@@ -322,9 +332,7 @@ public class UsbDeviceImp implements UsbDevice
 	 */
 	public void asyncSubmit( ControlUsbIrp irp ) throws UsbException
 	{
-		ControlUsbIrpImp controlUsbIrpImp = controlUsbIrpToControlUsbIrpImp(irp);
-
-		getUsbDeviceOsImp().asyncSubmit(controlUsbIrpImp);
+		getUsbDeviceOsImp().asyncSubmit( controlUsbIrpToControlUsbIrpImp( irp ) );
 	}
 
 	/**
@@ -338,9 +346,7 @@ public class UsbDeviceImp implements UsbDevice
 	 */
 	public void syncSubmit( List list ) throws UsbException
 	{
-		List newList = controlUsbIrpListToControlUsbIrpImpList(list);
-
-		getUsbDeviceOsImp().syncSubmit(newList);
+		getUsbDeviceOsImp().syncSubmit( controlUsbIrpListToControlUsbIrpImpList( list ) );
 	}
 
 	/**
@@ -354,9 +360,7 @@ public class UsbDeviceImp implements UsbDevice
 	 */
 	public void asyncSubmit( List list ) throws UsbException
 	{
-		List newList = controlUsbIrpListToControlUsbIrpImpList(list);
-
-		getUsbDeviceOsImp().asyncSubmit(newList);
+		getUsbDeviceOsImp().asyncSubmit( controlUsbIrpListToControlUsbIrpImpList( list ) );
 	}
 
 	//**************************************************************************
@@ -409,17 +413,35 @@ throw new UsbException("Not implemented.");
 	}
 
 	/**
+	 * Setup a ControlUsbIrpImp.
+	 * @param controlUsbIrpImp The ControlUsbIrpImp to setup.
+	 */
+	protected void setupControlUsbIrpImp( ControlUsbIrpImp controlUsbIrpImp )
+	{
+		controlUsbIrpImp.setUsbException( null );
+		controlUsbIrpImp.setActualLength( 0 );
+		controlUsbIrpImp.setComplete( false );
+		controlUsbIrpImp.setCompletion( this );
+	}
+
+	/**
 	 * Convert a ControlUsbIrp to a ControlUsbIrpImp.
 	 * @param controlUsbIrp The ControlUsbIrp.
 	 * @return A ControlUsbIrpImp that corresponds to the controlUsbIrp.
 	 */
 	protected ControlUsbIrpImp controlUsbIrpToControlUsbIrpImp(ControlUsbIrp controlUsbIrp)
 	{
+		ControlUsbIrpImp controlUsbIrpImp = null;
+
 		try {
-			return (ControlUsbIrpImp)controlUsbIrp;
+			controlUsbIrpImp = (ControlUsbIrpImp)controlUsbIrp;
 		} catch ( ClassCastException ccE ) {
-			return new ControlUsbIrpImp(controlUsbIrp);
+			controlUsbIrpImp = new ControlUsbIrpImp(controlUsbIrp);
 		}
+
+		setupControlUsbIrpImp( controlUsbIrpImp );
+
+		return controlUsbIrpImp;
 	}
 
 	/**

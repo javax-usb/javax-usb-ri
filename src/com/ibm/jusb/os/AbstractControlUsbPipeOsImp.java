@@ -20,10 +20,41 @@ import com.ibm.jusb.*;
  * <p>
  * This is identical to AbstractUsbPipeOsImp except all the methods require
  * ControlUsbIrpImps, not UsbIrpImps.
+ * <p>
+ * This implementation must be driven by a ControlUsbPipeImp; all methods require ControlUsbIrpImps and
+ * cannot accept non-Control UsbIrpImps.
  * @author Dan Streetman
  */
 public abstract class AbstractControlUsbPipeOsImp extends AbstractUsbPipeOsImp implements ControlUsbPipeOsImp
 {
+	/**
+	 * Synchronously submit a ControlUsbIrpImp.
+	 * <p>
+	 * This casts the UsbIrpImp to a ControlUsbIrpImp and uses the
+	 * {@link #syncSubmit(ControlUsbIrpImp) syncSubmit(ControlUsbIrpImp)} method.
+	 * @param irp The ControlUsbIrpImp to submit.
+	 * @exception UsbException If {@link #syncSubmit(ControlUsbIrpImp) syncSubmit(ControlUsbIrpImp)} throws a UsbException.
+	 * @exception ClassCastException If the UsbIrpImp is not a ControlUsbIrpImp.
+	 */
+	public void syncSubmit( UsbIrpImp irp ) throws UsbException,ClassCastException
+	{
+		syncSubmit((ControlUsbIrpImp)irp);
+	}
+
+	/**
+	 * Asynchronously submits this UsbIrpImp to the platform implementation.
+	 * <p>
+	 * This casts the UsbIrpImp to a ControlUsbIrpImp and uses the
+	 * {@link #syncSubmit(ControlUsbIrpImp) asyncSubmit(ControlUsbIrpImp)} method.
+	 * @param irp The ControlUsbIrpImp to submit.
+	 * @exception UsbException If {@link #asyncSubmit(ControlUsbIrpImp) asyncSubmit(ControlUsbIrpImp)} throws a UsbException.
+	 * @exception ClassCastException If the UsbIrpImp is not a ControlUsbIrpImp.
+	 */
+	public void asyncSubmit( UsbIrpImp irp ) throws UsbException,ClassCastException
+	{
+		asyncSubmit((ControlUsbIrpImp)irp);
+	}
+
 	/**
 	 * Synchronously submits this ControlUsbIrpImp to the platform implementation.
 	 * <p>
@@ -42,19 +73,6 @@ public abstract class AbstractControlUsbPipeOsImp extends AbstractUsbPipeOsImp i
 	}
 
 	/**
-	 * Asynchronously submits this UsbIrpImp to the platform implementation.
-	 * <p>
-	 * This uses {@link #asyncSubmit(ControlUsbIrpImp) asyncSubmit(ControlUsbIrpImp)},
-	 * after casting the UsbIrpImp to a ControlUsbIrpImp.
-	 * @param irp the ControlUsbIrpImp to use for this submission
-	 * @exception UsbException If the initial submission was unsuccessful.
-	 */
-	public void asyncSubmit( UsbIrpImp irp ) throws UsbException
-	{
-		asyncSubmit((ControlUsbIrpImp)irp);
-	}
-
-	/**
 	 * Asynchronously submits this ControlUsbIrpImp to the platform implementation.
 	 * <p>
 	 * The OS-implementation must implement this method.
@@ -62,4 +80,5 @@ public abstract class AbstractControlUsbPipeOsImp extends AbstractUsbPipeOsImp i
 	 * @exception UsbException If the initial submission was unsuccessful.
 	 */
 	public abstract void asyncSubmit( ControlUsbIrpImp irp ) throws UsbException;
+
 }
