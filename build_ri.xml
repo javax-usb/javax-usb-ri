@@ -114,10 +114,9 @@
 	<property name="jsr80.ri.jdoc.api.src.dir" value="${Jsr80Env.JSR80_RI_JDOC_API_SRC_DIR}"/>
 
 	<property name="jsr80.ri.test.classname" value="${Jsr80Env.JSR80_RI_TEST_CLASSNAME}"/>
-	<property name="jsr80.ri.test.requestops.classname" value="javax.usb.RequestOpsTests"/>
 
-	<property name="jsr80.ri.test.src.dir" value="${Jsr80Env.JSR80_RI_TEST_DIR}"/>
-	<property name="jsr80.ri.test.dest.dir" value="${Jsr80Env.JSR80_RI_TEST_DIR}"/>
+	<property name="jsr80.ri.test.src.dir" value="${Jsr80Env.JSR80_RI_TEST_SRC_DIR}"/>
+	<property name="jsr80.ri.test.dest.dir" value="${Jsr80Env.JSR80_RI_TEST_DEST_DIR}"/>
 	<property name="jsr80.ri.test.arg" value="${Jsr80Env.JSR80_RI_TEST_ARG}"/>
 	<property name="jsr80.ri.test.fork" value="yes"/>
 
@@ -142,7 +141,6 @@
 		<echo message="  test-clean         Clean unit tests"/>
 		<echo message="  test-compile       Compile unit tests"/>
 		<echo message="  test-run           Run unit tests"/>
-		<echo message="  test-run-request   Run unit tests"/>
 		<echo message=""/>
 	</target>
 
@@ -196,7 +194,7 @@
 	</target>
 
 	<!-- Mr. Clean -->
-	<target name="mrproper" depends="init,clean">
+	<target name="mrproper" depends="init,clean,test-clean">
 		<echo message="Cleaning everything in JSR80 RI!"/>
 		<delete verbose="${jsr80.ri.verbose}" quiet="${jsr80.ri.quiet}" failonerror="false">
 			<fileset dir="${jsr80.ri.src.jarfile.dir}" includes="${jsr80.ri.src.jarfile}"/>
@@ -228,7 +226,7 @@
 			jarfile="${jsr80.ri.class.jarfile.dir}/${jsr80.ri.class.jarfile}"
 			basedir="${jsr80.ri.dest.dir}"
 			compress="${jsr80.ri.compress}"
-			includes="com/ibm/jusb/**/*.class,com/ibm/jusb/**/*.gif"/>
+			includes="javax/usb/res/jusb.properties,com/ibm/jusb/**/*.class,com/ibm/jusb/**/*.gif"/>
 
 		<mkdir dir="${jsr80.ri.lib.dir}"/>
 		<copy
@@ -240,7 +238,9 @@
 	<!--
 		Builds the JavaDOC for the RI
 		Note that if the API source files are not in the RI source path,
-		AND/OR the classpath, only the RI JavaDOC will be built.
+		AND/OR the ${jsr80.ri.jdoc.api.src.dir}, only the RI JavaDOC will be built.
+		Also note that if the API jdoc dir is the same as the RI jdoc dir, the
+		last built jdoc will be overwritten (i.e. calling this will overwrite the API jdoc).
 	-->
 	<target name="jdoc" depends="init">
 		<mkdir dir="${jsr80.ri.jdoc.dir}"/>
@@ -303,7 +303,7 @@
 
 		<!-- Copying test files -->
 		<copy todir="${jsr80.ri.dist.dir}/src/test">
-			<fileset dir="${jsr80.ri.test.src.dir}" includes="javax/usb/**,com/ibm/jusb/**" excludes="**/*.class"/>
+			<fileset dir="${jsr80.ri.test.src.dir}" includes="com/ibm/jusb/**" excludes="**/*.class"/>
 		</copy>
 
 		<!-- Creating Zip distribution file -->
@@ -335,7 +335,7 @@
 	<!-- 
 		The following are unit test tasks.  We have created a series of
 		JUnit XyzTestCase classes to unit test various aspect and portions
-		of the API and RI.  These tasks allows compilation and running of
+		of the RI.  These tasks allows compilation and running of
 		these tests.
 		Find JUnit at: http://www.junit.org
 	-->
@@ -364,7 +364,7 @@
 	</target>
 
 	<!--
-		Runs the root "AllTests" JUnit TestSuite for the RI and API
+		Runs the root "AllTests" JUnit TestSuite
 	-->
 	<target name="test-run" depends="init,test-compile">
 		<java classname="${jsr80.ri.test.classname}" fork="${jsr80.ri.test.fork}" failonerror="yes">
@@ -379,26 +379,11 @@
 	</target>
 
 	<!--
-		Runs the RequestOpsTests JUnit TestSuite for the Request/<Xyz>Operations interfaces
-	-->
-	<target name="test-run-requestops" depends="init,test-compile">
-		<java classname="${jsr80.ri.test.classname}" fork="${jsr80.ri.test.fork}" failonerror="yes">
-			<arg value="${jsr80.ri.test.requestops.classname}"/>
-			<classpath>
-				<pathelement path="${java.class.path}"/>
-				<pathelement path="${jsr80.ri.test.dest.dir}"/>
-				<pathelement location="${jsr80.ri.class.jarfile.dir}/${jsr80.ri.class.jarfile}"/>
-				<pathelement path="${jsr80.ri.dest.dir}"/>
-			</classpath>
-		</java>
-	</target>
-
-	<!--
 		Cleans all the JUnit tests classes
 	-->
 	<target name="test-clean" depends="init">
 		<delete>
-			<fileset dir="${jsr80.ri.test.dest.dir}" includes="**/*.class"/>
+			<fileset dir="${jsr80.ri.test.dest.dir}" includes="com/ibm/jusb/**/*.class"/>
 		</delete>
 	</target>
 

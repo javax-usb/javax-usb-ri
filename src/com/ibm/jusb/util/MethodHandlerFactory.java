@@ -5,16 +5,8 @@ package com.ibm.jusb.util;
  * All Rights Reserved.
  *
  * This software is provided and licensed under the terms and conditions
- * of the IBM Public License.
- *
- */
-
-
-/** 
- * Copyright (c) IBM Corporation, 2000
- * This software and documentation is the confidential and proprietary
- * information of IBM, Corp. ("Confidential Information").
- * Raleigh, NC USA
+ * of the Common Public License:
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
 /**

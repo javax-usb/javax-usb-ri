@@ -5,8 +5,8 @@ package com.ibm.jusb.os.linux;
  * All Rights Reserved.
  *
  * This software is provided and licensed under the terms and conditions
- * of the IBM Public License.
- *
+ * of the Common Public License:
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
 /**
@@ -55,14 +55,14 @@ interface LinuxUsbConst
 		+NL+"* All Rights Reserved."
 		+NL+"*"
 		+NL+"* This software is provided and licensed under the terms and conditions"
-		+NL+"* of the IBM Public License."
-		+NL+"*"
+		+NL+"* of the Common Public License:"
+		+NL+"* http://oss.software.ibm.com/developerworks/opensource/license-cpl.html"
 		+NL
 		+NL+"E. M. Maximilien <maxim@us.ibm.com>"
 		+NL+"Dan Streetman <ddstreet@us.ibm.com>"
 		+NL
-/*		+NL+"http://oss.software.ibm.com/javax_usb"
-		+NL+NL */
+		+NL+"http://oss.software.ibm.com/developerworks/projects/javaxusb/"
+		+NL+NL
 		;
 
 	public static final String VIRTUAL_ROOT_HUB_MANUFACTURER = "IBM Corporation Linux javax.usb implementation version " + IMP_VERSION;

@@ -1,23 +1,27 @@
 package com.ibm.jusb.util;
 
-/** 
- * Copyright (c) IBM Corporation, 2000
- * This software and documentation is the confidential and proprietary
- * information of IBM, Corp. ("Confidential Information").
- * Raleigh, NC USA
+/**
+ * Copyright (c) 1999 - 2001, International Business Machines Corporation.
+ * All Rights Reserved.
+ *
+ * This software is provided and licensed under the terms and conditions
+ * of the Common Public License:
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
 import java.util.*;
 
 import junit.framework.*;
 
-import com.ibm.jusb.test.JUnitUtility;
+import com.ibm.jusb.*;
+import com.ibm.jusb.test.*;
 
 /**
  * A JUnit TestCase for the FifoScheduler interface and implementing class
  * @author E. Michael Maximilien
+ * @author Dan Streetman
  */
-public class FifoSchedulerTestCase extends TestCase
+public class FifoSchedulerTestCase extends UsbTestCase
 {
 	//-------------------------------------------------------------------------
 	// Ctor(s)
@@ -33,11 +37,11 @@ public class FifoSchedulerTestCase extends TestCase
     {
         scheduler = new FifoScheduler();
         
-        task0 = this.new PrintTask( "PrintTask", 0 );
-        task1 = this.new PrintTask( "PrintTask", 1 );
-        task2 = this.new PrintTask( "PrintTask", 2 );
-        task3 = this.new PrintTask( "PrintTask", 3 );
-        task4 = this.new PrintTask( "PrintTask", 4 );
+        task0 = this.new PrintTask( 0 );
+        task1 = this.new PrintTask( 1 );
+        task2 = this.new PrintTask( 2 );
+        task3 = this.new PrintTask( 3 );
+        task4 = this.new PrintTask( 4 );
         sentinelTask = this.new SentinelTask();
 
         lastExecutedTaskNumber = -1;
@@ -135,10 +139,10 @@ public class FifoSchedulerTestCase extends TestCase
 
         scheduler.post( sentinelTask );
 
-        scheduler.resume();
-
         synchronized( sentinelLock )
         {
+			scheduler.resume();
+
             assertTrue( "Expect scheduler should NOT be paused", scheduler.isPaused() == false );
 
             try{ sentinelLock.wait(); }
@@ -169,10 +173,10 @@ public class FifoSchedulerTestCase extends TestCase
 
         scheduler.post( sentinelTask );
 
-        scheduler.resume();
-
         synchronized( sentinelLock )
         {
+			scheduler.resume();
+
             assertTrue( "Expect scheduler should NOT be paused", scheduler.isPaused() == false );
 
             try{ sentinelLock.wait(); }
@@ -202,10 +206,10 @@ public class FifoSchedulerTestCase extends TestCase
 
         scheduler.post( sentinelTask );
 
-        scheduler.resume();
-
         synchronized( sentinelLock )
         {
+			scheduler.resume();
+
 			assertTrue( "Expect scheduler should NOT be paused", scheduler.isPaused() == false );
 
             try{ sentinelLock.wait(); }
@@ -235,17 +239,15 @@ public class FifoSchedulerTestCase extends TestCase
 
     protected class PrintTask extends Object implements Task
     {
-        public PrintTask( String msg, int i ) 
-        { this.msg = msg; number = i; }
+        public PrintTask( int i ) 
+        { number = i; }
 
         public void execute() 
         { 
-            System.out.println( msg + " : executed task #" + number );
             lastExecutedTaskNumber = number;
             exeTaskList.add( this );
         }
 
-        private String msg = "";
         private int number = 0;
     }
 
@@ -256,7 +258,6 @@ public class FifoSchedulerTestCase extends TestCase
         public void execute() 
         { 
             synchronized( sentinelLock ) { sentinelLock.notifyAll(); }
-            System.out.println( "Executed sentinel task..." ); 
         }
     }
 }

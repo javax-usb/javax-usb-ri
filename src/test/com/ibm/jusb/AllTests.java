@@ -1,10 +1,12 @@
 package com.ibm.jusb;
 
-/** 
- * Copyright (c) IBM Corporation, 2000
- * This software and documentation is the confidential and proprietary
- * information of IBM, Corp. ("Confidential Information").
- * Raleigh, NC USA
+/**
+ * Copyright (c) 1999 - 2001, International Business Machines Corporation.
+ * All Rights Reserved.
+ *
+ * This software is provided and licensed under the terms and conditions
+ * of the Common Public License:
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
 import junit.framework.*;
@@ -13,6 +15,7 @@ import junit.framework.*;
  * A TestSuite that puts together all the test classes from
  * all com.ibm.jusb.* packages
  * @author E. Michael Maximilien
+ * @author Dan Streetman
  */
 public class AllTests extends TestSuite
 {
@@ -22,10 +25,15 @@ public class AllTests extends TestSuite
 
 	public static TestSuite suite()
 	{
-		TestSuite suite = new AllTests();
+		TestSuite suite = new TestSuite();
 
-		suite.addTest( com.ibm.jusb.util.AllTests.suite() );
+		/* This package test cases */
+		suite.addTestSuite( UsbTestCase.class );
+
+		/* Subpackage test cases */
 		suite.addTest( com.ibm.jusb.os.AllTests.suite() );
+		suite.addTest( com.ibm.jusb.test.AllTests.suite() );
+		suite.addTest( com.ibm.jusb.util.AllTests.suite() );
 
 		return suite;
 	}

@@ -1,10 +1,12 @@
 package com.ibm.jusb.util;
 
-/** 
- * Copyright (c) IBM Corporation, 2000
- * This software and documentation is the confidential and proprietary
- * information of IBM, Corp. ("Confidential Information").
- * Raleigh, NC USA
+/**
+ * Copyright (c) 1999 - 2001, International Business Machines Corporation.
+ * All Rights Reserved.
+ *
+ * This software is provided and licensed under the terms and conditions
+ * of the Common Public License:
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
 import junit.framework.*;
@@ -22,13 +24,13 @@ public class AllTests extends TestSuite
 
 	public static TestSuite suite()
 	{
-		TestSuite suite = new AllTests();
+		TestSuite suite = new TestSuite();
 
-		suite.addTest( new TestSuite( FifoSchedulerTestCase.class ) );
-		suite.addTest( new TestSuite( GraphTestCase.class ) );
-		suite.addTest( new TestSuite( DiGraphTestCase.class ) );
-        suite.addTest( new TestSuite( QueueTestCase.class ) );
-		suite.addTest( new TestSuite( StateMachineTestCase.class ) );
+		suite.addTestSuite( DiGraphTestCase.class );
+		suite.addTestSuite( FifoSchedulerTestCase.class );
+		suite.addTestSuite( GraphTestCase.class );
+        suite.addTestSuite( QueueTestCase.class );
+		suite.addTestSuite( StateMachineTestCase.class );
 
 		return suite;
 	}

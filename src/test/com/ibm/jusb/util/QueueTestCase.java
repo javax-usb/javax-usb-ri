@@ -1,10 +1,12 @@
 package com.ibm.jusb.util;
 
-/** 
- * Copyright (c) IBM Corporation, 2000
- * This software and documentation is the confidential and proprietary
- * information of IBM, Corp. ("Confidential Information").
- * Raleigh, NC USA
+/**
+ * Copyright (c) 1999 - 2001, International Business Machines Corporation.
+ * All Rights Reserved.
+ *
+ * This software is provided and licensed under the terms and conditions
+ * of the Common Public License:
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
 import java.util.*;
@@ -30,9 +32,14 @@ public class QueueTestCase extends TestCase
 	// Protected overridden methods
 	//
 
-	protected void setUp() { queue = new DefaultQueue(); }
+	protected void setUp()
+	{
+		queue = new DefaultQueue();
+	}
 
-	protected void tearDown() { queue = null; }
+	protected void tearDown()
+	{
+	}
 
 	//-------------------------------------------------------------------------
 	// Public testXyz() methods
@@ -41,7 +48,7 @@ public class QueueTestCase extends TestCase
     
 	public void testIsEmpty()
 	{
-        assertTrue( "Queue is not empty", queue.isEmpty() == true );
+        assertTrue( "Queue is not empty", queue.isEmpty() );
     }
 
     public void testEnqueueDequeue()
@@ -50,31 +57,31 @@ public class QueueTestCase extends TestCase
 		Object element2 = "element2";
 		Object element3 = "element3";
 
-        assertTrue( "Queue is not empty", queue.isEmpty() == true );
+        assertTrue( "Queue is not empty", queue.isEmpty() );
 
 		queue.enqueue( element1 );
-        assertTrue( "Queue is not empty", queue.isEmpty() == false );
+        assertTrue( "Queue is empty", !queue.isEmpty() );
 
 		queue.enqueue( element2 );
-        assertTrue( "Queue is not empty", queue.isEmpty() == false );
+        assertTrue( "Queue is empty", !queue.isEmpty() );
 
 		queue.enqueue( element3 );
-        assertTrue( "Queue is not empty", queue.isEmpty() == false );
+        assertTrue( "Queue is empty", !queue.isEmpty() );
 
-		assertEquals ( "It did not return element1!", element1, queue.dequeue() );
-		assertEquals ( "It did not return element2!", element2, queue.dequeue() );
-		assertEquals ( "It did not return element3!", element3, queue.dequeue() );
+		assertTrue( "Queue returned elements out of order", element1 == queue.dequeue() );
+		assertTrue( "Queue returned elements out of order", element2 == queue.dequeue() );
+		assertTrue( "Queue returned elements out of order", element3 == queue.dequeue() );
        
-		assertTrue ( "Queue is not empty!", queue.isEmpty() == true );
+		assertTrue ( "Queue is not empty", queue.isEmpty() );
        
 		try
 		{
 			queue.dequeue();
-			assertTrue("it did not throw an exception!!!", false);
+			fail("Expected NoSuchElementException not thrown");
 		}
 		catch (NoSuchElementException e)
 		{ 
-			assertTrue( "Queue is not empty!", queue.isEmpty() == true );
+			assertTrue( "Queue is not empty after throwing NoSuchElementException", queue.isEmpty() );
 		}
     }
 

@@ -1,15 +1,17 @@
 package com.ibm.jusb.os;
 
-/** 
- * Copyright (c) IBM Corporation, 2000
- * This software and documentation is the confidential and proprietary
- * information of IBM, Corp. ("Confidential Information").
- * Raleigh, NC USA
+/**
+ * Copyright (c) 1999 - 2001, International Business Machines Corporation.
+ * All Rights Reserved.
+ *
+ * This software is provided and licensed under the terms and conditions
+ * of the Common Public License:
+ * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
 import junit.framework.*;
 
-import javax.usb.*;
+import com.ibm.jusb.*;
 
 /**
  * @author Dan Streetman
@@ -40,6 +42,4 @@ public class DefaultUsbIrpFactoryTestCase extends UsbTestCase
 	// Public testXyz methods
 	//
 
-	/** Default test since JUnit will complain if your test class executes w/o a testXyz method */
-	public void testDefault() { emptyTest(); }
 }
