@@ -259,10 +259,33 @@ public class UsbIrpImp implements UsbIrp,UsbSubmission
 		 */
 		public void setIndex(short wIndex) { this.wIndex = wIndex; }
 
+		/**
+		 * If this is a SET_CONFIGURATION UsbIrp.
+		 * @return If this is a SET_CONFIGURATION UsbIrp.
+		 */
+		public boolean isSetConfiguration()
+		{
+			return (getRequestType() == REQUESTTYPE_SET_CONFIGURATION) && (getRequest() == UsbConst.REQUEST_SET_CONFIGURATION);
+		}
+
+		/**
+		 * If this is a SET_INTERFACE UsbIrp.
+		 * @return If this is a SET_INTERFACE UsbIrp.
+		 */
+		public boolean isSetInterface()
+		{
+			return (getRequestType() == REQUESTTYPE_SET_INTERFACE) && (getRequest() == UsbConst.REQUEST_SET_INTERFACE);
+		}
+
 		private byte bmRequestType = 0x00;
 		private byte bRequest = 0x00;
 		private short wValue = 0x0000;
 		private short wIndex = 0x0000;
+
+		private static final byte REQUESTTYPE_SET_CONFIGURATION =
+			UsbConst.REQUESTTYPE_DIRECTION_OUT | UsbConst.REQUESTTYPE_TYPE_STANDARD | UsbConst.REQUESTTYPE_RECIPIENT_DEVICE;
+		private static final byte REQUESTTYPE_SET_INTERFACE =
+			UsbConst.REQUESTTYPE_DIRECTION_OUT | UsbConst.REQUESTTYPE_TYPE_STANDARD | UsbConst.REQUESTTYPE_RECIPIENT_INTERFACE;
 	}
 
 }
