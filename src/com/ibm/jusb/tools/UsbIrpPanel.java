@@ -43,6 +43,8 @@ public class UsbIrpPanel extends JPanel
 		add(packetDataScroll, BorderLayout.SOUTH);
 	}
 
+	public String toString() { return "Buffer @" + UsbUtil.toHexString(hashCode()); }
+
 	public void submit(UsbPipe pipe) throws UsbException,NumberFormatException
 	{
 		lastData = getData();

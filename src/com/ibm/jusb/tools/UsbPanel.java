@@ -323,49 +323,61 @@ public static class UsbPipePanel extends UsbPanel
 	protected void initPanels()
 	{
 		outputTextArea.setEditable(false);
-		packetListTextArea.setEditable(false);
 
 		openButton.addActionListener(openListener);
 		closeButton.addActionListener(closeListener);
 		submitButton.addActionListener(submitListener);
 		newPacketButton.addActionListener(newPacketListener);
+		removeButton.addActionListener(removeListener);
+		upButton.addActionListener(upListener);
+		downButton.addActionListener(downListener);
+
+		packetJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		packetJList.addListSelectionListener(packetListListener);
 
 		openClosePanel.add(openButton);
 		openClosePanel.add(closeButton);
 
-		submitPanel.add(submitButton);
-		submitPanel.add(newPacketButton);
-		submitPanel.add(removeButton);
-		submitPanel.add(upButton);
-		submitPanel.add(downButton);
+		JPanel jp = new JPanel();
+		jp.add(submitButton);
+		submitButtonBox.add(jp);
+		jp = new JPanel();
+		jp.add(newPacketButton);
+		submitButtonBox.add(jp);
+		jp = new JPanel();
+		jp.add(removeButton);
+		submitButtonBox.add(jp);
+		jp = new JPanel();
+		jp.add(upButton);
+		submitButtonBox.add(jp);
+		jp = new JPanel();
+		jp.add(downButton);
+		submitButtonBox.add(jp);
 
 		irpPanel.setLayout(irpLayout);
 
+		packetPanel.add(packetJList);
+
+		submitBox.add(submitButtonBox);
+		submitBox.add(packetListScroll);
+
 		add(openClosePanel);
 		add(outputScroll);
-		add(submitPanel);
-		add(packetListScroll);
+		add(submitBox);
 		add(irpPanel);
 	}
 
-	protected void submit()
+	protected int getSelectedIndex()
 	{
+		if (packetJList.isSelectionEmpty() && !packetList.isEmpty())
+			packetJList.setSelectedIndex(0);
+		return packetJList.getSelectedIndex();
 	}
 
-	protected void refreshPacketList()
+	protected void updateSelection()
 	{
-		packetListTextArea.replaceRange("", 0, packetListTextArea.getText().length());
-		for (int i=0; i<packetList.size(); i++)
-			packetListTextArea.append("Packet #" + i + "\n");
-	}
-
-	protected void addPacket()
-	{
-		UsbIrpPanel newPanel = new UsbIrpPanel();
-		packetList.add(newPanel);
-		irpPanel.add(newPanel, newPanel.toString());
-		irpLayout.show(irpPanel, newPanel.toString());
-		refreshPacketList();
+		if (!packetList.isEmpty())
+			irpLayout.show(irpPanel, packetList.get(getSelectedIndex()).toString());
 		validate();
 	}
 
@@ -389,12 +401,83 @@ public static class UsbPipePanel extends UsbPanel
 		}
 	}
 
+	protected void submit()
+	{
+		UsbIrpPanel panel = null;
+
+		try {
+			for (int i=0; i<packetList.size(); i++) {
+				panel = (UsbIrpPanel)packetList.get(i);
+				panel.submit(usbPipe);
+			}
+		} catch ( UsbException uE ) {
+			JOptionPane.showMessageDialog(null, "UsbException while submitting " + panel + " : " + uE.getMessage());
+		} catch ( NumberFormatException nfE ) {
+			JOptionPane.showMessageDialog(null, "NumberFormatException in " + panel + " : " + nfE.getMessage());
+		}
+	}
+
+	protected void addPacket()
+	{
+		UsbIrpPanel newPanel = new UsbIrpPanel();
+		packetList.add(newPanel);
+		packetJList.setListData(packetList);
+		irpPanel.add(newPanel, newPanel.toString());
+		irpLayout.show(irpPanel, newPanel.toString());
+		updateSelection();
+	}
+
+	protected void removePacket()
+	{
+		int index = packetJList.getSelectedIndex();
+		if (0 <= index) {
+			packetList.remove(index);
+			packetJList.setListData(packetList);
+			if (packetList.size() <= index)
+					index--;
+			if (0 <= index)
+					packetJList.setSelectedIndex(index);
+			updateSelection();
+		}
+	}
+
+	protected void upPacket()
+	{
+		if (packetJList.isSelectionEmpty())
+			return;
+
+		int index = packetJList.getSelectedIndex();
+		if (0 < index) {
+			packetList.set(index, packetList.set(index-1, packetList.get(index)));
+			packetJList.setListData(packetList);
+			packetJList.setSelectedIndex(index-1);
+			updateSelection();
+		}
+	}
+
+	protected void downPacket()
+	{
+		if (packetJList.isSelectionEmpty())
+			return;
+
+		int index = packetJList.getSelectedIndex();
+		if (packetList.size() > (index+1)) {
+			packetList.set(index, packetList.set(index+1, packetList.get(index)));
+			packetJList.setListData(packetList);
+			packetJList.setSelectedIndex(index+1);
+			updateSelection();
+		}
+	}
+
 	private JPanel openClosePanel = new JPanel();
 	private JTextArea outputTextArea = new JTextArea();
 	private JScrollPane outputScroll = new JScrollPane(outputTextArea);
-	private JPanel submitPanel = new JPanel();
-	private JTextArea packetListTextArea = new JTextArea();
-	private JScrollPane packetListScroll = new JScrollPane(packetListTextArea);
+	private Vector packetList = new Vector();
+	private JList packetJList = new JList();
+	private JPanel packetPanel = new JPanel();
+	private JScrollPane packetListScroll = new JScrollPane(packetPanel);
+	private Box submitBox = new Box(BoxLayout.X_AXIS);
+	private Box submitButtonBox = new Box(BoxLayout.Y_AXIS);
 	private JPanel irpPanel = new JPanel();
 	private CardLayout irpLayout = new CardLayout();
 
@@ -410,8 +493,12 @@ public static class UsbPipePanel extends UsbPanel
 	private ActionListener closeListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { close(); } };
 	private ActionListener submitListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { submit(); } };
 	private ActionListener newPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { addPacket(); } };
+	private ActionListener removeListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { removePacket(); } };
+	private ActionListener upListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { upPacket(); } };
+	private ActionListener downListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { downPacket(); } };
 
-	private java.util.List packetList = new LinkedList();
+	private ListSelectionListener packetListListener =
+		new ListSelectionListener() { public void valueChanged(ListSelectionEvent lsE) { updateSelection(); } };
 
 	private UsbPipe usbPipe = null;
 }
