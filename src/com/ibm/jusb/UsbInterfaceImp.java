@@ -25,34 +25,8 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	/**
 	 * Constructor.
 	 * <p>
-	 * The UsbConfigImp must be
-	 * {@link #setUsbConfigImp(UsbConfigImp) set}
-	 * before this is used.  Also the UsbInterfaceOsImp must be
-	 * {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) set} before this is used.
-	 */
-	public UsbInterfaceImp() { }
-
-	/**
-	 * Constructor.
-	 * <p>
-	 * The UsbInterfaceOsImp must be
-	 * {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) set} before this is used.
-	 * @param config The parent config.
-	 */
-	public UsbInterfaceImp( UsbConfigImp config ) { setUsbConfigImp(config); }
-
-	/**
-	 * Constructor.
-	 * <p>
-	 * The UsbConfigImp must be
-	 * {@link #setUsbConfigImp(UsbConfigImp) set}
-	 * before this is used.
-	 * @param osImp The UsbInterfaceOsImp.
-	 */
-	public UsbInterfaceImp( UsbInterfaceOsImp osImp ) { setUsbInterfaceOsImp(osImp); }
-
-	/**
-	 * Constructor.
+	 * One or more of the paramaters can be passed null,
+	 * but they must be then set using their setter before this is used.
 	 * @param config The parent config.
 	 * @param osImp The UsbInterfaceOsImp.
 	 */
@@ -280,7 +254,8 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	/** @return the bundle of UsbPipes contained in this interface setting. */
 	public UsbPipeBundle getUsbPipes()
 	{
-		/*get from endpoints*/
+/*get from endpoints*/
+return null;
 	}
 
 	/** @return the interface descriptor for this interface */

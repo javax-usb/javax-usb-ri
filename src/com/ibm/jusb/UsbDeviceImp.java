@@ -10,6 +10,7 @@ package com.ibm.jusb;
  */
 
 import java.util.*;
+import java.io.*;
 
 import javax.usb.*;
 import javax.usb.event.*;
@@ -61,18 +62,24 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 	/** @return the manufacturer of this device */
 	public String getManufacturer()
-	{ return getString( getDeviceDescriptor().getManufacturerIndex() ); }
+	{
+		try { return getString( getDeviceDescriptor().getManufacturerIndex() ); } catch ( UsbException uE ) { return null; }
+	}
 
 	/** @return the serial number of this device */
 	public String getSerialNumber()
-	{ return getString( getDeviceDescriptor().getSerialNumberIndex() ); }
+	{
+		try { return getString( getDeviceDescriptor().getSerialNumberIndex() ); } catch ( UsbException uE ) { return null; }
+	}
 
 	/** @return a String describing the speed of this device */
 	public String getSpeedString() { return speedString; }
 
 	/** @return a String describing this product */
 	public String getProductString()
-	{ return getString( getDeviceDescriptor().getProductIndex() ); }
+	{
+		try { return getString( getDeviceDescriptor().getProductIndex() ); } catch ( UsbException uE ) { return null; }
+	}
 
 	/** @return the USB device class */
 	public byte getDeviceClass() { return getDeviceDescriptor().getDeviceClass(); }
@@ -222,11 +229,64 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 		stringDescriptors.put( new Byte( index ), desc );
 	}
 
-	/** Update the StringDescriptor at the specified index. */
-	public void requestStringDescriptor( byte index )
+	/** @return the device's default langID */
+	short getLangId() throws UsbException
 	{
-//FIXME!!
-		/* Do a StringDescriptor Request here, and update the cache */
+		byte[] data = new byte[256];
+
+		getStandardOperations().getDescriptor( (short)(DescriptorConst.DESCRIPTOR_TYPE_STRING << 8), (short)0x0000, data );
+
+		/* strings not supported by device */
+		if (4 > data[0])
+			return (short)0x0000;
+		else
+			return (short)((data[3] << 8) | data[2]);
+	}
+
+	/**
+	 * Convert byte[] to String
+	 * @param data StringDescriptor bytes.
+	 * @param len Length of unicode string.
+	 */
+	String bytesToString(byte[] data, int len)
+	{
+		for (int i=0; i<ENCODING.length; i++) {
+			try { return new String( data, 2, len, ENCODING[i] ); }
+			catch ( UnsupportedEncodingException ueE ) { }
+		}
+
+		/* Fallback to 8BIT encoding - ignore high byte */
+		byte[] s = new byte[len/2];
+
+		for (int i=0; i<s.length; i++)
+			s[i] = data[2 + i*2];
+
+		try {
+			return new String( s, ENCODING_8BIT );
+		} catch ( UnsupportedEncodingException ueE ) {
+			/* No encodings supported!  Fallback to platform, but String will likely be corrupted here */
+			return new String( s );
+		}
+	}
+
+	/** Update the StringDescriptor at the specified index. */
+	void requestStringDescriptor( byte index ) throws UsbException
+	{
+		byte[] data = new byte[256];
+
+		Request request = getStandardOperations().getDescriptor( (short)((DescriptorConst.DESCRIPTOR_TYPE_STRING << 8) | (index)), getLangId(), data );
+
+		/* requested string not present */
+		if (request.getDataLength() < 2)
+			return;
+
+		/* string length (descriptor len minus 2 for header) */
+		int len = UsbUtil.unsignedInt(data[0]) - 2;
+
+		if (request.getDataLength() < (len + 2))
+			throw new UsbException("String Descriptor length byte is longer than Descriptor data");
+
+		setStringDescriptor( index, new StringDescriptorImp( data[0], data[1], bytesToString(data,len) ) );
 	}
 
 	/**
@@ -355,4 +415,28 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	//
 
 	public static final String USB_DEVICE_NAME = "device";
+
+	/**
+	 * For all encodings supported by Java, see:
+	 * <p><a href="http://java.sun.com/products/jdk/1.1/docs/guide/intl/encoding.doc.html">Java 1 (1.1) Supported Encodings</a>
+	 * <p><a href="http://java.sun.com/j2se/1.3/docs/guide/intl/encoding.doc.html">Java 2 (1.3) Supported Encodings</a>
+	 * <p><a href="http://java.sun.com/j2se/1.3/docs/api/java/lang/package-summary.html#charenc">Java 2 (1.3) Required Encodings</a>
+	 * <p>
+	 * Conversion attempts to use encodings in this order:
+	 * <ul>
+	 * <li><code>UnicodeLittleUnmarked</code> (16-bit)</li>
+	 * <li><code>UnicodeLittle</code> (16-bit)</li>
+	 * <li><code>UTF-16LE</code> (16-bit)</li>
+	 * <li><code>ASCII</code> (8-bit)</li>
+	 * <li>Platform default (8-bit)</li>
+	 * </ul>
+	 * The high bytes are discarded before attempting the 8-bit encodings.
+	 */
+	public static final String[] ENCODING = {
+		"UnicodeLittleUnmarked", /* Present in Sun Java 1.3 rt.jar (not 1.1) */
+		"UnicodeLittle", /* Present in Sun Java 1.3 rt.jar and Sun Java 1.1 i18n.jar */
+		"UTF-16LE", /* Required by Sun Java 1.3 Package Specifications */
+	};
+	/** Fallback encoding if no 16-bit encoding is supported */
+	public static final String ENCODING_8BIT = "ASCII"; /* Present in Sun Java 1.3 rt.jar and Sun Java 1.1 i18n.jar */
 }

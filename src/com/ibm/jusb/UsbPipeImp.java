@@ -28,7 +28,7 @@ import com.ibm.jusb.util.*;
  */
 public class UsbPipeImp extends Object implements UsbPipe
 {
-	public UsbPipeImp( UsbEndpointImp ep )
+	public UsbPipeImp( UsbEndpointImp ep ) { this( ep, null ); }
 
     public UsbPipeImp( UsbEndpointImp ep, UsbPipeOsImp pipe )
     {
@@ -36,14 +36,14 @@ public class UsbPipeImp extends Object implements UsbPipe
 		setUsbPipeOsImp( pipe );
     }
 
+	//**************************************************************************
+    // Public methods
+
 	/** @param the UsbPipeOsImp to use */
 	public void setUsbPipeOsImp( UsbPipeOsImp pipe ) { usbPipeOsImp = pipe; }
 
     /** @return the UsbPipeOsImp object */
     public UsbPipeOsImp getUsbPipeOsImp() { return usbPipeOsImp; }
-
-	//**************************************************************************
-    // Public methods
 
 	/** @return if this UsbPipe is active */
 	public boolean isActive() { return getUsbEndpoint().getUsbInterface().isActive(); }
@@ -110,7 +110,6 @@ public class UsbPipeImp extends Object implements UsbPipe
 		if (!isOpen()) {
 			getUsbPipeOsImp().open();
 
-			usbException = null;
 			errorCode = 0;
 
 			open = true;
