@@ -143,13 +143,15 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 */
 	public int syncSubmit( byte[] data ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
-		checkOpen();
+		synchronized (submitLock) {
+			checkOpen();
 
-		UsbIrpImp usbIrpImp = createUsbIrpImp();
-		usbIrpImp.setData(data);
-		syncSubmit(usbIrpImp);
+			UsbIrpImp usbIrpImp = createUsbIrpImp();
+			usbIrpImp.setData(data);
+			syncSubmit(usbIrpImp);
 
-		return usbIrpImp.getLength();
+			return usbIrpImp.getLength();
+		}
 	}
 
 	/**
@@ -157,13 +159,15 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 */
 	public UsbIrp asyncSubmit( byte[] data ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
-		checkOpen();
+		synchronized (submitLock) {
+			checkOpen();
 
-		UsbIrpImp usbIrpImp = createUsbIrpImp();
-		usbIrpImp.setData(data);
-		asyncSubmit(usbIrpImp);
+			UsbIrpImp usbIrpImp = createUsbIrpImp();
+			usbIrpImp.setData(data);
+			asyncSubmit(usbIrpImp);
 
-		return usbIrpImp;
+			return usbIrpImp;
+		}
 	}
 
 	/**
@@ -171,18 +175,20 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void syncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
-		checkOpen();
+		synchronized (submitLock) {
+			checkOpen();
 
-		UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp( usbIrp );
+			UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp( usbIrp );
 
-		if ( queueSubmissions ) {
-			queueUsbIrpImp( usbIrpImp );
-			usbIrpImp.waitUntilComplete();
-			if (usbIrpImp.isUsbException())
-				throw usbIrpImp.getUsbException();
-		} else {
-			submissionCount++;
-			getUsbPipeOsImp().syncSubmit( usbIrpImp );
+			if ( queueSubmissions ) {
+				queueUsbIrpImp( usbIrpImp );
+				usbIrpImp.waitUntilComplete();
+				if (usbIrpImp.isUsbException())
+					throw usbIrpImp.getUsbException();
+			} else {
+				submissionCount++;
+				getUsbPipeOsImp().syncSubmit( usbIrpImp );
+			}
 		}
 	}
 
@@ -191,15 +197,17 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void asyncSubmit( UsbIrp usbIrp ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
-		checkOpen();
+		synchronized (submitLock) {
+			checkOpen();
 
-		UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp( usbIrp );
+			UsbIrpImp usbIrpImp = usbIrpToUsbIrpImp( usbIrp );
 
-		if ( queueSubmissions ) {
-			queueUsbIrpImp( usbIrpImp );
-		} else {
-			submissionCount++;
-			getUsbPipeOsImp().asyncSubmit( usbIrpImp );
+			if ( queueSubmissions ) {
+				queueUsbIrpImp( usbIrpImp );
+			} else {
+				submissionCount++;
+				getUsbPipeOsImp().asyncSubmit( usbIrpImp );
+			}
 		}
 	}
 
@@ -208,19 +216,21 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void syncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
-		checkOpen();
+		synchronized (submitLock) {
+			checkOpen();
 
-		if (list.isEmpty())
-			return;
+			if (list.isEmpty())
+				return;
 
-		List usbIrpImpList = usbIrpListToUsbIrpImpList( list );
+			List usbIrpImpList = usbIrpListToUsbIrpImpList( list );
 
-		if ( queueSubmissions ) {
-			queueList( usbIrpImpList );
-			((UsbIrp)usbIrpImpList.get(usbIrpImpList.size()-1)).waitUntilComplete();
-		} else {
-			submissionCount += usbIrpImpList.size();
-			getUsbPipeOsImp().syncSubmit( usbIrpImpList );
+			if ( queueSubmissions ) {
+				queueList( usbIrpImpList );
+				((UsbIrp)usbIrpImpList.get(usbIrpImpList.size()-1)).waitUntilComplete();
+			} else {
+				submissionCount += usbIrpImpList.size();
+				getUsbPipeOsImp().syncSubmit( usbIrpImpList );
+			}
 		}
 	}
 
@@ -229,18 +239,20 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void asyncSubmit( List list ) throws UsbException,IllegalArgumentException,UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
-		checkOpen();
+		synchronized (submitLock) {
+			checkOpen();
 
-		if (list.isEmpty())
-			return;
+			if (list.isEmpty())
+				return;
 
-		List usbIrpImpList = usbIrpListToUsbIrpImpList( list );
+			List usbIrpImpList = usbIrpListToUsbIrpImpList( list );
 
-		if ( queueSubmissions ) {
-			queueList( usbIrpImpList );
-		} else {
-			submissionCount += usbIrpImpList.size();
-			getUsbPipeOsImp().asyncSubmit( usbIrpImpList );
+			if ( queueSubmissions ) {
+				queueList( usbIrpImpList );
+			} else {
+				submissionCount += usbIrpImpList.size();
+				getUsbPipeOsImp().asyncSubmit( usbIrpImpList );
+			}
 		}
 	}
 
@@ -249,37 +261,39 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void abortAllSubmissions() throws UsbNotActiveException,UsbNotOpenException,UsbDisconnectedException
 	{
-		checkOpen();
+		synchronized (submitLock) {
+			checkOpen();
 
-		if (queueSubmissions) {
-			synchronized (abortLock) {
-				abortInProgress = true;
+			if (queueSubmissions) {
+				synchronized (abortLock) {
+					abortInProgress = true;
 
-				/* There is a difficult-to-prevent race condition after the queueManager
-				 * checks for abortInProgress and releases the abortLock, to until the
-				 * syncSumbit actually gets to the OS implementation, where this may
-				 * complete the OS imp level abort before the syncSubmit gets there,
-				 * and then that submission is stuck.  That cannot be worked around
-				 * without significant design change and help from the OS imp, which
-				 * isn't worth it - this sleep should be enough to prevent that (very rare)
-				 * race condition from happening.
-				 * FIXME - this could be fixed in the future, but may require an OS imp change.
-				 */
-				try { Thread.sleep(500); } catch ( InterruptedException iE ) { }
+					/* There is a difficult-to-prevent race condition after the queueManager
+					 * checks for abortInProgress and releases the abortLock, to until the
+					 * syncSumbit actually gets to the OS implementation, where this may
+					 * complete the OS imp level abort before the syncSubmit gets there,
+					 * and then that submission is stuck.  That cannot be worked around
+					 * without significant design change and help from the OS imp, which
+					 * isn't worth it - this sleep should be enough to prevent that (very rare)
+					 * race condition from happening.
+					 * FIXME - this could be fixed in the future, but may require an OS imp change.
+					 */
+					try { Thread.sleep(500); } catch ( InterruptedException iE ) { }
 
-				getUsbPipeOsImp().abortAllSubmissions();
+					getUsbPipeOsImp().abortAllSubmissions();
 
-				/* It's hard to coordinate safely/correctly with the queueManager
-				 * so (slow) spinning is easiest.
-				 */
-				while (0 < queueManager.getSize()) {
-					try { abortLock.wait(500); } catch ( InterruptedException iE ) { }
+					/* It's hard to coordinate safely/correctly with the queueManager
+					 * so (slow) spinning is easiest.
+					 */
+					while (0 < queueManager.getSize()) {
+						try { abortLock.wait(500); } catch ( InterruptedException iE ) { }
+					}
+
+					abortInProgress = false;
 				}
-
-				abortInProgress = false;
+			} else {
+				getUsbPipeOsImp().abortAllSubmissions();
 			}
-		} else {
-			getUsbPipeOsImp().abortAllSubmissions();
 		}
 	}
 
@@ -306,27 +320,29 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 * This is called after isComplete() is set to true.
 	 * @param irp The UsbIrpImp that completed.
 	 */
-	public synchronized void usbIrpImpComplete( UsbIrpImp irp )
+	public void usbIrpImpComplete( UsbIrpImp irp )
 	{
-		submissionCount--;
+		synchronized (completeLock) {
+			submissionCount--;
 
-		if (listTable.containsKey(irp)) {
-			List list = (List)listTable.get(irp);
-			/* Starting with the first UsbIrpImp in the list,
-			 * fire all consecutive that are complete.
-			 */
-			while (!list.isEmpty()) {
-				UsbIrpImp usbIrpImp = (UsbIrpImp)list.get(0);
-				if (usbIrpImp.isComplete()) {
-					list.remove(0);
-					listTable.remove(irp);
-					fireEvent(usbIrpImp);
-				} else {
-					break;
+			if (listTable.containsKey(irp)) {
+				List list = (List)listTable.get(irp);
+				/* Starting with the first UsbIrpImp in the list,
+				 * fire all consecutive that are complete.
+				 */
+				while (!list.isEmpty()) {
+					UsbIrpImp usbIrpImp = (UsbIrpImp)list.get(0);
+					if (usbIrpImp.isComplete()) {
+						list.remove(0);
+						listTable.remove(irp);
+						fireEvent(usbIrpImp);
+					} else {
+						break;
+					}
 				}
+			} else {
+				fireEvent(irp);
 			}
-		} else {
-			fireEvent(irp);
 		}
 	}
 
@@ -570,6 +586,9 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/** Disconnect this. */
 	void disconnect()
 	{
+		/* Stop the queueManager. */
+		queueManager.stop();
+
 		/* We could abortAllSubmissions, but we probably don't need to.
 		 * Any pending submissions should either be automatically aborted,
 		 * or remain pending - but their status is not (or should not be)
@@ -595,12 +614,15 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 */
 	protected RunnableManager queueManager = new RunnableManager(false);
 	protected boolean queueSubmissions = false;
-	protected Object abortLock = new Object();
 	protected boolean abortInProgress = false;
 
 	protected Hashtable listTable = new Hashtable();
 
 	protected int submissionCount = 0;
+
+	private Object submitLock = new Object();
+	private Object completeLock = new Object();
+	private Object abortLock = new Object();
 
 	//**************************************************************************
 	// Class constants

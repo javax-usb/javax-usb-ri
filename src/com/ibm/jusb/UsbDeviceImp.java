@@ -356,6 +356,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		disconnected = true;
 
 		listenerImp.usbDeviceDetached(new UsbDeviceEvent(this));
+
+		queueManager.stop();
 	}
 
 	/**
