@@ -218,8 +218,6 @@ public class RunnableManager
 		{
 			while (running || !list.isEmpty()) {
 				while (!list.isEmpty()) {
-					Object[] array = null;
-
 					/* For a large list (size > ~50000), this is amazingly faster
 					 * than pulling one at a time.
 					 */
@@ -249,6 +247,7 @@ public class RunnableManager
 			}
 		}
 
+		public Object[] array = null;
 		public Object lock = new Object();
 		public boolean running = false;
 		public List list = new ArrayList();
