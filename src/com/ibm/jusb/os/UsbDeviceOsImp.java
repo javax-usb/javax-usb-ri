@@ -39,10 +39,12 @@ public interface UsbDeviceOsImp
 	/**
 	 * Asynchronously submit a UsbControlIrpImp.
 	 * <p>
-	 * This should return as soon as possible.  If a UsbException is
-	 * thrown, no other action is required.  Otherwise, the UsbControlIrpImp is
-	 * accepted for processing.  The UsbControlIrpImp should then be handled the same as
-	 * {@link #syncSubmit(UsbControlIrpImp) single UsbControlIrpImp syncSubmit}.
+	 * This should return as soon as possible.	The implementation must perform
+	 * all actions specified in the
+	 * {@link com.ibm.jusb.UsbControlIrpImp UsbControlIrpImp's documentation}.  In addition,
+	 * if the UsbControlIrpImp is not accepted for processing (i.e. before returning from
+	 * this method), a UsbException should be thrown.  Otherwise (i.e. after returning
+	 * from this method) no UsbException can be thrown (but should be set on the UsbControlIrpImp).
 	 * @param controlUsbIrpImp The UsbControlIrpImp.
 	 * @throws UsbException If the submission was not accepted by the implementation.
 	 */
