@@ -27,23 +27,6 @@ public abstract class AbstractUsbServices implements UsbServices
 	/** @return The root UsbHubImp. */
 	public UsbHubImp getRootUsbHubImp() { return rootUsbHubImp; }
 
-	/**
-	 * Create a UsbIrp.
-	 * @return A UsbIrp ready for use.
-	 */
-	public UsbIrp createUsbIrp() { return new UsbIrpImp(); }
-
-	/**
-	 * Create a ControlUsbIrp.
-	 * @param bmRequestType The bmRequestType.
-	 * @param bRequest The bRequest.
-	 * @param wValue The wValue.
-	 * @param wIndex The wIndex.
-	 * @return A ControlUsbIrp ready for use.
-	 */
-	public ControlUsbIrp createControlUsbIrp(byte bmRequestType, byte bRequest, short wValue, short wIndex)
-	{ return new ControlUsbIrpImp(bmRequestType, bRequest, wValue, wIndex); }
-
 	/** @param listener The listener to add. */
 	public synchronized void addUsbServicesListener( UsbServicesListener listener )
 	{ listenerImp.addEventListener( listener ); }

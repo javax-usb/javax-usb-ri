@@ -181,6 +181,17 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	}
 
 	/**
+	 * Create a ControlUsbIrp.
+	 * @param bmRequestType The bmRequestType.
+	 * @param bRequest The bRequest.
+	 * @param wValue The wValue.
+	 * @param wIndex The wIndex.
+	 * @return A ControlUsbIrp ready for use.
+	 */
+	public ControlUsbIrp createControlUsbIrp(byte bmRequestType, byte bRequest, short wValue, short wIndex)
+	{ return new ControlUsbIrpImp(bmRequestType, bRequest, wValue, wIndex); }
+
+	/**
 	 * Indicate that a specific UsbIrpImp has completed.
 	 * @param irp The UsbIrpImp that completed.
 	 */
