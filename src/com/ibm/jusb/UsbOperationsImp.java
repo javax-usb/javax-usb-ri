@@ -55,6 +55,8 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 			requestImp = requestImpFactory.createRequestImp(request);
 		}
 
+		checkInterfaceClaimed(requestImp);
+
 		requestImp.setUsbDeviceImp(getUsbDeviceImp());
 
 		try {
@@ -87,6 +89,8 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 				requestImp = requestImpFactory.createRequestImp(request);
 			}
 
+			checkInterfaceClaimed(requestImp);
+
 			requestImp.setUsbDeviceImp(getUsbDeviceImp());
 			list.add(requestImp);
 		}
@@ -112,6 +116,8 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 		} catch ( ClassCastException ccE ) {
 			requestImp = requestImpFactory.createRequestImp(request);
 		}
+
+		checkInterfaceClaimed(requestImp);
 
 		requestImp.setUsbDeviceImp(getUsbDeviceImp());
 
@@ -388,6 +394,24 @@ public class UsbOperationsImp implements StandardOperations,VendorOperations,Cla
 
 	/** @return A RequestFactory */
 	protected RequestImpFactory getRequestImpFactory() { return requestImpFactory; }
+
+	/** Check if interface claimed (if applicable) */
+	protected void checkInterfaceClaimed(RequestImp request) throws RequestException
+	{
+		if (!request.isInterfaceRequest())
+			return;
+
+		boolean claimed = false;
+
+		try {
+				claimed = getUsbDeviceImp().getActiveUsbConfigImp().getUsbInterfaceImp((byte)request.getIndex()).isJavaClaimed();
+		} catch ( NotActiveException naE ) {
+			throw new RequestException( "NotActiveException while checking for claim of UsbInterface " + UsbUtil.unsignedInt((byte)request.getIndex()) + " : " + naE.getMessage(), naE );
+		}
+
+		if (!claimed)
+				throw new RequestException( "Can not submit Request to unclaimed UsbInterface " + UsbUtil.unsignedInt((byte)request.getIndex()) );
+	}
 
 	//**************************************************************************
 	// Instance variables
