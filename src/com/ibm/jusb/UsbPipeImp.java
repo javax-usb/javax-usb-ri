@@ -386,8 +386,12 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 		ArrayList newlist = new ArrayList();
 
 		/* if any of the UsbIrps are invalid, an exception is thrown */
-		for (int i=0; i<list.size(); i++)
-			newlist.add(usbIrpToUsbIrpImp((UsbIrp)list.get(i)));
+		try {
+			for (int i=0; i<list.size(); i++)
+				newlist.add(usbIrpToUsbIrpImp((UsbIrp)list.get(i)));
+		} catch ( ClassCastException ccE ) {
+			throw new IllegalArgumentException("The List contains a non-UsbIrp object.");
+		}
 
 		List delayEventList = (ArrayList)newlist.clone();
 
