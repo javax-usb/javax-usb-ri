@@ -23,6 +23,8 @@ import com.ibm.jusb.util.*;
  * <p>
  * This is the same as UsbIrpImp, except this contains Control-specific
  * setup packet information.
+ * <p>
+ * This does <i>not</i> extend {@link javax.usb.util.DefaultControlUsbIrp DefaultControlUsbIrp}.
  * @author Dan Streetman
  */
 public class ControlUsbIrpImp extends UsbIrpImp implements ControlUsbIrp
@@ -138,21 +140,6 @@ public class ControlUsbIrpImp extends UsbIrpImp implements ControlUsbIrp
 		return setupPacket;
 	}
 
-	/** @return The ControlUsbIrpImp.Completion */
-	protected ControlUsbIrpImp.Completion getControlCompletion()
-	{
-		try { return (ControlUsbIrpImp.Completion)getCompletion(); }
-		catch ( ClassCastException ccE ) { return null; }
-	}
-
-	/** Execute the Completion, if there is one. */
-	protected void executeCompletion()
-	{
-		try { getControlCompletion().usbIrpImpComplete(this); }
-		catch ( NullPointerException npE ) { /* No completion Runnable. */ }
-		catch ( Exception e ) { /* FIXME - should ignore all completion exceptions...? */ }
-	}
-
 	protected byte bmRequestType = 0x00;
 	protected byte bRequest = 0x00;
 	protected short wValue = 0x0000;
@@ -162,9 +149,4 @@ public class ControlUsbIrpImp extends UsbIrpImp implements ControlUsbIrp
 		UsbConst.REQUESTTYPE_DIRECTION_OUT | UsbConst.REQUESTTYPE_TYPE_STANDARD | UsbConst.REQUESTTYPE_RECIPIENT_DEVICE;
 	private static final byte REQUESTTYPE_SET_INTERFACE =
 		UsbConst.REQUESTTYPE_DIRECTION_OUT | UsbConst.REQUESTTYPE_TYPE_STANDARD | UsbConst.REQUESTTYPE_RECIPIENT_INTERFACE;
-
-	public static interface Completion extends UsbIrpImp.Completion
-	{
-		public void usbIrpImpComplete(ControlUsbIrpImp controlUsbIrpImp);
-	}
 }
