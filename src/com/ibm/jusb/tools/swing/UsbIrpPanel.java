@@ -33,11 +33,20 @@ public class UsbIrpPanel extends JPanel implements Cloneable
 		setLayout( new BorderLayout());
 
 		irpCheckBox.addChangeListener(irpListener);
+		lengthCheckBox.addChangeListener(lengthListener);
 		refreshButton.addActionListener(refreshListener);
 		clearButton.addActionListener(clearListener);
 
+		offsetField.setText("0");
+		lengthField.setText("0");
+		lengthCheckBox.setSelected(false);
+
 		packetOptionsPanel.add(syncCheckBox);
 		packetOptionsPanel.add(irpCheckBox);
+		packetOptionsPanel.add(offsetLabel);
+		packetOptionsPanel.add(offsetField);
+		packetOptionsPanel.add(lengthCheckBox);
+		packetOptionsPanel.add(lengthField);
 		packetOptionsPanel.add(acceptShortCheckBox);
 		
 		buttonPanel.add(refreshButton);
@@ -69,8 +78,8 @@ public class UsbIrpPanel extends JPanel implements Cloneable
 		if (irpCheckBox.isSelected()) {
 			DefaultUsbIrp irp = new DefaultUsbIrp();
 			irp.setData(lastData);
-			irp.setOffset(0);
-			irp.setLength(lastData.length);
+			irp.setOffset(getOffset());
+			irp.setLength(getLength(lastData));
 			irp.setAcceptShortPacket(acceptShortCheckBox.isSelected());
 			if (syncCheckBox.isSelected())
 				pipe.syncSubmit(irp);
@@ -110,6 +119,19 @@ public class UsbIrpPanel extends JPanel implements Cloneable
 		return data;
 	}
 
+	protected int getOffset()
+	{
+		return Integer.decode(offsetField.getText()).intValue();
+	}
+
+	protected int getLength(byte[] data)
+	{
+		if (lengthCheckBox.isSelected())
+			return Integer.decode(lengthField.getText()).intValue();
+		else
+			return data.length;
+	}
+
 	protected void refresh()
 	{
 		if (null == lastData)
@@ -127,10 +149,35 @@ public class UsbIrpPanel extends JPanel implements Cloneable
 		packetDataTextArea.setText("");
 	}
 
+	protected void irpSelectionChanged()
+	{
+		if (irpCheckBox.isSelected()) {
+			offsetField.setEnabled(true);
+			lengthCheckBox.setEnabled(true);
+			lengthField.setEnabled(lengthCheckBox.isSelected());
+			acceptShortCheckBox.setEnabled(true);
+		} else {
+			offsetField.setEnabled(false);
+			lengthCheckBox.setEnabled(false);
+			lengthField.setEnabled(false);
+			acceptShortCheckBox.setEnabled(false);
+		}
+	}
+
+	protected void lengthSelectionChanged()
+	{
+		if (irpCheckBox.isSelected())
+			lengthField.setEnabled(lengthCheckBox.isSelected());
+	}
+
 	private JPanel packetOptionsPanel = new JPanel();
 	protected JCheckBox syncCheckBox = new JCheckBox("Sync", true);
 	protected JCheckBox irpCheckBox = new JCheckBox("UsbIrp", true);
 	protected JCheckBox acceptShortCheckBox = new JCheckBox("AcceptShort", true);
+	private JLabel offsetLabel = new JLabel("Offset");
+	protected JTextField offsetField = new JTextField(4);
+	protected JCheckBox lengthCheckBox = new JCheckBox("Length", true);
+	protected JTextField lengthField = new JTextField(4);
 	private JPanel buttonPanel = new JPanel();
 	private JButton refreshButton = new JButton("Refresh");
 	private JButton clearButton = new JButton("Clear");
@@ -143,6 +190,8 @@ public class UsbIrpPanel extends JPanel implements Cloneable
 	private ActionListener clearListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { clear(); } };
 
 	private ChangeListener irpListener =
-		new ChangeListener() { public void stateChanged(ChangeEvent cE) { acceptShortCheckBox.setEnabled(irpCheckBox.isSelected()); } };
+		new ChangeListener() { public void stateChanged(ChangeEvent cE) { irpSelectionChanged(); } };
+	private ChangeListener lengthListener =
+		new ChangeListener() { public void stateChanged(ChangeEvent cE) { lengthSelectionChanged(); } };
 
 }

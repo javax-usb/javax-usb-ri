@@ -34,6 +34,12 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 		refreshButton.addActionListener(refreshListener);
 		clearButton.addActionListener(clearListener);
 
+		lengthCheckBox.addChangeListener(lengthListener);
+
+		offsetField.setText("0");
+		lengthField.setText("0");
+		lengthCheckBox.setSelected(false);
+
 		JPanel setupPacketPanel = new JPanel( new GridLayout(4,2,2,2));
 		setupPacketPanel.add(bmRequestTypeLabel);
 		setupPacketPanel.add(bmRequestTypeField);
@@ -48,12 +54,20 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 		panel.add(setupPacketPanel, BorderLayout.CENTER);
 		panel.setBorder(BorderFactory.createEmptyBorder(2,2,4,2));
 		
-		buttonPanel.add(syncCheckBox);
+		selectionPanel.add(syncCheckBox);
+		selectionPanel.add(syncCheckBox);
+		selectionPanel.add(offsetLabel);
+		selectionPanel.add(offsetField);
+		selectionPanel.add(lengthCheckBox);
+		selectionPanel.add(lengthField);
+		selectionPanel.add(acceptShortCheckBox);
+
 		buttonPanel.add(refreshButton);
 		buttonPanel.add(clearButton);
 
 		JPanel rightPanel = new JPanel(new BorderLayout());
 		
+		rightPanel.add(selectionPanel, BorderLayout.NORTH);
 		rightPanel.add(packetDataScroll, BorderLayout.CENTER);
 		rightPanel.add(buttonPanel, BorderLayout.SOUTH);
 		rightPanel.setBorder(BorderFactory.createEmptyBorder(2,2,3,2));
@@ -82,8 +96,9 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 		short wIndex = (short)Integer.decode(wIndexField.getText()).intValue();
 		DefaultControlUsbIrp controlUsbIrp = new DefaultControlUsbIrp(bmRequestType, bRequest, wValue, wIndex);
 		controlUsbIrp.setData(lastData);
-		controlUsbIrp.setOffset(0);
-		controlUsbIrp.setLength(lastData.length);
+		controlUsbIrp.setOffset(getOffset());
+		controlUsbIrp.setLength(getLength(lastData));
+		controlUsbIrp.setAcceptShortPacket(acceptShortCheckBox.isSelected());
 
 		if (syncCheckBox.isSelected())
 			device.syncSubmit(controlUsbIrp);
@@ -117,6 +132,19 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 		return data;
 	}
 
+	protected int getOffset()
+	{
+		return Integer.decode(offsetField.getText()).intValue();
+	}
+
+	protected int getLength(byte[] data)
+	{
+		if (lengthCheckBox.isSelected())
+			return Integer.decode(lengthField.getText()).intValue();
+		else
+			return data.length;
+	}
+
 	protected void refresh()
 	{
 		if (null == lastData)
@@ -134,8 +162,18 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 		packetDataTextArea.setText("");
 	}
 
+	protected void lengthSelectionChanged()
+	{
+	}
+
 	private JPanel packetOptionsPanel = new JPanel();
 	protected JCheckBox syncCheckBox = new JCheckBox("Sync", true);
+	private JLabel offsetLabel = new JLabel("Offset");
+	protected JTextField offsetField = new JTextField(4);
+	protected JCheckBox lengthCheckBox = new JCheckBox("Length", true);
+	protected JTextField lengthField = new JTextField(4);
+	protected JCheckBox acceptShortCheckBox = new JCheckBox("AcceptShort", true);
+	private JPanel selectionPanel = new JPanel();
 	private JPanel buttonPanel = new JPanel();
 	private Vector requestTypeVector = new Vector();
 	private Box bmRequestTypeBox = new Box(BoxLayout.X_AXIS);
@@ -164,4 +202,6 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 	private ActionListener refreshListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { refresh(); } };
 	private ActionListener clearListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { clear(); } };
 
+	private ChangeListener lengthListener =
+		new ChangeListener() { public void stateChanged(ChangeEvent cE) { lengthSelectionChanged(); } };
 }
