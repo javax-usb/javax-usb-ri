@@ -12,6 +12,8 @@ package com.ibm.jusb;
 import javax.usb.*;
 import javax.usb.util.*;
 
+import com.ibm.jusb.os.*;
+
 /**
  * UsbHub implementation.
  * <p>
@@ -22,13 +24,21 @@ import javax.usb.util.*;
 public class UsbHubImp extends UsbDeviceImp implements UsbHub
 {
 	/** Constructor */
-	public UsbHubImp( ) { this( 1 ); }
+	public UsbHubImp(UsbDeviceOsImp device) { this( 1, device ); }
 
 	/**
 	 * Constructor
+	 * <p>
+	 * The parameters may be passed null,
+	 * but they must be set using their setter before using this.
 	 * @param ports The initial number of ports.
+	 * @param device The platform device implementation.
 	 */
-	public UsbHubImp( int ports ) { resize( ports ); }
+	public UsbHubImp( int ports, UsbDeviceOsImp device )
+	{
+		super(device);
+		resize( ports );
+	}
 
 	//**************************************************************************
 	// Public methods

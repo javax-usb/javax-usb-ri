@@ -20,13 +20,8 @@ public class UsbEndpointImp extends AbstractUsbInfo implements UsbEndpoint
 {
 	/**
 	 * Constructor.
-	 * <p>
-	 * The UsbInterfaceImp must be {@link #setUsbInterfaceImp(UsbInterfaceImp) set} before use.
-	 */
-    public UsbEndpointImp( ) { }
-
-	/**
-	 * Constructor.
+	 * The parameters can be passed null,
+	 * but they must be set using their setter before using this.
 	 * @param iface The parent interface.
 	 */
 	public UsbEndpointImp( UsbInterfaceImp iface ) { setUsbInterfaceImp(iface); }

@@ -12,6 +12,8 @@ package com.ibm.jusb;
 import javax.usb.*;
 import javax.usb.util.*;
 
+import com.ibm.jusb.os.*;
+
 /**
  * UsbRootHub implementation.
  * @author Dan Streetman
@@ -19,14 +21,15 @@ import javax.usb.util.*;
  */
 public class UsbRootHubImp extends UsbHubImp implements UsbRootHub
 {
-	/** Constructor */
-    public UsbRootHubImp() { super(); }
-
 	/**
 	 * Constructor
+	 * <p>
+	 * The parameters may be passed null,
+	 * but they must be set using their setter before using this.
 	 * @param ports The initial number of ports.
+	 * @param device The platform device implementation.
 	 */
-    public UsbRootHubImp( int ports ) { super( ports ); }
+	public UsbRootHubImp( int ports, UsbDeviceOsImp device ) { super(ports,device); }
 
     /** @return true if this is the root hub */
     public boolean isUsbRootHub() { return true;  }

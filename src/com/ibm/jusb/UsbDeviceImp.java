@@ -20,6 +20,8 @@ import com.ibm.jusb.os.*;
 
 /**
  * UsbDevice platform-independent implementation.
+ * <p>
+ * To connect this to the topology tree, use the {@link #connect(UsbHubImp,byte) connect()} method.
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */
@@ -28,13 +30,11 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 	/**
 	 * Constructor.
 	 * <p>
-	 * The UsbDeviceOsImp must be {@link #setUsbDeviceOsImp(UsbDeviceOsImp) set} before
-	 * connecting this device to the topology tree.
-	 */
-	public UsbDeviceImp() {}
-
-	/**
-	 * Constructor.
+	 * The parameters may be passed null,
+	 * but they must be set using their setter before using this.
+	 * <p>
+	 * This can be connected to the topology, after all fields are set, by
+	 * using the {@link #connect(UsbHubImp,byte) connect} method.
 	 * @param device The UsbDeviceOsImp.
 	 */
 	public UsbDeviceImp(UsbDeviceOsImp device) { setUsbDeviceOsImp(device); }
@@ -321,6 +321,18 @@ public class UsbDeviceImp extends AbstractUsbInfo implements UsbDevice
 
 	/** @param the configuration to add */
 	public void addUsbConfig( UsbConfig config ) { configs.addUsbInfo( config ); }
+
+	/**
+	 * Connect to the parent UsbHubImp.
+	 * @param hub The parent.
+	 * @param portNumber The port on the parent this is connected to.
+	 */
+	public void connect(UsbHubImp hub, byte portNumber) throws UsbException
+	{
+		hub.addUsbDeviceImp( this, portNumber );
+
+		setUsbPortImp(hub.getUsbPortImp(portNumber));
+	}
 
 	/**
 	 * Disconnect UsbDeviceImp.

@@ -18,7 +18,7 @@ import javax.usb.util.UsbInfoToStringV;
  * @author Dan Streetman
  * @version 0.0.1 (JDK 1.1.x)
  */
-public abstract class AbstractUsbInfo extends Object implements UsbInfo
+public abstract class AbstractUsbInfo implements UsbInfo
 {
     //-------------------------------------------------------------------------
     // Public methods

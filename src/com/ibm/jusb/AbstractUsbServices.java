@@ -166,9 +166,9 @@ public abstract class AbstractUsbServices extends Object implements UsbServices
 	 * Virtual Root Hub implementation.
 	 * @author Dan Streetman
 	 */
-	public class VirtualRootHubImp extends UsbRootHubImp implements UsbRootHub
-	{
+	//public class VirtualRootHubImp extends UsbRootHubImp implements UsbRootHub
+	//{
 
-	}
+	//}
 
 }

@@ -22,13 +22,8 @@ public class UsbConfigImp extends AbstractUsbInfo implements UsbConfig
 	/**
 	 * Constructor.
 	 * <p>
-	 * The UsbDeviceImp must be {@link #setUsbDeviceImp(UsbDeviceImp) set}
-	 * before use.
-	 */
-	public UsbConfigImp() { }
-
-	/**
-	 * Constructor.
+	 * The parameters can be passed null,
+	 * but they must be set using their setter before using this.
 	 * @param device The parent device.
 	 */
 	public UsbConfigImp( UsbDeviceImp device ) { setUsbDeviceImp( device ); }
