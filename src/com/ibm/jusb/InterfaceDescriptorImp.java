@@ -13,16 +13,36 @@ import javax.usb.*;
 import javax.usb.util.UsbUtil;
 
 /**
- * Concrete class implementing the InterfaceDescriptor interface
+ * InterfaceDescriptor implementation.
  * @author E. Michael Maximilien
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
  */
-class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDescriptor
+public class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDescriptor
 {
-    //-------------------------------------------------------------------------
-    // USB descriptor specific public method
-    //
+	/**
+	 * Constructor.
+	 * @param len Descriptor length.
+	 * @param type Descriptor type.
+	 * @param iNum Interface number.
+	 * @param alt Alternate setting number.
+	 * @param nEps Number of endpoints.
+	 * @param iClass Interface Class.
+	 * @param iSubClass Interface SubClass.
+	 * @param iProto Interface protocol.
+	 * @param iInd Interface index.
+	 */
+	public InterfaceDescriptorImp( byte len, byte type, byte iNum, byte alt, byte nEps, byte iClass, byte iSubClass, byte iProto, byte iInd )
+	{
+		setLength(len);
+		setType(type);
+		setInterfaceNumber(iNum);
+		setAlternateSetting(alt);
+		setNumEndpoints(nEps);
+		setInterfaceClass(iClass);
+		setInterfaceSubClass(iSubClass);
+		setInterfaceProtocol(iProto);
+		setInterfaceIndex(iInd);
+	}
 
     /** @return the interface number */
     public byte getInterfaceNumber() { return interfaceNumber; }
@@ -68,26 +88,18 @@ class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDesc
 		return b;
 	}
 
-    //-------------------------------------------------------------------------
-    // Public accept method for the Visitor pattern
-    //
-
     /**
      * Accepts a DescriptorVisitor objects
      * @param visitor the DescriptorVisitor object
      */
     public void accept( DescriptorVisitor visitor ) { visitor.visitInterfaceDescriptor( this ); }
 
-    //-------------------------------------------------------------------------
-    // Protected and package methods
-    //
-
     /**
      * Sets this descriptor's interfaceNumber value
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setInterfaceNumber( byte b )
+    public void setInterfaceNumber( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -99,7 +111,7 @@ class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDesc
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setAlternateSetting( byte b )
+    public void setAlternateSetting( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -111,7 +123,7 @@ class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDesc
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setNumEndpoints( byte b )
+    public void setNumEndpoints( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -123,7 +135,7 @@ class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDesc
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setInterfaceClass( byte b )
+    public void setInterfaceClass( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -135,7 +147,7 @@ class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDesc
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setInterfaceSubClass( byte b )
+    public void setInterfaceSubClass( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -147,7 +159,7 @@ class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDesc
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setInterfaceProtocol( byte b )
+    public void setInterfaceProtocol( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -159,7 +171,7 @@ class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDesc
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setInterfaceIndex( byte b )
+    public void setInterfaceIndex( byte b )
     {
         //May need to do some pre-condition checks here
 

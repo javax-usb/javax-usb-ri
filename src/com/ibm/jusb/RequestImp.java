@@ -24,14 +24,26 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	/** @return the bmRequestType bitmap byte for this Request */
 	public byte getRequestType() { return bmRequestType; }
 
+	/** @param type the bmRequestType bitmap byte for this Request */
+	public void setRequestType(byte type) { bmRequestType = type; }
+
 	/** @return the Request code byte for this request */
 	public byte getRequest() { return request; }
+
+	/** @param r the Request code byte for this request */
+	public void setRequest(byte r) { request = r; }
 
 	/** @return the wValue for this request */
 	public short getValue() { return wValue; }
 
+	/** @param v the wValue for this request */
+	public void setValue(short v) { wValue = v; }
+
 	/** @return the wIndex for this request */
 	public short getIndex() { return wIndex; }
+
+	/** @param i the wIndex for this request */
+	public void setIndex(short i) { wIndex = i; }
 
 	/** @return the length of the <i>data</i> (not including setup bytes) for this request. */
 	public short getLength() { return (short)data.length; }
@@ -39,8 +51,14 @@ public class RequestImp implements Request,UsbOperations.SubmitResult
 	/** @return the length of valid data */
 	public int getDataLength() { return dataLength; }
 
+	/** @param len the length of valid data */
+	public void setDataLength(int len) { dataLength = len; }
+
 	/** @return the data byte[] for this request */
 	public byte[] getData() { return data; }
+
+	/** @param d the data byte[] for this request */
+	public void setData(byte[] d) { data = d; }
 
 	/** @return a formated byte[] representing this Request object */
 	public byte[] toBytes()

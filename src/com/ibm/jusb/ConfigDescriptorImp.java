@@ -13,16 +13,35 @@ import javax.usb.*;
 import javax.usb.util.*;
 
 /**
- * Concrete class implementing the ConfigDescriptor interface
+ * ConfigDescriptor implementation.
  * @author E. Michael Maximilien
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
  */
-class ConfigDescriptorImp extends AbstractDescriptor implements ConfigDescriptor
+public class ConfigDescriptorImp extends AbstractDescriptor implements ConfigDescriptor
 {
-    //-------------------------------------------------------------------------
-    // USB descriptor specific public method
-    //
+	/**
+	 * Constructor.
+	 * @param len Descriptor length.
+	 * @param type Descriptor type.
+	 * @param numI Number of interfaces.
+	 * @param cVal The ConfigValue.
+	 * @param cInd The ConfigIndex.
+	 * @param attr The attributes.
+	 * @param mPwr The max power.
+	 */
+	public ConfigDescriptorImp( byte len, byte type, byte numI, byte cVal, byte cInd, byte attr, byte mPwr )
+	{
+		setLength(len);
+		setType(type);
+		setNumInterfaces(numI);
+		setConfigValue(cVal);
+		setConfigIndex(cInd);
+		setAttributes(attr);
+		setMaxPower(mPwr);
+	}
+
+	//**************************************************************************
+	// Public methods
 
     /** @return the total lenght returned for this configuration */
     public short getTotalLength() { return totalLength; }
@@ -68,28 +87,18 @@ class ConfigDescriptorImp extends AbstractDescriptor implements ConfigDescriptor
 		return b;
 	}
 
-		
-
-    //-------------------------------------------------------------------------
-    // Public accept method for the Visitor pattern
-    //
-
     /**
      * Accepts a DescriptorVisitor objects
      * @param visitor the DescriptorVisitor object
      */
     public void accept( DescriptorVisitor visitor ) { visitor.visitConfigDescriptor( this ); }
 
-    //-------------------------------------------------------------------------
-    // Protected and package methods
-    //
-
     /**
      * Sets this descriptor's totalLength value
      * @param w the word (i.e. short) argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setTotalLength( short w )
+    public void setTotalLength( short w )
     {
 		int len = UsbUtil.unsignedInt( w );
         if( len < 1 ) throw new IllegalArgumentException( "Illegal ConfigDescriptor.totalLength value = " + len );
@@ -102,7 +111,7 @@ class ConfigDescriptorImp extends AbstractDescriptor implements ConfigDescriptor
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setNumInterfaces( byte b )
+    public void setNumInterfaces( byte b )
     {
 		int n = UsbUtil.unsignedInt( b );
         if( n < 0 ) throw new IllegalArgumentException( "Illegal ConfigDescriptor.numInterfaces value = " + n );
@@ -115,7 +124,7 @@ class ConfigDescriptorImp extends AbstractDescriptor implements ConfigDescriptor
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setConfigValue( byte b )
+    public void setConfigValue( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -127,7 +136,7 @@ class ConfigDescriptorImp extends AbstractDescriptor implements ConfigDescriptor
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setConfigIndex( byte b )
+    public void setConfigIndex( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -139,7 +148,7 @@ class ConfigDescriptorImp extends AbstractDescriptor implements ConfigDescriptor
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setAttributes( byte b )
+    public void setAttributes( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -151,7 +160,7 @@ class ConfigDescriptorImp extends AbstractDescriptor implements ConfigDescriptor
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setMaxPower( byte b )
+    public void setMaxPower( byte b )
     {
         //May need to do some pre-condition checks here
 

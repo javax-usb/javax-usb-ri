@@ -13,16 +13,24 @@ import javax.usb.*;
 import javax.usb.util.UsbUtil;
 
 /**
- * Concrete class implementing the StringDescriptor interface
+ * StringDescriptor implementation.
  * @author E. Michael Maximilien
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
  */
-class StringDescriptorImp extends AbstractDescriptor implements StringDescriptor
+public class StringDescriptorImp extends AbstractDescriptor implements StringDescriptor
 {
-    //-------------------------------------------------------------------------
-    // USB descriptor specific public method
-    //
+	/**
+	 * Constructor.
+	 * @param len Descriptor length.
+	 * @param type Descriptor type.
+	 * @param string String.
+	 */
+	public StringDescriptorImp( byte len, byte type, String string )
+	{
+		setLength(len);
+		setType(type);
+		setString(string);
+	}
 
     /** @return the UNICODE encoded string for this descriptor */
     public String getString() { return string; }
@@ -52,25 +60,17 @@ class StringDescriptorImp extends AbstractDescriptor implements StringDescriptor
 		return b;
 	}
 
-    //-------------------------------------------------------------------------
-    // Public accept method for the Visitor pattern
-    //
-
     /**
      * Accepts a DescriptorVisitor objects
      * @param visitor the DescriptorVisitor object
      */
     public void accept( DescriptorVisitor visitor ) { visitor.visitStringDescriptor( this ); }
 
-    //-------------------------------------------------------------------------
-    // Protected and package methods
-    //
-
     /**
      * Sets this descriptor's String value
      * @param s the String argument
      */
-    void setString( String s ) 
+    public void setString( String s ) 
     {
         string = ( null == s ? "" : s );
     }

@@ -16,40 +16,21 @@ import javax.usb.util.UsbUtil;
  * Abstract super-class for all USB descriptors
  * @author E. Michael Maximilien
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
  */
-public abstract class AbstractDescriptor extends Object implements Descriptor
+public abstract class AbstractDescriptor implements Descriptor
 {
-    //-------------------------------------------------------------------------
-    // USB descriptor specific public method
-    //
-
     /** @return the length of this descriptor */
     public byte getLength() { return length; }
 
     /** @return the type of this descriptor */
     public byte getType() { return type; }
 
-    //-------------------------------------------------------------------------
-    // Public abstract methods
-    //
-
-    /**
-     * Accepts a DescriptorVisitor objects
-     * @param visitor the DescriptorVisitor object
-     */
-    public abstract void accept( DescriptorVisitor visitor );
-
-    //-------------------------------------------------------------------------
-    // Protected and package methods
-    //
-
-    /**
+	/**
      * Sets this descriptor's length
      * @param b the > 0 lenght
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setLength( byte b ) 
+    public void setLength( byte b ) 
     {
         //Precondition check
 		int len = UsbUtil.unsignedInt( b );
@@ -64,12 +45,18 @@ public abstract class AbstractDescriptor extends Object implements Descriptor
      * @param b the type of this descriptor (see constants)
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setType( byte b ) throws IllegalArgumentException
+    public void setType( byte b ) throws IllegalArgumentException
     {
         //May need to do some validation or checking
 
         type = b;
     }
+
+    /**
+     * Accepts a DescriptorVisitor objects
+     * @param visitor the DescriptorVisitor object
+     */
+    public abstract void accept( DescriptorVisitor visitor );
 
     //-------------------------------------------------------------------------
     // Instance variables

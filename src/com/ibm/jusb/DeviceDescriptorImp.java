@@ -13,16 +13,48 @@ import javax.usb.*;
 import javax.usb.util.UsbUtil;
 
 /*
- * Concrete class implementing the DeviceDescriptor interface
+ * DeviceDescriptor implementation.
  * @author E. Michael Maximilien
  * @author Dan Streetman
- * @version 1.0.0
  */
-class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
+public class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
 {
-    //-------------------------------------------------------------------------
-    // USB descriptor specific public method
-    //
+	/**
+	 * Constructor.
+	 * @param len Descriptor length.
+	 * @param type Descriptor type.
+	 * @param dClass Device class.
+	 * @param dSubClass Device SubClass.
+	 * @param dProto Device Protocol.
+	 * @param mSize Max packet size.
+	 * @param mInd Manufacturer index.
+	 * @param pInd Product index.
+	 * @param snInd Serialnumber index.
+	 * @param nConfigs Number of configs.
+	 * @param vID Vendor ID.
+	 * @param pID Product ID.
+	 * @param bcdDev Device Binary Coded Decimal number.
+	 * @param bcdUsb USB Binary Coded Decimal number.
+	 */
+	public DeviceDescriptorImp( byte len, byte type, byte dClass, byte dSubClass,
+								byte dProto, byte mSize, byte mInd, byte pInd, byte snInd,
+								byte nConfigs, short vID, short pID, short bcdDev, short bcdUsb )
+	{
+		setLength(len);
+		setType(type);
+		setDeviceClass(dClass);
+		setDeviceSubClass(dSubClass);
+		setDeviceProtocol(dProto);
+		setMaxPacketSize(mSize);
+		setManufacturerIndex(mInd);
+		setProductIndex(pInd);
+		setSerialNumberIndex(snInd);
+		setNumConfigs(nConfigs);
+		setVendorId(vID);
+		setProductId(pID);
+		setBcdDevice(bcdDev);
+		setBcdUsb(bcdUsb);
+	}
 
     /** @return a binary coded decimal for the level of USB supported by this spec */
     public short getBcdUsb() { return bcdUsb; }
@@ -92,25 +124,17 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
 		return b;
 	}
 
-    //-------------------------------------------------------------------------
-    // Public accept method for the Visitor pattern
-    //
-
     /**
      * Accepts a DescriptorVisitor objects
      * @param visitor the DescriptorVisitor object
      */
     public void accept( DescriptorVisitor visitor ) { visitor.visitDeviceDescriptor( this ); }
 
-    //-------------------------------------------------------------------------
-    // Protected and package methods
-    //
-
     /**
      * Sets the BcdUsb value
      * @param s the short value
      */
-    void setBcdUsb( short s )
+    public void setBcdUsb( short s )
     {
         //May need to do some pre-condition checks
 
@@ -121,7 +145,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Sets the device class for this descriptor
      * @param b the byte device class code
      */
-    void setDeviceClass( byte b )
+    public void setDeviceClass( byte b )
     {
         //May need to do some pre-condition checks
 
@@ -132,7 +156,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Sets the device sub-class for this descriptor
      * @param b the byte code for the device sub-class
      */
-    void setDeviceSubClass( byte b )
+    public void setDeviceSubClass( byte b )
     {
         //May need to do some pre-condition checks
 
@@ -143,7 +167,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Sets the protocol for this descriptor
      * @param b the byte code for this descriptor protocol
      */
-    void setDeviceProtocol( byte  b )
+    public void setDeviceProtocol( byte  b )
     {
         //May need to do some pre-condition checks
 
@@ -154,7 +178,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Sets the max packet size for this descriptor
      * @param b the byte code for the max packet size
      */
-    void setMaxPacketSize( byte b )
+    public void setMaxPacketSize( byte b )
     {
         //May need to do some pre-condition checks
 
@@ -165,7 +189,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Sets the vendorId for the device that will accept this descriptor
      * @param w the word vendor ID code
      */
-    void setVendorId( short w )
+    public void setVendorId( short w )
     {
         //May need to do some pre-condition checks
 
@@ -176,7 +200,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Sets the product Id of the device that will accept this descritor
      * @param w the product ID word
      */
-    void setProductId( short w )
+    public void setProductId( short w )
     {
         //May need to do some pre-condition checks
 
@@ -188,7 +212,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * @param s the short value
      * NOTE: may need to make this a byte[] instead (TBD)
      */
-    void setBcdDevice( short s )
+    public void setBcdDevice( short s )
     {
         //May need to do some pre-condition checks
 
@@ -199,7 +223,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Sets the manufacturerIndex for this descriptor
      * @param b the manufacturerIndex code
      */
-    void setManufacturerIndex( byte b )
+    public void setManufacturerIndex( byte b )
     {
         //May need to do some pre-condition checks
 
@@ -210,7 +234,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Sets the productIndex for this descritptor
      * @param b the productIndex value
      */
-    void setProductIndex( byte b )
+    public void setProductIndex( byte b )
     {
         //May need to do some pre-condition checks
 
@@ -221,7 +245,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Set the serialNumberIndex for this descriptor
      * @param b the serialNumberIndex value
      */
-    void setSerialNumberIndex( byte b )
+    public void setSerialNumberIndex( byte b )
     {
         //May need to do some pre-condition checks
         
@@ -232,7 +256,7 @@ class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
      * Sets the number of config for the device that will accept this descriptor
      * @param b the number of config
      */
-    void setNumConfigs( byte b )
+    public void setNumConfigs( byte b )
     {
         //May need to do some pre-condition checks
 

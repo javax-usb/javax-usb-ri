@@ -13,16 +13,30 @@ import javax.usb.*;
 import javax.usb.util.UsbUtil;
 
 /**
- * Concrete class implementing the EndpointDescriptor interface
+ * EndpointDescriptor implementation.
  * @author E. Michael Maximilien
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
  */
-class EndpointDescriptorImp extends AbstractDescriptor implements EndpointDescriptor
+public class EndpointDescriptorImp extends AbstractDescriptor implements EndpointDescriptor
 {
-    //-------------------------------------------------------------------------
-    // USB descriptor specific public method
-    //
+	/**
+	 * Constructor.
+	 * @param len Descriptor length.
+	 * @param type Descriptor type.
+	 * @param addr Endpoint address.
+	 * @param attr Attributes.
+	 * @param ival Interval.
+	 * @param mSize Max packet size.
+	 */
+	public EndpointDescriptorImp( byte len, byte type, byte addr, byte attr, byte ival, short mSize )
+	{
+		setLength(len);
+		setType(type);
+		setEndpointAddress(addr);
+		setAttributes(attr);
+		setInterval(ival);
+		setMaxPacketSize(mSize);
+	}
 
     /** @return the address of the endpoint on the USB device described by this descriptor */
     public byte getEndpointAddress() { return endpointAddress; }
@@ -61,26 +75,18 @@ class EndpointDescriptorImp extends AbstractDescriptor implements EndpointDescri
 		return b;
 	}
 
-    //-------------------------------------------------------------------------
-    // Public accept method for the Visitor pattern
-    //
-
     /**
      * Accepts a DescriptorVisitor objects
      * @param visitor the DescriptorVisitor object
      */
     public void accept( DescriptorVisitor visitor ) { visitor.visitStringDescriptor( this ); }
 
-    //-------------------------------------------------------------------------
-    // Protected and package methods
-    //
-
     /**
      * Sets this descriptor's endpointAddress
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setEndpointAddress( byte b )
+    public void setEndpointAddress( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -92,7 +98,7 @@ class EndpointDescriptorImp extends AbstractDescriptor implements EndpointDescri
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setAttributes( byte b )
+    public void setAttributes( byte b )
     {
         //May need to do some pre-condition checks here
 
@@ -104,7 +110,7 @@ class EndpointDescriptorImp extends AbstractDescriptor implements EndpointDescri
      * @param w the word (i.e. short) argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setMaxPacketSize( short w )
+    public void setMaxPacketSize( short w )
     {
         //May need to do some pre-condition checks here
 
@@ -116,7 +122,7 @@ class EndpointDescriptorImp extends AbstractDescriptor implements EndpointDescri
      * @param b the byte argument
      * @exception java.lang.IllegalArgumentException for a bad argument
      */
-    void setInterval( byte b )
+    public void setInterval( byte b )
     {
         //May need to do some pre-condition checks here
 

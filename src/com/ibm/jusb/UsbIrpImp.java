@@ -17,13 +17,8 @@ import javax.usb.event.*;
 import com.ibm.jusb.util.*;
 
 /**
- * Defines a Recyclable Usb IRP (I/O Request Packet).
- * <p>
- * The platform implementation is responsible for handling this object,
- * including firing events, (re)setting variables, notifying waiting Threads, etc.
- * The UsbPipe will take no action on any UsbIrps passed through it.
+ * UsbIrp implementation.
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
  */
 public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 {
@@ -116,57 +111,6 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	/** @return the UsbException that occured during submission */
 	public UsbException getUsbException() { return usbException; }
 
-	/** @return if this should be automatically resubmitted */
-	public boolean getResubmit() { return resubmit; }
-
-	/** @param resubmit if this should be automatically resubmitted */
-	public void setResubmit( boolean resubmit ) { this.resubmit = resubmit; }
-
-	/**
-	 * Get the ResubmitDataCommand currently in use.
-	 * @return the ResubmitDataCommand in use (or null)
-	 */
-	public UsbIrp.ResubmitDataCommand getResubmitDataCommand() { return resubmitDataCommand; }
-
-	/**
-	 * Set the ResubmitDataCommand to use.
-	 * @param command the ResubmitDataCommand to use.
-	 */
-	public void setResubmitDataCommand( UsbIrp.ResubmitDataCommand command )
-	{
-		resubmitDataCommand = null == command ? DEFAULT_RESUBMIT_DATA_COMMAND : command;
-	}
-
-	/**
-	 * Get the ResubmitErrorCommand currently in use.
-	 * @return the ResubmitErrorCommand in use.
-	 */
-	public UsbIrp.ResubmitErrorCommand getResubmitErrorCommand() { return resubmitErrorCommand; }
-
-	/**
-	 * Set the ResubmitErrorCommand to use.
-	 * @param command the ResubmitErrorCommand to use.
-	 */
-	public void setResubmitErrorCommand( UsbIrp.ResubmitErrorCommand command )
-	{
-		resubmitErrorCommand = null == command ? DEFAULT_RESUBMIT_ERROR_COMMAND : command;
-	}
-
-	/**
-	 * Get the EventCommand currently in use.
-	 * @return the EventCommand currently in use.
-	 */
-	public UsbIrp.EventCommand getEventCommand() { return eventCommand; }
-
-	/**
-	 * Set the EventCommand currently in use.
-	 * @param the EventCommand to use.
-	 */
-	public void setEventCommand( UsbIrp.EventCommand command )
-	{
-		eventCommand = null == command ? DEFAULT_EVENT_COMMAND : command;
-	}
-
 	/**
 	 * @return if a short packet during this submission should be accepted (no error)
 	 */
@@ -193,15 +137,8 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 		setCompleted( DEFAULT_COMPLETED );
 		setUsbException( DEFAULT_USB_EXCEPTION );
 		setDataLength( DEFAULT_DATA_LENGTH );
-		setResubmit( DEFAULT_RESUBMIT );
 		setAcceptShortPacket( DEFAULT_ACCEPT_SHORT_PACKET );
 
-		setPreSubmissionTask( DEFAULT_PRE_TASK );
-		setPostSubmissionTask( DEFAULT_POST_TASK );
-
-		setResubmitDataCommand( DEFAULT_RESUBMIT_DATA_COMMAND );
-		setResubmitErrorCommand( DEFAULT_RESUBMIT_ERROR_COMMAND );
-		setEventCommand( DEFAULT_EVENT_COMMAND );
 	}
 
 	/**
@@ -265,55 +202,6 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	 */
 	public void setUsbException( UsbException exception ) { usbException = exception; }
 
-	/**
-	 * Get the pre-submission Task.
-	 * <p>
-	 * This will never return null, instead a 'null' Task that does nothing is returned.
-	 * <p>
-	 * By default, this is a null (do nothing) Task -
-	 * the platform implementation is responsible for setting up
-	 * all pre-tasks that should occur, and for calling those tasks.
-	 * @return the preTask
-	 */
-	public UsbIrpImp.Task getPreSubmissionTask() { return preTask; }
-
-	/**
-	 * Set the pre-submission Task to use.
-	 * <p>
-	 * If the provided Task is null, a 'null' Task (that does nothing) will be used instead.
-	 * @param the preTask to use
-	 */
-	public void setPreSubmissionTask( UsbIrpImp.Task task )
-	{
-		preTask = null == task ? DEFAULT_PRE_TASK : task;
-	}
-
-	/**
-	 * Get the post-submission Task.
-	 * <p>
-	 * This will never return null, instead a 'null' Task that does nothing is returned.
-	 * <p>
-	 * By default, this is a null (do nothing) Task -
-	 * the platform implementation is responsible for setting up
-	 * all post-tasks that should occur, and for calling those tasks.
-	 * <p>
-	 * This is a good way for the platform implementation to handle things such as
-	 * firing events, notifying waiters, resubmitting, etc.
-	 * @return the postTask.
-	 */
-	public UsbIrpImp.Task getPostSubmissionTask() { return postTask; }
-
-	/**
-	 * Set the post-submission Task to use.
-	 * <p>
-	 * If the provided Task is null, a 'null' Task (that does nothing) will be used instead.
-	 * @param the postTask to use.
-	 */
-	public void setPostSubmissionTask( UsbIrpImp.Task task )
-	{
-		postTask = null == task ? DEFAULT_POST_TASK : task;
-	}
-
 	//*************************************************************************
 	// Instance variables
 
@@ -326,17 +214,9 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	private byte[] data = DEFAULT_DATA;
 	private boolean active = DEFAULT_ACTIVE;
 	private boolean completed = DEFAULT_COMPLETED;
-	private boolean resubmit = DEFAULT_RESUBMIT;
 	private boolean acceptShortPacket = DEFAULT_ACCEPT_SHORT_PACKET;
 	private int dataLength = DEFAULT_DATA_LENGTH;
 	private UsbException usbException = DEFAULT_USB_EXCEPTION;
-
-	private UsbIrpImp.Task preTask = DEFAULT_PRE_TASK;
-	private UsbIrpImp.Task postTask = DEFAULT_POST_TASK;
-
-	private UsbIrp.ResubmitDataCommand resubmitDataCommand = DEFAULT_RESUBMIT_DATA_COMMAND;
-	private UsbIrp.ResubmitErrorCommand resubmitErrorCommand = DEFAULT_RESUBMIT_ERROR_COMMAND;
-	private UsbIrp.EventCommand eventCommand = DEFAULT_EVENT_COMMAND;
 
 	private RecycleFactory factory = null;
 
@@ -349,58 +229,8 @@ public class UsbIrpImp implements UsbIrp,UsbPipe.SubmitResult,Recyclable
 	private static final byte[] DEFAULT_DATA = new byte[0];
 	private static final boolean DEFAULT_ACTIVE = false;
 	private static final boolean DEFAULT_COMPLETED = false;
-	private static final boolean DEFAULT_RESUBMIT = false;
 	private static final boolean DEFAULT_ACCEPT_SHORT_PACKET = true;
 	private static final int DEFAULT_DATA_LENGTH = -1;
 	private static final UsbException DEFAULT_USB_EXCEPTION = null;
-
-	private static final UsbIrpImp.Task DEFAULT_PRE_TASK = new UsbIrpImp.Task()
-	{ public void execute( UsbIrpImp irp ) { } };
-
-	private static final UsbIrpImp.Task DEFAULT_POST_TASK = new UsbIrpImp.Task()
-	{ public void execute( UsbIrpImp irp ) { } };
-
-	private static final UsbIrp.ResubmitDataCommand DEFAULT_RESUBMIT_DATA_COMMAND = new UsbIrp.ResubmitDataCommand() {
-		public byte[] getResubmitData( UsbIrp irp )
-		{
-			byte[] oldData = irp.getData();
-			byte[] newData = new byte[oldData.length];
-
-			for (int i=0; i<newData.length; i++)
-				newData[i] = oldData[i];
-
-			return newData;
-		}
-	};
-
-	private static final UsbIrp.ResubmitErrorCommand DEFAULT_RESUBMIT_ERROR_COMMAND = new UsbIrp.ResubmitErrorCommand() {
-		public boolean continueResubmission( UsbIrp irp ) { return false; }
-	};
-
-	private static final UsbIrp.EventCommand DEFAULT_EVENT_COMMAND = new UsbIrp.EventCommand() {
-		public boolean shouldFireEvent( UsbIrp irp ) { return true; }
-	};
-
-	//*************************************************************************
-	// Inner interfaces
-
-	public static interface Task
-	{
-		public void execute( UsbIrpImp usbIrpImp );
-	}
-
-	//*************************************************************************
-	// Inner classes
-
-	public static class TaskList extends Vector implements UsbIrpImp.Task,List
-	{
-		public void execute( UsbIrpImp usbIrpImp )
-		{
-			int i = 0;
-
-			try { while (true) { ((UsbIrpImp.Task)get(i++)).execute( usbIrpImp ); } }
-			catch ( ArrayIndexOutOfBoundsException aioobE ) { }
-		}
-	}
 
 }
