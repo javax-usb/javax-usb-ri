@@ -33,6 +33,15 @@ public class UsbHubPanel extends UsbDevicePanel
 		usbDevice = hub;
 		usbHub = hub;
 		string = hub.isRootUsbHub() ? "Root UsbHub" : "UsbHub";
+		String product = null;
+		try { product = usbDevice.getProductString(); } catch ( Exception e ) { }
+		if (null != product) {
+			string += " (" + product + ")";
+		} else {
+			String idvendor = UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().idVendor());
+			String idproduct = UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().idProduct());
+			string += " <"+idvendor+":"+idproduct+">";
+		}
 		initPanels();
 		refresh();
 	}

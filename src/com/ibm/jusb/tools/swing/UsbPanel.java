@@ -53,4 +53,6 @@ public abstract class UsbPanel extends JPanel
 	protected JTextArea textArea = new JTextArea(15, 30);
 	protected JScrollPane textScroll = new JScrollPane(textArea);
 	protected String string;
+
+	protected final String NULL_STRING = "<undefined>";
 }

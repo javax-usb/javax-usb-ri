@@ -34,7 +34,15 @@ public class UsbDevicePanel extends UsbPanel
 		super();
 		usbDevice = device;
 		string = "UsbDevice";
-		try { string += ":" + usbDevice.getProductString(); } catch ( Exception e ) { }
+		String product = null;
+		try { product = usbDevice.getProductString(); } catch ( Exception e ) { }
+		if (null != product) {
+			string += " (" + product + ")";
+		} else {
+			String idvendor = UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().idVendor());
+			String idproduct = UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().idProduct());
+			string += " <"+idvendor+":"+idproduct+">";
+		}
 		initPanels();
 		refresh();
 	}
@@ -54,21 +62,19 @@ public class UsbDevicePanel extends UsbPanel
 		try { product = usbDevice.getProductString(); } catch ( Exception e ) { product = "Error : " + e.getMessage(); }
 		try { serialNumber = usbDevice.getSerialNumberString(); } catch ( Exception e ) { serialNumber = "Error : " + e.getMessage(); }
 
-		appendln("Vendor ID : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().idVendor()));
-		appendln("Product ID : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().idProduct()));
-		appendln("Speed : " + UsbUtil.getSpeedString(usbDevice.getSpeed()));
+		if (null == manufacturer) manufacturer = NULL_STRING;
+		if (null == product) product = NULL_STRING;
+		if (null == serialNumber) serialNumber = NULL_STRING;
+
 		appendln("Manufacturer : " + manufacturer);
 		appendln("Product : " + product);
 		appendln("Serial Number : " + serialNumber);
-		appendln("Device Class : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bDeviceClass()));
-		appendln("Device Subclass : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bDeviceSubClass()));
-		appendln("Device Protocol : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bDeviceProtocol()));
-		appendln("BCD Device : " + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bcdDevice()));
-		appendln("BCD USB : " + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bcdUSB()));
-		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbDevice.getUsbDeviceDescriptor().bMaxPacketSize0()));
+		appendln("Speed : " + UsbUtil.getSpeedString(usbDevice.getSpeed()));
 		appendln("Is Configured : " + usbDevice.isConfigured());
 		appendln("Active UsbConfiguration Number : " + UsbUtil.unsignedInt(usbDevice.getActiveUsbConfigurationNumber()));
-		appendln("Number of UsbConfigurations : " + UsbUtil.unsignedInt(usbDevice.getUsbDeviceDescriptor().bNumConfigurations()));
+
+		/* Note - this relies on the IBM Reference Implementation to provide a descriptive String */
+		append(usbDevice.getUsbDeviceDescriptor().toString());
 	}
 
 	protected void initPanels()

@@ -32,8 +32,7 @@ public class UsbEndpointPanel extends UsbPanel
 		super();
 		usbEndpoint = ep;
 		string = "UsbEndpoint 0x" + UsbUtil.toHexString(ep.getUsbEndpointDescriptor().bEndpointAddress());
-		
-		// add empty space, make the UI more consistent
+
 		add(Box.createVerticalGlue());
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(Box.createRigidArea(new Dimension(0,10)));
@@ -68,12 +67,11 @@ public class UsbEndpointPanel extends UsbPanel
 		default: direction = "Unknown"; break;
 		}
 
-		appendln("Endpoint Address : 0x" + UsbUtil.toHexString(usbEndpoint.getUsbEndpointDescriptor().bEndpointAddress()));
 		appendln("Type : " + UsbUtil.toHexString(usbEndpoint.getType()) + " (" + type + ")");
 		appendln("Direction : " + direction);
-		appendln("Interval : " + UsbUtil.unsignedInt(usbEndpoint.getUsbEndpointDescriptor().bInterval()));
-		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbEndpoint.getUsbEndpointDescriptor().wMaxPacketSize()));
-		appendln("Attributes : " + UsbUtil.toHexString(usbEndpoint.getUsbEndpointDescriptor().bmAttributes()));
+
+		/* Note - this relies on the IBM Reference Implementation to provide a descriptive String */
+		append(usbEndpoint.getUsbEndpointDescriptor().toString());
 	}
 
 	private UsbEndpoint usbEndpoint = null;

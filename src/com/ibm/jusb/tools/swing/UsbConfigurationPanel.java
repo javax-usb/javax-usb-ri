@@ -31,8 +31,8 @@ public class UsbConfigurationPanel extends UsbPanel
 	{
 		super();
 		usbConfiguration = config;
-		string = "UsbConfiguration " + config.getUsbConfigurationDescriptor().bConfigurationValue();
-		
+		string = "UsbConfiguration " + UsbUtil.unsignedInt(config.getUsbConfigurationDescriptor().bConfigurationValue());
+
 		add(Box.createVerticalGlue());
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(Box.createRigidArea(new Dimension(0,10)));
@@ -54,12 +54,13 @@ public class UsbConfigurationPanel extends UsbPanel
 
 		try { configurationString = usbConfiguration.getConfigurationString(); } catch ( Exception e ) { configurationString = "Error : " + e.getMessage(); }
 
-		appendln("Configuration Number : " + UsbUtil.unsignedInt(usbConfiguration.getUsbConfigurationDescriptor().bConfigurationValue()));
-		appendln("Is Active : " + usbConfiguration.isActive());
+		if (null == configurationString) configurationString = NULL_STRING;
+
 		appendln("Configuration String : " + configurationString);
-		appendln("Attributes : " + UsbUtil.toHexString(usbConfiguration.getUsbConfigurationDescriptor().bmAttributes()));
-		appendln("Max Power (mA) : " + (2 * UsbUtil.unsignedInt(usbConfiguration.getUsbConfigurationDescriptor().bMaxPower()))); /* units are 2mA */
-		appendln("Number of UsbInterfaces : " + UsbUtil.unsignedInt(usbConfiguration.getUsbConfigurationDescriptor().bNumInterfaces()));
+		appendln("Is Active : " + usbConfiguration.isActive());
+
+		/* Note - this relies on the IBM Reference Implementation to provide a descriptive String */
+		append(usbConfiguration.getUsbConfigurationDescriptor().toString());
 	}
 
 	private UsbConfiguration usbConfiguration = null;
