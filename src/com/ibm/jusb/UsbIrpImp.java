@@ -94,6 +94,12 @@ public class UsbIrpImp extends DefaultUsbIrp implements UsbIrp
 	}
 
 	/**
+	 * If this UsbIrpImp has a wrapped UsbIrp.
+	 * @return If there is a wrapped UsbIrp.
+	 */
+	public boolean hasUsbIrp() { return null != getUsbIrp(); }
+
+	/**
 	 * Get the UsbIrp this is wrapping.
 	 * @return The UsbIrp or null.
 	 */
