@@ -30,11 +30,11 @@ import com.ibm.jusb.util.*;
  * </ul>
  * <p>
  * The os implementation will then process this.
- * If processing is successful, the implementation will set the
- * {@link #getLength() length} via its {@link #setLength(int) setter};
- * if unsuccessful, the implementation will set the
+ * Once processing is complete, the implementation will set the
+ * {@link #getActualLength() actual length} via its {@link #setActualLength(int) setter}.
+ * If unsuccessful, the implementation will set the
  * {@link #getUsbException() UsbException} via its {@link #setUsbException(UsbException) setter}.
- * In either case the implementation will then set this {@link #complete() complete}.
+ * The implementation will then set this {@link #complete() complete}.
  * <p>
  * If the user provided their own UsbIrp implementation, then the UsbPipeImp will 'wrap' their
  * implementation with this UsbIrpImp by {@link #setUsbIrp(UsbIrp) setting} the local
@@ -73,6 +73,12 @@ public class UsbIrpImp implements UsbIrp,UsbSubmission
 
 	/** @param l The length. */
 	public void setLength(int l) { length = l; }
+
+	/** @return The actual length. */
+	public int getActualLength() { return actualLength; }
+
+	/** @param l The actual length. */
+	public void setActualLength(int l) { actualLength = l; }
 
 	/** @return true if this submit has complete */
 	public boolean isComplete() { return complete; }
@@ -197,6 +203,7 @@ public class UsbIrpImp implements UsbIrp,UsbSubmission
 	private boolean acceptShortPacket = true;
 	private int offset = -1;
 	private int length = -1;
+	private int actualLength = -1;
 	private UsbException usbException = null;
 
 	//*************************************************************************
