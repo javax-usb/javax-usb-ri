@@ -9,259 +9,134 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.*;
-import javax.usb.util.UsbUtil;
+import javax.usb.DeviceDescriptor;
 
 /*
  * DeviceDescriptor implementation.
- * @author E. Michael Maximilien
  * @author Dan Streetman
  */
-public class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDescriptor
+public class DeviceDescriptorImp extends DescriptorImp implements DeviceDescriptor
 {
 	/**
 	 * Constructor.
-	 * @param len Descriptor length.
-	 * @param type Descriptor type.
-	 * @param dClass Device class.
-	 * @param dSubClass Device SubClass.
-	 * @param dProto Device Protocol.
-	 * @param mSize Max packet size.
-	 * @param mInd Manufacturer index.
-	 * @param pInd Product index.
-	 * @param snInd Serialnumber index.
-	 * @param nConfigs Number of configs.
-	 * @param vID Vendor ID.
-	 * @param pID Product ID.
-	 * @param bcdDev Device Binary Coded Decimal number.
-	 * @param bcdUsb USB Binary Coded Decimal number.
+	 * @param bLength This descriptor's bLength.
+	 * @param bDescriptorType This descriptor's bDescriptorType.
+	 * @param bcdUSB This descriptor's bcdUSB.
+	 * @param bDeviceClass This descriptor's bDeviceClass.
+	 * @param bDeviceSubClass This descriptor's bDeviceSubClass.
+	 * @param bDeviceProtocol This descriptor's bDeviceProtocol.
+	 * @param bMaxPacketSize0 This descriptor's bMaxPacketSize0.
+	 * @param idVendor This descriptor's idVendor.
+	 * @param idProduct This descriptor's idProduct.
+	 * @param bcdDevice This descriptor's bcdDevice.
+	 * @param iManufacturer This descriptor's iManufacturer.
+	 * @param iProduct This descriptor's iProduct.
+	 * @param iSerialNumber This descriptor's iSerialNumber.
+	 * @param bNumConfigurations This descriptor's bNumConfigurations.
 	 */
-	public DeviceDescriptorImp( byte len, byte type, byte dClass, byte dSubClass,
-								byte dProto, byte mSize, byte mInd, byte pInd, byte snInd,
-								byte nConfigs, short vID, short pID, short bcdDev, short bcdUsb )
+	public DeviceDescriptorImp( byte bLength, byte bDescriptorType,
+		short bcdUSB, byte bDeviceClass, byte bDeviceSubClass, byte bDeviceProtocol,
+		byte bMaxPacketSize0, short idVendor, short idProduct, short bcdDevice,
+		byte iManufacturer, byte iProduct, byte iSerialNumber, byte bNumConfigurations )
 	{
-		setLength(len);
-		setType(type);
-		setDeviceClass(dClass);
-		setDeviceSubClass(dSubClass);
-		setDeviceProtocol(dProto);
-		setMaxPacketSize(mSize);
-		setManufacturerIndex(mInd);
-		setProductIndex(pInd);
-		setSerialNumberIndex(snInd);
-		setNumConfigs(nConfigs);
-		setVendorId(vID);
-		setProductId(pID);
-		setBcdDevice(bcdDev);
-		setBcdUsb(bcdUsb);
-	}
-
-    /** @return a binary coded decimal for the level of USB supported by this spec */
-    public short getBcdUsb() { return bcdUsb; }
-
-    /** @return the USB device class for this descriptor */
-    public byte getDeviceClass() { return deviceClass; }
-
-    /** @return the USB device subclass for this descriptor */
-    public byte getDeviceSubClass() { return deviceSubClass; }
-
-    /** @return the device protocol for this descriptor */
-    public byte getDeviceProtocol() { return deviceProtocol; }
-
-    /** @return the maximum packet size for this descriptor */
-    public byte getMaxPacketSize() { return maxPacketSize; }
-
-    /** @return the vendor ID for this descriptor */
-    public short getVendorId() { return vendorId; }
-
-    /** @return the product ID for this descriptor */
-    public short getProductId() { return productId; }
-
-    /** @return a binary coded decimal of the device release number */
-    public short getBcdDevice() { return bcdDevice; }
-
-    /** @return the index of StringDescriptor describing the manufacturer */
-    public byte getManufacturerIndex() { return manufacturerIndex; }
-
-    /** @return the index of StringDescriptor describing the product */
-    public byte getProductIndex() { return productIndex; }
-
-    /** @return the index of StringDescriptor describing the serial number */
-    public byte getSerialNumberIndex() { return serialNumberIndex; }
-
-    /** @return the number of configuration that the device that will get this descriptor supports */
-    public byte getNumConfigs() { return numConfigs; }
-
-	/** @return this descriptor as a byte[] */
-	public byte[] toBytes()
-	{
-		int length = UsbUtil.unsignedInt( getLength() );
-
-		if (length < DescriptorConst.DESCRIPTOR_MIN_LENGTH_DEVICE)
-			length = DescriptorConst.DESCRIPTOR_MIN_LENGTH_DEVICE;
-
-		byte[] b = new byte[length];
-
-		b[0] = getLength();
-		b[1] = getType();
-		b[2] = (byte)getBcdUsb();
-		b[3] = (byte)(getBcdUsb()>>8);
-		b[4] = getDeviceClass();
-		b[5] = getDeviceSubClass();
-		b[6] = getDeviceProtocol();
-		b[7] = getMaxPacketSize();
-		b[8] = (byte)getVendorId();
-		b[9] = (byte)(getVendorId()>>8);
-		b[10] = (byte)getProductId();
-		b[11] = (byte)(getProductId()>>8);
-		b[12] = (byte)getBcdDevice();
-		b[13] = (byte)(getBcdDevice()>>8);
-		b[14] = getManufacturerIndex();
-		b[15] = getProductIndex();
-		b[16] = getSerialNumberIndex();
-		b[17] = getNumConfigs();
-
-		return b;
+		super(bLength, bDescriptorType);
+		this.bcdUSB = bcdUSB;
+		this.bDeviceClass = bDeviceClass;
+		this.bDeviceSubClass = bDeviceSubClass;
+		this.bDeviceProtocol = bDeviceProtocol;
+		this.bMaxPacketSize0 = bMaxPacketSize0;
+		this.idVendor = idVendor;
+		this.idProduct = idProduct;
+		this.bcdDevice = bcdDevice;
+		this.iManufacturer = iManufacturer;
+		this.iProduct = iProduct;
+		this.iSerialNumber = iSerialNumber;
+		this.bNumConfigurations = bNumConfigurations;
 	}
 
     /**
-     * Accepts a DescriptorVisitor objects
-     * @param visitor the DescriptorVisitor object
-     */
-    public void accept( DescriptorVisitor visitor ) { visitor.visitDeviceDescriptor( this ); }
+	 * Get this descriptor's bcdUSB.
+	 * @return This descriptor's bcdUSB.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(short) This is unsigned.
+	 */
+    public short bcdUSB() { return bcdUSB; }
 
     /**
-     * Sets the BcdUsb value
-     * @param s the short value
-     */
-    public void setBcdUsb( short s )
-    {
-        //May need to do some pre-condition checks
+	 * Get this descriptor's bDeviceClass.
+	 * @return This descriptor's bDeviceClass.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bDeviceClass() { return bDeviceClass; }
 
-        bcdUsb = s;
-    }
-
-    /**
-     * Sets the device class for this descriptor
-     * @param b the byte device class code
-     */
-    public void setDeviceClass( byte b )
-    {
-        //May need to do some pre-condition checks
-
-        deviceClass = b;
-    }
+	/**
+	 * Get this descriptor's bDeviceSubClass.
+	 * @return This descriptor's bDeviceSubClass.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bDeviceSubClass() { return bDeviceSubClass; }
 
     /**
-     * Sets the device sub-class for this descriptor
-     * @param b the byte code for the device sub-class
-     */
-    public void setDeviceSubClass( byte b )
-    {
-        //May need to do some pre-condition checks
-
-        deviceSubClass = b;
-    }
-
-    /** 
-     * Sets the protocol for this descriptor
-     * @param b the byte code for this descriptor protocol
-     */
-    public void setDeviceProtocol( byte  b )
-    {
-        //May need to do some pre-condition checks
-
-        deviceProtocol = b;
-    }
+	 * Get this descriptor's bDeviceProtocol.
+	 * @return This descriptor's bDeviceProtocol.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bDeviceProtocol() { return bDeviceProtocol; }
 
     /**
-     * Sets the max packet size for this descriptor
-     * @param b the byte code for the max packet size
-     */
-    public void setMaxPacketSize( byte b )
-    {
-        //May need to do some pre-condition checks
-
-        maxPacketSize = b;
-    }
+	 * Get this descriptor's bMaxPacketSize.
+	 * @return This descriptor's bMaxPacketSize.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bMaxPacketSize0() { return bMaxPacketSize0; }
 
     /**
-     * Sets the vendorId for the device that will accept this descriptor
-     * @param w the word vendor ID code
-     */
-    public void setVendorId( short w )
-    {
-        //May need to do some pre-condition checks
-
-        vendorId = w;
-    }
+	 * Get this descriptor's idVendor.
+	 * @return This descriptor's idVendor.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(short) This is unsigned.
+	 */
+    public short idVendor() { return idVendor; }
 
     /**
-     * Sets the product Id of the device that will accept this descritor
-     * @param w the product ID word
-     */
-    public void setProductId( short w )
-    {
-        //May need to do some pre-condition checks
-
-        productId = w;
-    }
+	 * Get this descriptor's idProduct.
+	 * @return This descriptor's idProduct.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(short) This is unsigned.
+	 */
+    public short idProduct() { return idProduct; }
 
     /**
-     * Sets the bcdDevice for this descritor
-     * @param s the short value
-     * NOTE: may need to make this a byte[] instead (TBD)
-     */
-    public void setBcdDevice( short s )
-    {
-        //May need to do some pre-condition checks
-
-        bcdDevice = s;
-    }
+	 * Get this descriptor's bcdDevice.
+	 * @return This descriptor's bcdDevice.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(short) This is unsigned.
+	 */
+    public short bcdDevice() { return bcdDevice; }
 
     /**
-     * Sets the manufacturerIndex for this descriptor
-     * @param b the manufacturerIndex code
-     */
-    public void setManufacturerIndex( byte b )
-    {
-        //May need to do some pre-condition checks
-
-        manufacturerIndex = b;
-    }
+	 * Get this descriptor's iManufacturer.
+	 * @return This descriptor's iManufacturer.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte iManufacturer() { return iManufacturer; }
 
     /**
-     * Sets the productIndex for this descritptor
-     * @param b the productIndex value
-     */
-    public void setProductIndex( byte b )
-    {
-        //May need to do some pre-condition checks
-
-        productIndex = b;
-    }
+	 * Get this descriptor's iProduct.
+	 * @return This descriptor's iProduct.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte iProduct() { return iProduct; }
 
     /**
-     * Set the serialNumberIndex for this descriptor
-     * @param b the serialNumberIndex value
-     */
-    public void setSerialNumberIndex( byte b )
-    {
-        //May need to do some pre-condition checks
-        
-        serialNumberIndex = b;
-    }
+	 * Get this descriptor's iSerialNumber.
+	 * @return This descriptor's iSerialNumber.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte iSerialNumber() { return iSerialNumber; }
 
     /**
-     * Sets the number of config for the device that will accept this descriptor
-     * @param b the number of config
-     */
-    public void setNumConfigs( byte b )
-    {
-        //May need to do some pre-condition checks
-
-        numConfigs = b;
-    }
+	 * Get this descriptor's bNumConfigurations.
+	 * @return This descriptor's bNumConfigurations.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bNumConfigurations() { return bNumConfigurations; }
 
 	/** Compare this to another Object */
 	public boolean equals(Object object)
@@ -272,34 +147,30 @@ public class DeviceDescriptorImp extends AbstractDescriptor implements DeviceDes
 		catch ( ClassCastException ccE ) { return false; }
 
 		return
-			getBcdUsb() == desc.getBcdUsb() &&
-			getDeviceClass() == desc.getDeviceClass() &&
-			getDeviceSubClass() == desc.getDeviceSubClass() &&
-			getDeviceProtocol() == desc.getDeviceProtocol() &&
-			getMaxPacketSize() == desc.getMaxPacketSize() &&
-			getVendorId() == desc.getVendorId() &&
-			getProductId() == desc.getProductId() &&
-			getBcdDevice() == desc.getBcdDevice() &&
-			getManufacturerIndex() == desc.getManufacturerIndex() &&
-			getProductIndex() == desc.getProductIndex() &&
-			getSerialNumberIndex() == desc.getSerialNumberIndex() &&
-			getNumConfigs() == desc.getNumConfigs();
+			bcdUSB() == desc.bcdUSB() &&
+			bDeviceClass() == desc.bDeviceClass() &&
+			bDeviceSubClass() == desc.bDeviceSubClass() &&
+			bDeviceProtocol() == desc.bDeviceProtocol() &&
+			bMaxPacketSize0() == desc.bMaxPacketSize0() &&
+			idVendor() == desc.idVendor() &&
+			idProduct() == desc.idProduct() &&
+			bcdDevice() == desc.bcdDevice() &&
+			iManufacturer() == desc.iManufacturer() &&
+			iProduct() == desc.iProduct() &&
+			iSerialNumber() == desc.iSerialNumber() &&
+			bNumConfigurations() == desc.bNumConfigurations();
 	}
 
-    //-------------------------------------------------------------------------
-    // Instance variables
-    //
-
-    private short bcdUsb = 0x0000;
-    private byte deviceClass = 0x00;
-    private byte deviceSubClass = 0x00;
-    private byte deviceProtocol = 0x00;
-    private byte maxPacketSize = 0x00;
-    private short vendorId = 0x0000;
-    private short productId = 0x0000;
+    private short bcdUSB = 0x0000;
+    private byte bDeviceClass = 0x00;
+    private byte bDeviceSubClass = 0x00;
+    private byte bDeviceProtocol = 0x00;
+    private byte bMaxPacketSize0 = 0x00;
+    private short idVendor = 0x0000;
+    private short idProduct = 0x0000;
     private short bcdDevice = 0x0000;
-    private byte manufacturerIndex = 0x00;
-    private byte productIndex = 0x00;
-    private byte serialNumberIndex = 0x00;
-    private byte numConfigs = 0x00;
+    private byte iManufacturer = 0x00;
+    private byte iPoduct = 0x00;
+    private byte ISerialNumber = 0x00;
+    private byte bNumConfigurations = 0x00;
 }

@@ -9,75 +9,107 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.*;
-import javax.usb.util.UsbUtil;
+import javax.usb.StringDescriptor;
 
 /**
  * StringDescriptor implementation.
- * @author E. Michael Maximilien
  * @author Dan Streetman
  */
-public class StringDescriptorImp extends AbstractDescriptor implements StringDescriptor
+public class StringDescriptorImp extends DescriptorImp implements StringDescriptor
 {
 	/**
 	 * Constructor.
-	 * @param len Descriptor length.
-	 * @param type Descriptor type.
-	 * @param string String.
+	 * @param bLength This descriptor's bLength.
+	 * @param bDescriptorType This descriptor's bDescriptorType.
+	 * @param bString This descriptor's bString.
 	 */
-	public StringDescriptorImp( byte len, byte type, String string )
+	public StringDescriptorImp( byte bLength, byte bDescriptorType, byte[] bString )
 	{
-		setLength(len);
-		setType(type);
-		setString(string);
+		super(bLength, bDescriptorType);
+		this.bString = (null == bString ? "" : bString);
 	}
-
-    /** @return the UNICODE encoded string for this descriptor */
-    public String getString() { return string; }
 
 	/**
-	 * WARNING: This depends on the platform's default encoding for String.getBytes() to work correctly!
-	 *          Also, this depends on String.getBytes() returning its bytes in a little-endian format
-	 * @return this descriptor as a byte[]
+	 * Get this descriptor's bString.
+	 * @return This descriptor's bString.
 	 */
-	public byte[] toBytes()
+	public byte[] bString()
 	{
-		int length = UsbUtil.unsignedInt( getLength() );
+		byte[] bStringCopy = new byte[bString.length];
 
-		if (length < DescriptorConst.DESCRIPTOR_MIN_LENGTH_STRING)
-			length = DescriptorConst.DESCRIPTOR_MIN_LENGTH_STRING;
+		System.arraycopy(bString, 0, bStringCopy, 0, bString.length);
 
-		byte[] b = new byte[length];
-		byte[] s = getString().getBytes();
-
-		b[0] = getLength();
-		b[1] = getType();
-
-		// If String.getBytes() is not little-endian, this is wrong...
-		for (int i=2; i<length; i++)
-			b[length] = s[length-2];
-
-		return b;
+		return bStringCopy;
 	}
 
-    /**
-     * Accepts a DescriptorVisitor objects
-     * @param visitor the DescriptorVisitor object
-     */
-    public void accept( DescriptorVisitor visitor ) { visitor.visitStringDescriptor( this ); }
+	/**
+	 * Get this descriptor's translated String.
+	 * <p>
+	 * This is the String translation of the {@link #bString() bString}.
+	 * The best available 16-bit encoding is used.  If no 16-bit encoding is available,
+	 * 8-bit encoding is used, unless any of the characters are 16 bit (high byte is non-zero);
+	 * then 8-bit encoding is not used, and an UnsupportedEncodingException is thrown.
+	 * @return This descriptor's String.
+	 * @exception UnsupportedEncodingException If no encodings are available.
+	 */
+    public String getString() throws UnsupportedEncodingException
+	{
+		if (null == string)
+			string = createString();
 
-    /**
-     * Sets this descriptor's String value
-     * @param s the String argument
-     */
-    public void setString( String s ) 
-    {
-        string = ( null == s ? "" : s );
-    }
+		return string;
+	}
 
-    //-------------------------------------------------------------------------
-    // Instance variables
-    //
+	/**
+	 * Create a String for the bString.
+	 * @return A String for the bString.
+	 * @exception UnsupportedEncodingException If no encodings are available.
+	 */
+	private String createString() throws UnsupportedEncodingException
+	{
+		byte[] s16 = bString();
 
-    private String string = "";
+		for (int i=0; i<ENCODING.length; i++) {
+			try { return new String( s16, 0, s16.length, ENCODING[i] ); }
+			catch ( UnsupportedEncodingException ueE ) { }
+		}
+
+		/* Fallback to 8BIT encoding */
+		byte[] s8 = new byte[s16.length/2];
+
+		/* Convert 16-bit (little-endian) to 8-bit, checking each high bit. */
+		for (int i8=0, int i16=0; i8<s8.length && (i16+1)<s16.length; i8++, i16++, i16++) {
+			s8[i8] = s16[i16];
+			/* if high bit is non-zero, character is not 8-bit. */
+			if (0 != s16[i16+1])
+				throw new UnsupportedEncodingException("No 16-bit encoding available for 16-bit string");
+		}
+
+		return new String( s, ENCODING_8BIT );
+	}
+
+	private byte[] bString = null;
+	private String string = null;
+
+	/**
+	 * For all encodings supported by Java, see:
+	 * <p><a href="http://java.sun.com/products/jdk/1.1/docs/guide/intl/encoding.doc.html">Java 1 (1.1) Supported Encodings</a>
+	 * <p><a href="http://java.sun.com/j2se/1.3/docs/guide/intl/encoding.doc.html">Java 2 (1.3) Supported Encodings</a>
+	 * <p><a href="http://java.sun.com/j2se/1.3/docs/api/java/lang/package-summary.html#charenc">Java 2 (1.3) Required Encodings</a>
+	 * <p>
+	 * The translation is done using the first available of these encodings:
+	 * <ul>
+	 * <li>UnicodeLittleUnmarked</li>
+	 * <li>UnicodeLittle</li>
+	 * <li>UTF-16LE</li>
+	 * <li>ASCII (after conversion from 16 bit to 8 bit)</li>
+	 * </ul>
+	 */
+	public static final String[] ENCODING = {
+		"UnicodeLittleUnmarked", /* Present in Sun Java 1.3 rt.jar (not 1.1) */
+		"UnicodeLittle", /* Present in Sun Java 1.3 rt.jar and Sun Java 1.1 i18n.jar */
+		"UTF-16LE", /* Required by Sun Java 1.3 Package Specifications */
+	};
+	/** Fallback encoding if no 16-bit encoding is supported */
+	public static final String ENCODING_8BIT = "ASCII"; /* Present in Sun Java 1.3 rt.jar and Sun Java 1.1 i18n.jar */
 }

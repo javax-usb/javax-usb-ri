@@ -9,132 +9,62 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.*;
-import javax.usb.util.UsbUtil;
+import javax.usb.EndpointDescriptor;
 
 /**
  * EndpointDescriptor implementation.
- * @author E. Michael Maximilien
  * @author Dan Streetman
  */
-public class EndpointDescriptorImp extends AbstractDescriptor implements EndpointDescriptor
+public class EndpointDescriptorImp extends DescriptorImp implements EndpointDescriptor
 {
 	/**
 	 * Constructor.
-	 * @param len Descriptor length.
-	 * @param type Descriptor type.
-	 * @param addr Endpoint address.
-	 * @param attr Attributes.
-	 * @param ival Interval.
-	 * @param mSize Max packet size.
+	 * @param bLength This descriptor's bLength.
+	 * @param bDescriptorType This descriptor's bDescriptorType.
+	 * @param bEndpointAddress This descriptor's bEndpointAddress.
+	 * @param bmAttributes This descriptor's bmAttributes.
+	 * @param bInterval This descriptor's bInterval.
+	 * @param wMaxPacketSize This descriptor's wMaxPacketSize.
 	 */
-	public EndpointDescriptorImp( byte len, byte type, byte addr, byte attr, byte ival, short mSize )
+	public EndpointDescriptorImp( byte bLength, byte bDescriptorType,
+		byte bEndpointAddress, byte bmAttributes, byte bInterval, short wMaxPacketSize );
 	{
-		setLength(len);
-		setType(type);
-		setEndpointAddress(addr);
-		setAttributes(attr);
-		setInterval(ival);
-		setMaxPacketSize(mSize);
+		super(bLength, bDescriptorType);
+		this.bEndpointAddress = bEndpointAddress;
+		this.bmAttributes = bmAttributes;
+		this.bInterval = bInterval;
+		this.wMaxPacketSize = wMaxPacketSize;
 	}
 
-    /** @return the address of the endpoint on the USB device described by this descriptor */
-    public byte getEndpointAddress() { return endpointAddress; }
+	/**
+	 * Get this descriptor's bEndpointAddress.
+	 * @return This descriptor's bEndpointAddress.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+	public byte bEndpointAddress() { return bEndpointAddress; }
 
-    /** @return this endpoint's attributes info */
-    public byte getAttributes() { return attributes; }
+	/**
+	 * Get this descriptor's bmAttributes.
+	 * @return This descriptor's bmAttributes.
+	 */
+	public byte bmAttributes() { return bmAttributes; }
 
-    /** @returnt the maximum packet size this endpoint is capable of sending or recieving */
-    public short getMaxPacketSize() { return maxPacketSize; }
+	/**
+	 * Get this descriptor's wMaxPacketSize.
+	 * @return This descriptor's wMaxPacketSize.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(short) This is unsigned.
+	 */
+	public short wMaxPacketSize() { return wMaxPacketSize; }
 
-    /** 
-     * @returnt the interval for polling endpoint for data tansfers (in ms) 
-     * NOTE: ignored for bulk and control endpoints.  Must be 1 for isochonous 
-     * and 1-255 for Interrupt endpoints
-     */
-    public byte getInterval() { return interval; }
+	/**
+	 * Get this descriptor's bInterval.
+	 * @return This descriptor's bInterval.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+	public byte bInterval() { return bInterval; }
 
-	/** @return this descriptor as a byte[] */
-	public byte[] toBytes()
-	{
-		int length = UsbUtil.unsignedInt( getLength() );
-
-		if (length < DescriptorConst.DESCRIPTOR_MIN_LENGTH_ENDPOINT)
-			length = DescriptorConst.DESCRIPTOR_MIN_LENGTH_ENDPOINT;
-
-		byte[] b = new byte[length];
-
-		b[0] = getLength();
-		b[1] = getType();
-		b[2] = getEndpointAddress();
-		b[3] = getAttributes();
-		b[4] = (byte)getMaxPacketSize();
-		b[5] = (byte)(getMaxPacketSize()>>8);
-		b[6] = getInterval();
-
-		return b;
-	}
-
-    /**
-     * Accepts a DescriptorVisitor objects
-     * @param visitor the DescriptorVisitor object
-     */
-    public void accept( DescriptorVisitor visitor ) { visitor.visitStringDescriptor( this ); }
-
-    /**
-     * Sets this descriptor's endpointAddress
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setEndpointAddress( byte b )
-    {
-        //May need to do some pre-condition checks here
-
-        endpointAddress = b;
-    }
-
-    /**
-     * Sets this descriptor's attributes value
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setAttributes( byte b )
-    {
-        //May need to do some pre-condition checks here
-
-        attributes = b;
-    }
-
-    /**
-     * Sets this descriptor's maxPacketSize value
-     * @param w the word (i.e. short) argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setMaxPacketSize( short w )
-    {
-        //May need to do some pre-condition checks here
-
-        maxPacketSize = w;
-    }
-
-    /**
-     * Sets this descriptor's interval value
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setInterval( byte b )
-    {
-        //May need to do some pre-condition checks here
-
-        interval = b;
-    }
-
-    //-------------------------------------------------------------------------
-    // Instance variables
-    //
-
-    private byte endpointAddress = 0x00;
-    private byte attributes = 0x00;
-    private short maxPacketSize = 0x0000;
-    private byte interval = 0x00;
+	private byte bEndpointAddress = 0x00;
+	private byte bmAttributes = 0x00;
+	private short wMaxPacketSize = 0x0000;
+	private byte bInterval = 0x00;
 }

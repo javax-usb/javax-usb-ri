@@ -9,184 +9,94 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.*;
-import javax.usb.util.UsbUtil;
+import javax.usb.InterfaceDescriptor;
 
 /**
  * InterfaceDescriptor implementation.
- * @author E. Michael Maximilien
  * @author Dan Streetman
  */
-public class InterfaceDescriptorImp extends AbstractDescriptor implements InterfaceDescriptor
+public class InterfaceDescriptorImp extends DescriptorImp implements InterfaceDescriptor
 {
 	/**
 	 * Constructor.
-	 * @param len Descriptor length.
-	 * @param type Descriptor type.
-	 * @param iNum Interface number.
-	 * @param alt Alternate setting number.
-	 * @param nEps Number of endpoints.
-	 * @param iClass Interface Class.
-	 * @param iSubClass Interface SubClass.
-	 * @param iProto Interface protocol.
-	 * @param iInd Interface index.
+	 * @param bLength This descriptor's bLength.
+	 * @param bDescriptorType This descriptor's bDescriptorType.
+	 * @param bInterfaceNumber This descriptor's bInterfaceNumber.
+	 * @param bAlternateSetting This descriptor's bAlternateSetting.
+	 * @param bNumEndpoints This descriptor's bNumEndpoints.
+	 * @param bInterfaceClass This descriptor's bInterfaceClass.
+	 * @param bInterfaceSubClass This descriptor's bInterfaceSubClass.
+	 * @param bInterfaceProtocol This descriptor's bInterfaceProtocol.
+	 * @param iInterface This descriptor's iInterface.
 	 */
-	public InterfaceDescriptorImp( byte len, byte type, byte iNum, byte alt, byte nEps, byte iClass, byte iSubClass, byte iProto, byte iInd )
+	public InterfaceDescriptorImp( byte bLength, byte bDescriptorType,
+		byte bInterfaceNumber, byte bAlternateSetting, byte bNumEndpoints,
+		byte bInterfaceClass, byte bInterfaceSubClass, byte bInterfaceProtocol, byte iInterface )
 	{
-		setLength(len);
-		setType(type);
-		setInterfaceNumber(iNum);
-		setAlternateSetting(alt);
-		setNumEndpoints(nEps);
-		setInterfaceClass(iClass);
-		setInterfaceSubClass(iSubClass);
-		setInterfaceProtocol(iProto);
-		setInterfaceIndex(iInd);
-	}
-
-    /** @return the interface number */
-    public byte getInterfaceNumber() { return interfaceNumber; }
-
-    /** @return the alternate setting for this interface */
-    public byte getAlternateSetting() { return alternateSetting; }
-
-    /** @return the number of endpoints used by this interface (excludes endpoint 0) */
-    public byte getNumEndpoints() { return numEndpoints; }
-
-    /** @return the interface class code */
-    public byte getInterfaceClass() { return interfaceClass; }
-
-    /** @return the interface subclass code */
-    public byte getInterfaceSubClass() { return interfaceSubClass; }
-
-    /** @return the interface protocol code */
-    public byte getInterfaceProtocol() { return interfaceProtocol; }
-
-    /** @return the interface StringDescriptor index code */
-    public byte getInterfaceIndex() { return interfaceIndex; }
-
-	/** @return this descriptor as a byte[] */
-	public byte[] toBytes()
-	{
-		int length = UsbUtil.unsignedInt( getLength() );
-
-		if (length < DescriptorConst.DESCRIPTOR_MIN_LENGTH_INTERFACE)
-			length = DescriptorConst.DESCRIPTOR_MIN_LENGTH_INTERFACE;
-
-		byte[] b = new byte[length];
-
-		b[0] = getLength();
-		b[1] = getType();
-		b[2] = getInterfaceNumber();
-		b[3] = getAlternateSetting();
-		b[4] = getNumEndpoints();
-		b[5] = getInterfaceClass();
-		b[6] = getInterfaceSubClass();
-		b[7] = getInterfaceProtocol();
-		b[8] = getInterfaceIndex();
-
-		return b;
+		super(bLength, bDescriptorType);
+		this.bInterfaceNumber = bInterfaceNumber;
+		this.bAlternateSetting = bAlternateSetting;
+		this.bNumEndpoints = bNumEndpoints;
+		this.bInterfaceClass = bInterfaceClass;
+		this.bInterfaceSubClass = bInterfaceSubClass;
+		this.bInterfaceProtocol = bInterfaceProtocol;
+		this.iInterface = iInterface;
 	}
 
     /**
-     * Accepts a DescriptorVisitor objects
-     * @param visitor the DescriptorVisitor object
-     */
-    public void accept( DescriptorVisitor visitor ) { visitor.visitInterfaceDescriptor( this ); }
+	 * Get this descriptor's bInterfaceNumber.
+	 * @return This descriptor's bInterfaceNumber.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bInterfaceNumber() { return bInterfaceNumber; }
 
     /**
-     * Sets this descriptor's interfaceNumber value
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setInterfaceNumber( byte b )
-    {
-        //May need to do some pre-condition checks here
-
-        interfaceNumber = b;
-    }
+	 * Get this descriptor's bAlternateSetting.
+	 * @return This descriptor's bAlternateSetting.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bAlternateSetting() { return bAlternateSetting; }
 
     /**
-     * Sets this descriptor's alternateSetting value
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setAlternateSetting( byte b )
-    {
-        //May need to do some pre-condition checks here
-
-        alternateSetting = b;
-    }
+	 * Get this descriptor's bNumEndpoints.
+	 * @return This descriptor's bNumEndpoints.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bNumEndpoints() { return bNumEndpoints; }
 
     /**
-     * Sets this descriptor's numEndpoints value
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setNumEndpoints( byte b )
-    {
-        //May need to do some pre-condition checks here
-
-        numEndpoints = b;
-    }
+	 * Get this descriptor's bInterfaceClass.
+	 * @return This descriptor's bInterfaceClass.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bInterfaceClass() { return bInterfaceClass; }
 
     /**
-     * Sets this descriptor's interfaceClass value
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setInterfaceClass( byte b )
-    {
-        //May need to do some pre-condition checks here
-
-        interfaceClass = b;
-    }
+	 * Get this descriptor's bInterfaceSubClass.
+	 * @return This descriptor's bInterfaceSubClass.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bInterfaceSubClass() { return bInterfaceSubClass; }
 
     /**
-     * Sets this descriptor's interfaceSubClass value
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setInterfaceSubClass( byte b )
-    {
-        //May need to do some pre-condition checks here
-
-        interfaceSubClass = b;
-    }
+	 * Get this descriptor's bInterfaceProtocol.
+	 * @return This descriptor's bInterfaceProtocol.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte bInterfaceProtocol() { return bInterfaceProtocol; }
 
     /**
-     * Sets this descriptor's interfaceProtocol value
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setInterfaceProtocol( byte b )
-    {
-        //May need to do some pre-condition checks here
+	 * Get this descriptor's iInterface.
+	 * @return This descriptor's iInterface.
+	 * @see javax.usb.util.UsbUtil#unsignedInt(byte) This is unsigned.
+	 */
+    public byte iInterface() { return iInterface; }
 
-        interfaceProtocol = b;
-    }
-
-    /**
-     * Sets this descriptor's interfaceIndex value
-     * @param b the byte argument
-     * @exception java.lang.IllegalArgumentException for a bad argument
-     */
-    public void setInterfaceIndex( byte b )
-    {
-        //May need to do some pre-condition checks here
-
-        interfaceIndex = b;
-    }
-
-    //-------------------------------------------------------------------------
-    // Instance variables
-    //
-
-    private byte interfaceNumber = 0x00;
-    private byte alternateSetting = 0x00;
-    private byte numEndpoints = 0x00;
-    private byte interfaceClass = 0x00;
-    private byte interfaceSubClass = 0x00;
-    private byte interfaceProtocol = 0x00;
-    private byte interfaceIndex = 0x00;
+    private byte bInterfaceNumber = 0x00;
+    private byte bAlternateSetting = 0x00;
+    private byte bNumEndpoints = 0x00;
+    private byte bInterfaceClass = 0x00;
+    private byte bInterfaceSubClass = 0x00;
+    private byte bInterfaceProtocol = 0x00;
+    private byte iInterface = 0x00;
 }
