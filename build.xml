@@ -78,7 +78,7 @@
 
 	<!-- Show help -->
 	<target name="help">
-		<echo message="Buildfile for JSR80 (javax.usb) RI"/>
+		<echo message="Buildfile for javax.usb Platform-Independent Reference Implementation"/>
 		<echo message=""/>
 		<echo message="Targets:"/>
 		<echo message=""/>
