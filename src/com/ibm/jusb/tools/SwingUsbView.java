@@ -45,8 +45,9 @@ public class SwingUsbView
 
 		createTree(rootHub, rootNode);
 
+		tree.setSelectionPath(new TreePath(rootNode.getPath()));
+
 		frame.setSize(DEFAULT_SIZE);
-		splitPane.setDividerLocation(0.50);
 
 		services.addUsbServicesListener(topologyListener);
 	}
@@ -59,6 +60,9 @@ public class SwingUsbView
 		
 		s.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		s.frame.setVisible(true);
+
+		/* Since Swing sucks, this can't be done before it's visible, or it doesn't actually do anything. */
+		s.splitPane.setDividerLocation(0.50);
 	}
 
 	protected void createTree(UsbHub hub, DefaultMutableTreeNode node)
@@ -222,16 +226,19 @@ public class SwingUsbView
 
 	private TreeExpansionListener expansionListener = new TreeExpansionListener() {
 			public void treeCollapsed(TreeExpansionEvent teE)
-			{ splitPane.resetToPreferredSizes(); }
+			{ /*splitPane.resetToPreferredSizes();*/ }
 			public void treeExpanded(TreeExpansionEvent teE)
-			{ splitPane.resetToPreferredSizes(); }
+			{ /*splitPane.resetToPreferredSizes();*/ }
 		};
 
 	private TreeSelectionListener selectionListener = new TreeSelectionListener() {
 			public void valueChanged(TreeSelectionEvent tsE)
 			{
 				if (tsE.isAddedPath()) {
+					/* Swing sucks.  Pretty bad. */
+					int dividerLocation = splitPane.getDividerLocation();
 					splitPane.setRightComponent( (UsbPanel)((DefaultMutableTreeNode)tsE.getPath().getLastPathComponent()).getUserObject() );
+					splitPane.setDividerLocation(dividerLocation);
 				}
 			}
 		};

@@ -34,6 +34,7 @@ public class UsbHubPanel extends UsbDevicePanel
 		usbDevice = hub;
 		usbHub = hub;
 		string = hub.isUsbRootHub() ? "UsbRootHub" : "UsbHub";
+		initPanels();
 		refresh();
 	}
 

@@ -29,7 +29,7 @@ public abstract class UsbPanel extends JPanel
 		refreshPanel.add(refreshButton);
 
 		add(refreshPanel);
-		add(textArea);
+		add(textScroll);
 	}
 
 	public String toString() { return string; }
@@ -47,5 +47,6 @@ public abstract class UsbPanel extends JPanel
 		};
 
 	protected JTextArea textArea = new JTextArea();
+	protected JScrollPane textScroll = new JScrollPane(textArea);
 	protected String string;
 }

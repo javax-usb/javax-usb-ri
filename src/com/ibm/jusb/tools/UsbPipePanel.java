@@ -32,8 +32,8 @@ public class UsbPipePanel extends UsbPanel
 	{
 		super();
 		usbPipe = pipe;
-		initPanels();
 		string = "UsbPipe";
+		initPanels();
 		refresh();
 	}
 
