@@ -71,6 +71,8 @@ public class UsbIrpPanel extends JPanel implements Cloneable
 		if (irpCheckBox.isSelected()) {
 			UsbIrpImp irp = new UsbIrpImp();
 			irp.setData(lastData);
+			irp.setOffset(0);
+			irp.setLength(lastData.length);
 			irp.setAcceptShortPacket(acceptShortCheckBox.isSelected());
 			if (syncCheckBox.isSelected())
 				pipe.syncSubmit(irp);

@@ -83,7 +83,9 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 		short wValue = (short)Integer.decode(wValueField.getText()).intValue();
 		short wIndex = (short)Integer.decode(wIndexField.getText()).intValue();
 		ControlUsbIrpImp controlUsbIrpImp = new ControlUsbIrpImp(bmRequestType, bRequest, wValue, wIndex);
-		controlUsbIrpImp.setData(getData());
+		controlUsbIrpImp.setData(lastData);
+		controlUsbIrpImp.setOffset(0);
+		controlUsbIrpImp.setLength(lastData.length);
 
 		if (syncCheckBox.isSelected())
 			device.syncSubmit(controlUsbIrpImp);
