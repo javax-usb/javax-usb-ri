@@ -431,12 +431,5 @@ public class UsbPipeImp extends Object implements UsbPipe
 	private int submitResultCount = 0;
 
 	private UsbEndpointImp usbEndpointImp = null;
-
-	//**************************************************************************
-	// Inner classes
-
-	/** Synchronized UsbPipe */
-//FIXME - do this
-
 }
 
