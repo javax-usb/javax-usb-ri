@@ -131,7 +131,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	{
 		checkOpen();
 
-/* FIXME - keep track of # of outstanding submissions? need to throw UsbException if any */
+		if (0 < submissionCount)
+			throw new UsbException("Cannot close pipe with pending submissions");
 
 		getUsbPipeOsImp().close();
 		open = false;
@@ -180,6 +181,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			if (usbIrpImp.isUsbException())
 				throw usbIrpImp.getUsbException();
 		} else {
+			submissionCount++;
 			getUsbPipeOsImp().syncSubmit( usbIrpImp );
 		}
 	}
@@ -196,6 +198,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 		if ( queueSubmissions ) {
 			queueUsbIrpImp( usbIrpImp );
 		} else {
+			submissionCount++;
 			getUsbPipeOsImp().asyncSubmit( usbIrpImp );
 		}
 	}
@@ -216,6 +219,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			queueList( usbIrpImpList );
 			((UsbIrp)usbIrpImpList.get(usbIrpImpList.size()-1)).waitUntilComplete();
 		} else {
+			submissionCount += usbIrpImpList.size();
 			getUsbPipeOsImp().syncSubmit( usbIrpImpList );
 		}
 	}
@@ -235,6 +239,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 		if ( queueSubmissions ) {
 			queueList( usbIrpImpList );
 		} else {
+			submissionCount += usbIrpImpList.size();
 			getUsbPipeOsImp().asyncSubmit( usbIrpImpList );
 		}
 	}
@@ -303,6 +308,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	 */
 	public synchronized void usbIrpImpComplete( UsbIrpImp irp )
 	{
+		submissionCount--;
+
 		if (listTable.containsKey(irp)) {
 			List list = (List)listTable.get(irp);
 			/* Starting with the first UsbIrpImp in the list,
@@ -461,6 +468,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			}
 		}
 		try {
+			submissionCount++;
 			getUsbPipeOsImp().syncSubmit(usbIrpImp);
 		} catch ( UsbException uE ) {
 			/* ignore this, as the UsbIrp's UsbException will be set and this is handled elsewhere. */
@@ -551,6 +559,8 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	protected boolean abortInProgress = false;
 
 	protected Hashtable listTable = new Hashtable();
+
+	protected int submissionCount = 0;
 
 	//**************************************************************************
 	// Class constants

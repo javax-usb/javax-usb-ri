@@ -216,6 +216,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void usbIrpImpComplete( UsbIrpImp usbIrpImp )
 	{
+		submissionCount--;
+
 		UsbControlIrpImp irp = null;
 
 		try {
@@ -361,6 +363,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 				if (usbControlIrpImp.isUsbException())
 					throw usbControlIrpImp.getUsbException();
 			} else {
+				submissionCount++;
 				getUsbDeviceOsImp().syncSubmit( usbControlIrpImp );
 			}
 		}
@@ -380,6 +383,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 			if (queueSubmissions) {
 				queueUsbControlIrpImp(usbControlIrpImp);
 			} else {
+				submissionCount++;
 				getUsbDeviceOsImp().asyncSubmit( usbControlIrpImp );
 			}
 		}
@@ -407,6 +411,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 				queueList(usbControlIrpImpList);
 				((UsbControlIrp)usbControlIrpImpList.get(usbControlIrpImpList.size()-1)).waitUntilComplete();
 			} else {
+				submissionCount += usbControlIrpImpList.size();
 				getUsbDeviceOsImp().syncSubmit( usbControlIrpImpList );
 			}
 		}
@@ -433,6 +438,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 			if (queueSubmissions) {
 				queueList(usbControlIrpImpList);
 			} else {
+				submissionCount += usbControlIrpImpList.size();
 				getUsbDeviceOsImp().asyncSubmit( usbControlIrpImpList );
 			}
 		}
@@ -590,6 +596,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		 */
 		try {
 			/* NOTE: no need to synchronize on the submitLock as queueing gaurantees serialized, synchronized submission */
+			submissionCount++;
 			getUsbDeviceOsImp().syncSubmit(usbControlIrpImp);
 		} catch ( UsbException uE ) {
 			/* ignore this, as the UsbControlIrp's UsbException will be set and this is handled elsewhere. */
@@ -676,6 +683,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 
 	protected Hashtable listTable = new Hashtable();
+
+	protected int submissionCount = 0;
 
 	//**************************************************************************
 	// Class constants
