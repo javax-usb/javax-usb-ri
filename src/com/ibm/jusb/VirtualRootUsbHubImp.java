@@ -162,59 +162,64 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 		 */
 		public void asyncSubmit(UsbControlIrpImp irp) throws UsbException
 		{
-			if (UsbConst.REQUESTTYPE_DIRECTION_IN != (UsbConst.REQUESTTYPE_DIRECTION_MASK & irp.bmRequestType()))
-				throw new UsbException(getSubmitString());
+			try {
+				if (UsbConst.REQUESTTYPE_DIRECTION_IN != (UsbConst.REQUESTTYPE_DIRECTION_MASK & irp.bmRequestType()))
+					throw new UsbException(getSubmitString());
 
-			if (UsbConst.REQUESTTYPE_TYPE_STANDARD != (UsbConst.REQUESTTYPE_TYPE_MASK & irp.bmRequestType()))
-				throw new UsbException(getSubmitString());
+				if (UsbConst.REQUESTTYPE_TYPE_STANDARD != (UsbConst.REQUESTTYPE_TYPE_MASK & irp.bmRequestType()))
+					throw new UsbException(getSubmitString());
 
-			if (UsbConst.REQUESTTYPE_RECIPIENT_DEVICE == (UsbConst.REQUESTTYPE_RECIPIENT_MASK & irp.bmRequestType())) {
-				if (UsbConst.REQUEST_GET_CONFIGURATION == irp.bRequest()) {
-					if (0 == irp.wValue() && 0 == irp.wIndex() && 1 == irp.getLength()) {
-						irp.getData()[irp.getOffset()] = CONFIG_NUM;
-						irp.setActualLength(1);
+				if (UsbConst.REQUESTTYPE_RECIPIENT_DEVICE == (UsbConst.REQUESTTYPE_RECIPIENT_MASK & irp.bmRequestType())) {
+					if (UsbConst.REQUEST_GET_CONFIGURATION == irp.bRequest()) {
+						if (0 == irp.wValue() && 0 == irp.wIndex() && 1 == irp.getLength()) {
+							irp.getData()[irp.getOffset()] = CONFIG_NUM;
+							irp.setActualLength(1);
+						} else {
+							throw new UsbException(getSubmitString());
+						}
+					} else if (UsbConst.REQUEST_GET_DESCRIPTOR == irp.bRequest()) {
+						if (UsbConst.DESCRIPTOR_TYPE_DEVICE == (byte)(irp.wValue() >> 8)) {
+							if (0 == (byte)irp.wValue() && 0 == irp.wIndex()) {
+								irp.setActualLength(irp.getLength() < deviceDescriptorBytes.length ? irp.getLength() : deviceDescriptorBytes.length);
+								System.arraycopy(deviceDescriptorBytes, 0, irp.getData(), irp.getOffset(), irp.getActualLength());
+							} else {
+								throw new UsbException(getSubmitString());
+							}
+						} else if (UsbConst.DESCRIPTOR_TYPE_CONFIGURATION == (irp.wValue() >> 8)) {
+							if (CONFIG_NUM == (byte)irp.wValue() && 0 == irp.wIndex()) {
+								irp.setActualLength(irp.getLength() < configurationDescriptorBytes.length ? irp.getLength() : configurationDescriptorBytes.length);
+								System.arraycopy(configurationDescriptorBytes, 0, irp.getData(), irp.getOffset(), irp.getActualLength());
+							} else {
+								throw new UsbException(getSubmitString());
+							}
+						} else if (UsbConst.DESCRIPTOR_TYPE_STRING == (irp.wValue() >> 8)) {
+							getStringDescriptor(irp);
+						} else {
+							throw new UsbException(getSubmitString());
+						}
 					} else {
 						throw new UsbException(getSubmitString());
 					}
-				} else if (UsbConst.REQUEST_GET_DESCRIPTOR == irp.bRequest()) {
-					if (UsbConst.DESCRIPTOR_TYPE_DEVICE == (byte)(irp.wValue() >> 8)) {
-						if (0 == (byte)irp.wValue() && 0 == irp.wIndex()) {
-							irp.setActualLength(irp.getLength() < deviceDescriptorBytes.length ? irp.getLength() : deviceDescriptorBytes.length);
-							System.arraycopy(deviceDescriptorBytes, 0, irp.getData(), irp.getOffset(), irp.getActualLength());
+				} else if (UsbConst.REQUESTTYPE_RECIPIENT_INTERFACE == (UsbConst.REQUESTTYPE_RECIPIENT_MASK & irp.bmRequestType())) {
+					if (UsbConst.REQUEST_GET_INTERFACE == irp.bRequest()) {
+						if (0 == irp.wValue() && INTERFACE_NUM == irp.wIndex() && 1 == irp.getLength()) {
+							irp.getData()[irp.getOffset()] = SETTING_NUM;
+							irp.setActualLength(1);
 						} else {
 							throw new UsbException(getSubmitString());
 						}
-					} else if (UsbConst.DESCRIPTOR_TYPE_CONFIGURATION == (irp.wValue() >> 8)) {
-						if (CONFIG_NUM == (byte)irp.wValue() && 0 == irp.wIndex()) {
-							irp.setActualLength(irp.getLength() < configurationDescriptorBytes.length ? irp.getLength() : configurationDescriptorBytes.length);
-							System.arraycopy(configurationDescriptorBytes, 0, irp.getData(), irp.getOffset(), irp.getActualLength());
-						} else {
-							throw new UsbException(getSubmitString());
-						}
-					} else if (UsbConst.DESCRIPTOR_TYPE_STRING == (irp.wValue() >> 8)) {
-						getStringDescriptor(irp);
 					} else {
 						throw new UsbException(getSubmitString());
 					}
 				} else {
 					throw new UsbException(getSubmitString());
 				}
-			} else if (UsbConst.REQUESTTYPE_RECIPIENT_INTERFACE == (UsbConst.REQUESTTYPE_RECIPIENT_MASK & irp.bmRequestType())) {
-				if (UsbConst.REQUEST_GET_INTERFACE == irp.bRequest()) {
-					if (0 == irp.wValue() && INTERFACE_NUM == irp.wIndex() && 1 == irp.getLength()) {
-						irp.getData()[irp.getOffset()] = SETTING_NUM;
-						irp.setActualLength(1);
-					} else {
-						throw new UsbException(getSubmitString());
-					}
-				} else {
-					throw new UsbException(getSubmitString());
-				}
-			} else {
-				throw new UsbException(getSubmitString());
+			} catch ( UsbException uE ) {
+				irp.setUsbException(uE);
+				throw uE;
+			} finally {
+				irp.complete();
 			}
-
-			irp.complete();
 		}
 
 		/**
