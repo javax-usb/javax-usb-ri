@@ -18,8 +18,24 @@ import com.ibm.jusb.*;
 public interface UsbDeviceImp
 {
 	/**
-	 * Get a UsbOpsImp for this UsbDevice.
-	 * @return A UsbOpsImp.
+	 * Synchronously submit a RequestImp.
+	 * @param requestImp The RequestImp.
+	 * @return The number of bytes transferred.
+	 * @throws UsbException If the submission is unsuccessful.
 	 */
-	public UsbOpsImp getUsbOpsImp();
+	public void syncSubmit(RequestImp requestImp) throws UsbException;
+
+	/**
+	 * Synchronously submit a List of RequestImps.
+	 * @param list The List.
+	 * @throws UsbException If the submission is unsuccessful.
+	 */
+	public void syncSubmit(List list) throws UsbException;
+
+	/**
+	 * Asynchronously submit a RequestImp.
+	 * @param requestImp The RequestImp.
+	 * @throws UsbException If the submission is unsuccessful.
+	 */
+	public void asyncSubmit(RequestImp requestImp) throws UsbException;
 }

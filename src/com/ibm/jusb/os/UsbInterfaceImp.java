@@ -25,12 +25,15 @@ public interface UsbInterfaceImp
 
 	/**
 	 * Release this interface.
-	 * @exception UsbException if the interface could not be released.
 	 */
-	public void release() throws UsbException;
+	public void release();
 
 	/**
-	 * @return if this interface is claimed (in Java).
+	 * Indicate if this interface is claimed.
+	 * <p>
+	 * The claim must represent at least {@link #claim() Java claims}
+	 * and depending on implementation may represent native platform claims.
+	 * @return if this interface is claimed.
 	 */
 	public boolean isClaimed();
 

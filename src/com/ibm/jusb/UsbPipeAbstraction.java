@@ -16,27 +16,15 @@ import javax.usb.util.*;
 import com.ibm.jusb.util.*;
 
 /**
- * Defines abstraction for the UsbPipe bridge pattern.
+ * UsbPipe platform-independent implementation.
  * <p>
- * Note that this will take no action on any UsbIrps passed through it,
- * except for reference counting the total number in order to maintain the correct
- * state.
- * @author E. Michael Maximilien
+ * This handles UsbPipe processing as much as possible and passes platform
+ * specific responsibilities to its UsbPipeImp.
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
+ * @author E. Michael Maximilien
  */
 public class UsbPipeAbstraction extends Object implements UsbPipe
 {
-    //-------------------------------------------------------------------------
-    // Ctor
-    //
-
-    /**
-     * Ctor
-	 * NOTE: by defaults the UsbPipeEventHelper is created and passed a FifoSchduler
-	 * use other ctor to implement other kind of event delivering policy...
-	 * @param endpoint this pipe's associated UsbEndpoint.
-     */
     UsbPipeAbstraction( UsbEndpoint endpoint ) 
 	{ this( endpoint, new FifoScheduler() ); }
 
@@ -56,15 +44,11 @@ public class UsbPipeAbstraction extends Object implements UsbPipe
 			setActive( true );
     }
 
-    //-------------------------------------------------------------------------
-    // Package methods
-    //
-
 	/** @param the UsbPipeImp to use */
-	void setUsbPipeImp( UsbPipeImp pipe ) { usbPipeImp = pipe; }
+	public void setUsbPipeImp( UsbPipeImp pipe ) { usbPipeImp = pipe; }
 
     /** @return the UsbPipeImp object */
-    UsbPipeImp getUsbPipeImp() { return usbPipeImp; }
+    public UsbPipeImp getUsbPipeImp() { return usbPipeImp; }
 
     //-------------------------------------------------------------------------
     // Protected methods
@@ -185,7 +169,7 @@ public class UsbPipeAbstraction extends Object implements UsbPipe
 	 * to submissions that are successfully submitted.
 	 * @return the current sequence number of this UsbPipe
 	 */
-	public long getSequenceNumber() { return getUsbPipeImp().getSequenceNumber(); }
+	public long getSequenceNumber() { return sequenceNumber; }
 
 	/** @return the UsbDevice associated with this pipe */
 	public UsbDevice getUsbDevice() { return getUsbEndpoint().getUsbDevice(); }

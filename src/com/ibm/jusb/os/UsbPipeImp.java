@@ -12,42 +12,22 @@ package com.ibm.jusb.os;
 import javax.usb.*;
 
 /**
- * The implementation interface of a UsbPipe
- * @author E. Michael Maximilien
+ * The implementation interface of a UsbPipe.
+ * <p>
+ * All methods are synchronized in the abstraction layer; the
+ * implementation does not need to make them Thread-safe.
  * @author Dan Streetman
- * @version 0.0.1 (JDK 1.1.x)
+ * @author E. Michael Maximilien
  */
 public interface UsbPipeImp
 {
-    //-------------------------------------------------------------------------
-    // Public methods
-    //
-
-	/**
-	 * Get the associated UsbInterfaceImp.
-	 * @return the associated UsbInterfaceImp.
-	 */
-	public UsbInterfaceImp getUsbInterfaceImp();
-
-	/**
-	 * Set the associated UsbInterfaceImp.
-	 * @param usbInterfaceImp the associated UsbIntefaceImp.
-	 */
-	public void setUsbInterfaceImp( UsbInterfaceImp usbInterfaceImp );
-
-	/**
-	 * Return the current sequence number.
-	 * @return the current sequence number.
-	 */
-	public long getSequenceNumber();
-
     /**
      * Open this UsbPipeImp.
 	 * <p>
 	 * The platform can perform whatever operations it likes.
 	 * This method does not currently require the platform to guarantee
 	 * anything after returning.
-     * @exception javax.usb.UsbException if this pipe could not be opened.
+     * @exception javax.usb.UsbException If this pipe could not be opened.
      */
     public void open() throws UsbException;
 
@@ -60,16 +40,13 @@ public interface UsbPipeImp
 	 * defaults to true, so the platform should also accept short packets for
 	 * this submission.
 	 * <p>
-	 * Note that the platform implementation must allocate a sequence number for
-	 * this submission unless an UsbException is thrown.
-	 * <p>
 	 * The platform implementation does not need to notify the UsbPipeAbstraction
 	 * of completion by calling UsbPipeAbstraction.UsbIrpImpCompleted();
 	 * since the operation is synchronous the pipe performs all completion
 	 * activities after the method returns (or throws UsbException).
      * @param data the byte[] data
 	 * @return the status of the submission.
-     * @exception javax.usb.UsbException if error occurs while sending.
+     * @exception javax.usb.UsbException If the data transfer was unsuccessful.
      */
     public int syncSubmit( byte[] data ) throws UsbException;
 
@@ -81,21 +58,9 @@ public interface UsbPipeImp
 	 * since the operation is synchronous the pipe performs all completion
 	 * activities after the method returns (or throws UsbException).
 	 * @param irp the UsbIrpImp to use for this submission.
-     * @exception javax.usb.UsbException if error occurs while sending.
+     * @exception javax.usb.UsbException If the data transfer was unsuccessful.
 	 */
     public void syncSubmit( UsbIrpImp irp ) throws UsbException;
-
-	/**
-	 * Synchronously submits this UsbCompositeIrpImp to the platform implementation.
-	 * <p>
-	 * The platform implementation does not need to notify the UsbPipeAbstraction
-	 * of completion by calling UsbPipeAbstraction.UsbIrpImpCompleted();
-	 * since the operation is synchronous the pipe performs all completion
-	 * activities after the method returns (or throws UsbException).
-	 * @param irp the UsbCompositeIrpImp to use for this submission
-     * @exception javax.usb.UsbException if error occurs while sending
-	 */
-    public void syncSubmit( UsbCompositeIrpImp irp ) throws UsbException;
 
 	/**
 	 * Asynchronously submits this UsbIrpImp to the platform implementation.
@@ -108,30 +73,52 @@ public interface UsbPipeImp
 	 * returning from this method.  If the platform throws a UsbException from this
 	 * method, it should <i>not</i> also call UsbIrpImpCompleted().
 	 * @param irp the UsbIrpImp to use for this submission
-     * @exception javax.usb.UsbException if error occurs while sending
+     * @exception javax.usb.UsbException If the initial submission was unsuccessful.
 	 */
     public void asyncSubmit( UsbIrpImp irp ) throws UsbException;
 
 	/**
-	 * Asynchronously submits this UsbCompositeIrpImp to the platform implementation.
+	 * Synchronously submits a List of UsbIrpImps to the platform implementation.
+	 * <p>
+	 * The platform implementation does not need to notify the UsbPipeAbstraction
+	 * of completion by calling UsbPipeAbstraction.UsbIrpImpCompleted();
+	 * since the operation is synchronous the pipe performs all completion
+	 * activities after the method returns (or throws UsbException).
+	 * <p>
+	 * All UsbIrpImps that complete successfully must have their appropriate
+	 * values set, and (if an UsbException is thrown) all unsuccessful
+	 * UsbIrpImps must have their UsbException set, before throwing
+	 * a UsbException for the method.
+	 * @param list the UsbIrpImps to use for this submission.
+     * @exception javax.usb.UsbException If the data transfer for any of the UsbIrpImps was unsuccessful.
+	 */
+    public void syncSubmit( List list ) throws UsbException;
+
+	/**
+	 * Asynchronously submits a List of UsbIrpImps to the platform implementation.
 	 * <p>
 	 * Since this is an asynchronous call, the platform implementation should
-	 * notify the UsbPipeAbstraction upon completion of the UsbCompositeIrpImp by
+	 * notify the UsbPipeAbstraction upon completion of the UsbIrpImp by
 	 * calling
-	 * {@link com.ibm.jusb.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()}
-	 * <i>only if</i> the platform 'accepted' the submission by successfully
+	 * {@link com.ibm.jusb.UsbPipeAbstraction#UsbIrpImpCompleted(UsbIrpImp) UsbIrpImpCompleted()},
+	 * for each UsbIrpImp in order, <i>only if</i> the platform 'accepted' the submission by successfully
 	 * returning from this method.  If the platform throws a UsbException from this
 	 * method, it should <i>not</i> also call UsbIrpImpCompleted().
-	 * @param irp the UsbCompositeIrpImp to use for this submission
-     * @exception javax.usb.UsbException if error occurs while sending
+	 * <p>
+	 * This method must return before the first UsbIrpImp completes (and should return before the first
+	 * UsbIrpImp is submitted natively).  Any problems in platform submission should be reported on a per-UsbIrpImp basis (asynchronously).
+	 * @param irp the UsbIrpImp to use for this submission
+     * @exception javax.usb.UsbException If there was a problem with one or more UsbIrpImps <i>before platform submission</i>.
 	 */
-    public void asyncSubmit( UsbCompositeIrpImp irp ) throws UsbException;
+    public void asyncSubmit( UsbIrpImp irp ) throws UsbException;
 
 	/**
 	 * Stop all submissions in progress.
 	 * <p>
 	 * This should not return until all submissions have been aborted
-	 * and <i>are not longer in progress</i> (i.e., the pipe is in a non-busy state).
+	 * and <i>are no longer in progress</i> (i.e., the pipe is in a non-busy state).
+	 * <p>
+	 * The implementation may assume no more submissions will occur while this is executing.
 	 */
 	public void abortAllSubmissions();
 
