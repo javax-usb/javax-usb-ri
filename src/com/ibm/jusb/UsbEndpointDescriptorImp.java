@@ -9,13 +9,13 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.EndpointDescriptor;
+import javax.usb.UsbEndpointDescriptor;
 
 /**
- * EndpointDescriptor implementation.
+ * UsbEndpointDescriptor implementation.
  * @author Dan Streetman
  */
-public class EndpointDescriptorImp extends DescriptorImp implements EndpointDescriptor
+public class UsbEndpointDescriptorImp extends UsbDescriptorImp implements UsbEndpointDescriptor
 {
 	/**
 	 * Constructor.
@@ -26,7 +26,7 @@ public class EndpointDescriptorImp extends DescriptorImp implements EndpointDesc
 	 * @param bInterval This descriptor's bInterval.
 	 * @param wMaxPacketSize This descriptor's wMaxPacketSize.
 	 */
-	public EndpointDescriptorImp( byte bLength, byte bDescriptorType,
+	public UsbEndpointDescriptorImp( byte bLength, byte bDescriptorType,
 		byte bEndpointAddress, byte bmAttributes, byte bInterval, short wMaxPacketSize )
 	{
 		super(bLength, bDescriptorType);
@@ -73,9 +73,9 @@ public class EndpointDescriptorImp extends DescriptorImp implements EndpointDesc
 		if (!super.equals(object))
 			return false;
 
-		EndpointDescriptorImp desc = null;
+		UsbEndpointDescriptorImp desc = null;
 
-		try { desc = (EndpointDescriptorImp)object; }
+		try { desc = (UsbEndpointDescriptorImp)object; }
 		catch ( ClassCastException ccE ) { return false; }
 
 		return

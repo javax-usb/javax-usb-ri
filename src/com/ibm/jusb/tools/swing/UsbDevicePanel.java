@@ -53,21 +53,21 @@ public class UsbDevicePanel extends UsbPanel
 		try { product = usbDevice.getProductString(); } catch ( Exception e ) { product = "Error : " + e.getMessage(); }
 		try { serialNumber = usbDevice.getSerialNumberString(); } catch ( Exception e ) { serialNumber = "Error : " + e.getMessage(); }
 
-		appendln("Vendor ID : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().idVendor()));
-		appendln("Product ID : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().idProduct()));
+		appendln("Vendor ID : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().idVendor()));
+		appendln("Product ID : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().idProduct()));
 		appendln("Speed : " + UsbUtil.getSpeedString(usbDevice.getSpeed()));
 		appendln("Manufacturer : " + manufacturer);
 		appendln("Product : " + product);
 		appendln("Serial Number : " + serialNumber);
-		appendln("Device Class : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bDeviceClass()));
-		appendln("Device Subclass : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bDeviceSubClass()));
-		appendln("Device Protocol : 0x" + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bDeviceProtocol()));
-		appendln("BCD Device : " + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bcdDevice()));
-		appendln("BCD USB : " + UsbUtil.toHexString(usbDevice.getDeviceDescriptor().bcdUSB()));
-		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbDevice.getDeviceDescriptor().bMaxPacketSize0()));
+		appendln("Device Class : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bDeviceClass()));
+		appendln("Device Subclass : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bDeviceSubClass()));
+		appendln("Device Protocol : 0x" + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bDeviceProtocol()));
+		appendln("BCD Device : " + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bcdDevice()));
+		appendln("BCD USB : " + UsbUtil.toHexString(usbDevice.getUsbDeviceDescriptor().bcdUSB()));
+		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbDevice.getUsbDeviceDescriptor().bMaxPacketSize0()));
 		appendln("Is Configured : " + usbDevice.isConfigured());
-		appendln("Active UsbConfig Number : " + UsbUtil.unsignedInt(usbDevice.getActiveUsbConfigNumber()));
-		appendln("Number of UsbConfigs : " + UsbUtil.unsignedInt(usbDevice.getDeviceDescriptor().bNumConfigurations()));
+		appendln("Active UsbConfiguration Number : " + UsbUtil.unsignedInt(usbDevice.getActiveUsbConfigurationNumber()));
+		appendln("Number of UsbConfigurations : " + UsbUtil.unsignedInt(usbDevice.getUsbDeviceDescriptor().bNumConfigurations()));
 	}
 
 	protected void initPanels()
@@ -118,18 +118,14 @@ public class UsbDevicePanel extends UsbPanel
 		refreshButtons();
 	}
 
-	/**
-	 * Method init.
-	 */
-	private void refreshButtons() {
-		
+	protected void refreshButtons()
+	{
 		submitButton.setEnabled( packetList.size() > 0 );
 		upButton.setEnabled( packetList.size() > 0 && getSelectedIndex() > 0 );
 		downButton.setEnabled( packetList.size() > 0 && getSelectedIndex() != packetList.size() - 1 );
 		removeButton.setEnabled( packetList.size() > 0 );
 		copyPacketButton.setEnabled( packetList.size() > 0 );
 		newPacketButton.setEnabled( true );
-
 	}
 
 	protected int getSelectedIndex()
@@ -149,11 +145,11 @@ public class UsbDevicePanel extends UsbPanel
 
 	protected void submit()
 	{
-		ControlUsbIrpPanel panel = null;
+		UsbControlIrpPanel panel = null;
 
 		try {
 			for (int i=0; i<packetList.size(); i++) {
-				panel = (ControlUsbIrpPanel)packetList.get(i);
+				panel = (UsbControlIrpPanel)packetList.get(i);
 				panel.submit(usbDevice);
 			}
 		} catch ( UsbException uE ) {
@@ -163,7 +159,7 @@ public class UsbDevicePanel extends UsbPanel
 		}
 	}
 
-	protected void addPacket(ControlUsbIrpPanel newPanel)
+	protected void addPacket(UsbControlIrpPanel newPanel)
 	{
 		int index = packetJList.getSelectedIndex();
 		packetList.add(newPanel);
@@ -180,7 +176,7 @@ public class UsbDevicePanel extends UsbPanel
 		if (packetJList.isSelectionEmpty())
 			return;
 
-		addPacket((ControlUsbIrpPanel)((ControlUsbIrpPanel)packetList.get(packetJList.getSelectedIndex())).clone());
+		addPacket((UsbControlIrpPanel)((UsbControlIrpPanel)packetList.get(packetJList.getSelectedIndex())).clone());
 	}
 
 	protected void removePacket()
@@ -267,7 +263,7 @@ public class UsbDevicePanel extends UsbPanel
 
 	private ActionListener clearListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { outputTextArea.setText(""); } };
 	private ActionListener submitListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { submit(); } };
-	private ActionListener newPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { addPacket(new ControlUsbIrpPanel()); } };
+	private ActionListener newPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { addPacket(new UsbControlIrpPanel()); } };
 	private ActionListener copyPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { copyPacket(); } };
 	private ActionListener removeListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { removePacket(); } };
 	private ActionListener upListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { upPacket(); } };

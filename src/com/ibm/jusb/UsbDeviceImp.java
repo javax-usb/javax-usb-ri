@@ -25,13 +25,13 @@ import com.ibm.jusb.event.*;
  * <p>
  * This must be set up before use and/or connection to the topology tree.
  * <ul>
- * <li>The DeviceDescriptor must be set, either in the constructor or by its {@link #setDeviceDescriptor(DeviceDescriptor) setter}.</li>
+ * <li>The UsbDeviceDescriptor must be set, either in the constructor or by its {@link #setUsbDeviceDescriptor(UsbDeviceDescriptor) setter}.</li>
  * <li>The UsbDeviceOsImp may optionally be set, either in the constructor or
  *     by its {@link #setUsbDeviceOsImp(UsbDeviceOsImp) setter}.
  *     If not set, it defaults to a {@link com.ibm.jusb.os.DefaultUsbDeviceOsImp DefaultUsbDeviceOsImp}.</li>
  * <li>The speed must be set by its {@link #setSpeed(Object) setter}.</li>
- * <li>All UsbConfigImps must be {@link #addUsbConfigImp(UsbConfigImp) added}.</li>
- * <li>The active config number must be {@link #setActiveUsbConfigNumber(byte) set}, if this device {@link #isConfigured() is configured}.</li>
+ * <li>All UsbConfigurationImps must be {@link #addUsbConfigurationImp(UsbConfigurationImp) added}.</li>
+ * <li>The active config number must be {@link #setActiveUsbConfigurationNumber(byte) set}, if this device {@link #isConfigured() is configured}.</li>
  * </ul>
  * After setup, this may be connected to the topology tree by using the {@link #connect(UsbHubImp,byte) connect} method.
  * If the connect method is not used, there are additional steps:
@@ -50,7 +50,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 * Constructor.
 	 * @param desc This device's Descriptor.
 	 */
-	public UsbDeviceImp(DeviceDescriptor desc) { setDeviceDescriptor(desc); }
+	public UsbDeviceImp(UsbDeviceDescriptor desc) { setUsbDeviceDescriptor(desc); }
 
 	/**
 	 * Constructor.
@@ -63,9 +63,9 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 * @param desc This device's Descriptor.
 	 * @param device The UsbDeviceOsImp.
 	 */
-	public UsbDeviceImp(DeviceDescriptor desc, UsbDeviceOsImp device)
+	public UsbDeviceImp(UsbDeviceDescriptor desc, UsbDeviceOsImp device)
 	{
-		setDeviceDescriptor(desc);
+		setUsbDeviceDescriptor(desc);
 		setUsbDeviceOsImp(device);
 	}
 
@@ -99,85 +99,85 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	/** @return The manufacturer string. */
 	public String getManufacturerString() throws UsbException,UnsupportedEncodingException
 	{
-		return getString( getDeviceDescriptor().iManufacturer() );
+		return getString( getUsbDeviceDescriptor().iManufacturer() );
 	}
 
 	/** @return The serial number string. */
 	public String getSerialNumberString() throws UsbException,UnsupportedEncodingException
 	{
-		return getString( getDeviceDescriptor().iSerialNumber() );
+		return getString( getUsbDeviceDescriptor().iSerialNumber() );
 	}
 
 	/** @return The product string. */
 	public String getProductString() throws UsbException,UnsupportedEncodingException
 	{
-		return getString( getDeviceDescriptor().iProduct() );
+		return getString( getUsbDeviceDescriptor().iProduct() );
 	}
 
 	/** @return The speed of this device. */
 	public Object getSpeed() { return speed; }
 
-	/** @return the UsbConfig objects associated with this UsbDevice */
-	public List getUsbConfigs() { return Collections.unmodifiableList(configs); }
+	/** @return the UsbConfiguration objects associated with this UsbDevice */
+	public List getUsbConfigurations() { return Collections.unmodifiableList(configurations); }
 
-	/** @return the UsbConfig with the specified number as reported by getConfigNumber() */
-	public UsbConfig getUsbConfig( byte number ) { return getUsbConfigImp(number); }
+	/** @return the UsbConfiguration with the specified number as reported by getConfigurationNumber() */
+	public UsbConfiguration getUsbConfiguration( byte number ) { return getUsbConfigurationImp(number); }
 
-	/** @return the UsbConfigImp with the specified number as reported by getConfigNumber() */
-	public UsbConfigImp getUsbConfigImp( byte number )
+	/** @return the UsbConfigurationImp with the specified number as reported by getConfigurationNumber() */
+	public UsbConfigurationImp getUsbConfigurationImp( byte number )
 	{
-		synchronized ( configs ) {
-			for (int i=0; i<configs.size(); i++) {
-				UsbConfigImp config = (UsbConfigImp)configs.get(i);
+		synchronized ( configurations ) {
+			for (int i=0; i<configurations.size(); i++) {
+				UsbConfigurationImp configuration = (UsbConfigurationImp)configurations.get(i);
 
-				if (number == config.getConfigDescriptor().bConfigurationValue())
-					return config;
+				if (number == configuration.getUsbConfigurationDescriptor().bConfigurationValue())
+					return configuration;
 			}
 		}
 
 		return null;
 	}
 
-	/** @return if the specified UsbConfig is contained in this UsbDevice */
-	public boolean containsUsbConfig( byte number )
+	/** @return if the specified UsbConfiguration is contained in this UsbDevice */
+	public boolean containsUsbConfiguration( byte number )
 	{
-		if (null == getUsbConfig( number ))
+		if (null == getUsbConfiguration( number ))
 			return false;
 		else
 			return true;
 	}
 
 	/** @return if this device is configured */
-	public boolean isConfigured() { return 0 != getActiveUsbConfigNumber(); }
+	public boolean isConfigured() { return 0 != getActiveUsbConfigurationNumber(); }
 
-	/** @return the active UsbConfig number */
-	public byte getActiveUsbConfigNumber() { return activeConfigNumber; }
+	/** @return the active UsbConfiguration number */
+	public byte getActiveUsbConfigurationNumber() { return activeConfigurationNumber; }
 
-	/** @return the active UsbConfig object */
-	public UsbConfig getActiveUsbConfig() { return getActiveUsbConfigImp(); }
+	/** @return the active UsbConfiguration object */
+	public UsbConfiguration getActiveUsbConfiguration() { return getActiveUsbConfigurationImp(); }
 
-	/** @return the active UsbConfigImp object */
-	public UsbConfigImp getActiveUsbConfigImp() { return getUsbConfigImp( getActiveUsbConfigNumber() ); }
+	/** @return the active UsbConfigurationImp object */
+	public UsbConfigurationImp getActiveUsbConfigurationImp() { return getUsbConfigurationImp( getActiveUsbConfigurationNumber() ); }
 
 	/** @return the device descriptor for this device */
-	public DeviceDescriptor getDeviceDescriptor() { return deviceDescriptor; }
+	public UsbDeviceDescriptor getUsbDeviceDescriptor() { return usbDeviceDescriptor; }
 
 	/*
 	 * @return the specified string descriptor
 	 * @param the index of the string descriptor to get
-	 * @throws javax.usb.UsbException if an error occurrs while getting the StringDescriptor.
+	 * @throws javax.usb.UsbException if an error occurrs while getting the UsbStringDescriptor.
 	 */
-	public StringDescriptor getStringDescriptor( byte index ) throws UsbException
+	public UsbStringDescriptor getUsbStringDescriptor( byte index ) throws UsbException
 	{
-		/* There is no StringDescriptor for index 0 */
+		/* There is no UsbStringDescriptor for index 0 */
 		if (0 == index)
 			return null;
 
-		StringDescriptor desc = getCachedStringDescriptor( index );
+		UsbStringDescriptor desc = getCachedUsbStringDescriptor( index );
 
 		if ( null == desc ) {
-			requestStringDescriptor( index );
-			desc = getCachedStringDescriptor( index );
+			requestUsbStringDescriptor( index );
+			desc = getCachedUsbStringDescriptor( index );
 		}
 
 		return desc;
@@ -185,12 +185,12 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 
 	/**
 	 * @return the String from the specified STringDescriptor
-	 * @exception UsbException if an error occurrs while getting the StringDescriptor.
+	 * @exception UsbException if an error occurrs while getting the UsbStringDescriptor.
 	 * @exception UnsupportedEncodingException If the string encoding is not supported.
 	 */
 	public String getString( byte index ) throws UsbException,UnsupportedEncodingException
 	{
-		StringDescriptor desc = getStringDescriptor( index );
+		UsbStringDescriptor desc = getUsbStringDescriptor( index );
 
 		try {
 			return desc.getString();
@@ -200,15 +200,15 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	}
 
 	/**
-	 * Create a ControlUsbIrp.
+	 * Create a UsbControlIrp.
 	 * @param bmRequestType The bmRequestType.
 	 * @param bRequest The bRequest.
 	 * @param wValue The wValue.
 	 * @param wIndex The wIndex.
-	 * @return A ControlUsbIrp ready for use.
+	 * @return A UsbControlIrp ready for use.
 	 */
-	public ControlUsbIrp createControlUsbIrp(byte bmRequestType, byte bRequest, short wValue, short wIndex)
-	{ return new ControlUsbIrpImp(bmRequestType, bRequest, wValue, wIndex); }
+	public UsbControlIrp createUsbControlIrp(byte bmRequestType, byte bRequest, short wValue, short wIndex)
+	{ return new UsbControlIrpImp(bmRequestType, bRequest, wValue, wIndex); }
 
 	/**
 	 * Indicate that a specific UsbIrpImp has completed.
@@ -216,26 +216,26 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	 */
 	public void usbIrpImpComplete( UsbIrpImp irp )
 	{
-		try { usbIrpImpComplete( (ControlUsbIrpImp)irp ); }
+		try { usbIrpImpComplete( (UsbControlIrpImp)irp ); }
 		catch ( ClassCastException ccE ) { /* shouldn't happen */ }
 	}
 
 	/**
-	 * Indicate that a specific ControlUsbIrpImp has completed.
+	 * Indicate that a specific UsbControlIrpImp has completed.
 	 * <p>
-	 * This will be called during the ControlUsbIrpImp's complete() method.
-	 * @param irp The ControlUsbIrpImp that completed.
+	 * This will be called during the UsbControlIrpImp's complete() method.
+	 * @param irp The UsbControlIrpImp that completed.
 	 */
-	public void usbIrpImpComplete( ControlUsbIrpImp irp )
+	public void usbIrpImpComplete( UsbControlIrpImp irp )
 	{
 		if (irp.isUsbException()) {
 			listenerImp.errorEventOccurred(new UsbDeviceErrorEvent(this,irp.getUsbException()));
 		} else {
 			if (irp.isSetConfiguration()) {
-				try { setActiveUsbConfigNumber((byte)irp.wValue()); }
+				try { setActiveUsbConfigurationNumber((byte)irp.wValue()); }
 				catch ( Exception e ) { /* FIXME - log? */ }
 			} else if (irp.isSetInterface()) {
-				try { getActiveUsbConfigImp().getUsbInterfaceImp((byte)irp.wIndex()).setActiveSettingNumber((byte)irp.wValue()); }
+				try { getActiveUsbConfigurationImp().getUsbInterfaceImp((byte)irp.wIndex()).setActiveSettingNumber((byte)irp.wValue()); }
 				catch ( Exception e ) { /* FIXME - log? */ }
 			}
 			listenerImp.dataEventOccurred(new UsbDeviceDataEvent(this,irp,irp.getData(),irp.getOffset(),irp.getActualLength()));
@@ -255,26 +255,26 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	}
 
 	/** @param desc the new device descriptor */
-	public void setDeviceDescriptor( DeviceDescriptor desc ) { deviceDescriptor = desc; }
+	public void setUsbDeviceDescriptor( UsbDeviceDescriptor desc ) { usbDeviceDescriptor = desc; }
 
 	/**
-	 * Get a cached StringDescriptor.
-	 * @param index The index of the StringDescriptor.
-	 * @return The specified StringDescriptor, or null.
+	 * Get a cached UsbStringDescriptor.
+	 * @param index The index of the UsbStringDescriptor.
+	 * @return The specified UsbStringDescriptor, or null.
 	 */
-	public StringDescriptor getCachedStringDescriptor( byte index )
+	public UsbStringDescriptor getCachedUsbStringDescriptor( byte index )
 	{
-		return (StringDescriptor)stringDescriptors.get( new Byte(index).toString() );
+		return (UsbStringDescriptor)usbStringDescriptors.get( new Byte(index).toString() );
 	}
 
 	/**
-	 * Set a cached StringDescriptor.
+	 * Set a cached UsbStringDescriptor.
 	 * @param index The index.
-	 * @param desc The StringDescriptor.
+	 * @param desc The UsbStringDescriptor.
 	 */
-	public void setCachedStringDescriptor( byte index, StringDescriptor desc )
+	public void setCachedUsbStringDescriptor( byte index, UsbStringDescriptor desc )
 	{
-		stringDescriptors.put( new Byte(index).toString(), desc );
+		usbStringDescriptors.put( new Byte(index).toString(), desc );
 	}
 
 	/**
@@ -294,16 +294,16 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	}
 
 	/**
-	 * Sets the active config index
-	 * @param num the active config number (0 if device has been unconfigured)
+	 * Sets the active configuration index
+	 * @param num the active configuration number (0 if device has been unconfigured)
 	 */
-	public void setActiveUsbConfigNumber( byte num ) { activeConfigNumber = num; }
+	public void setActiveUsbConfigurationNumber( byte num ) { activeConfigurationNumber = num; }
 
 	/** @param the configuration to add */
-	public void addUsbConfigImp( UsbConfigImp config )
+	public void addUsbConfigurationImp( UsbConfigurationImp configuration )
 	{
-		if (!configs.contains(config))
-			configs.add( config );
+		if (!configurations.contains(configuration))
+			configurations.add( configuration );
 	}
 
 	/**
@@ -354,17 +354,17 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 		if (!getSpeed().equals(device.getSpeed()))
 			return false;
 
-		if (!getDeviceDescriptor().equals(device.getDeviceDescriptor()))
+		if (!getUsbDeviceDescriptor().equals(device.getUsbDeviceDescriptor()))
 			return false;
 
-		List cfgs = getUsbConfigs();
+		List cfgs = getUsbConfigurations();
 
 		for (int i=0; i<cfgs.size(); i++) {
-			UsbConfigImp usbConfigImp = (UsbConfigImp)cfgs.get(i);
-			byte configValue = usbConfigImp.getConfigDescriptor().bConfigurationValue();
-			if (!device.containsUsbConfig(configValue))
+			UsbConfigurationImp usbConfigurationImp = (UsbConfigurationImp)cfgs.get(i);
+			byte configurationValue = usbConfigurationImp.getUsbConfigurationDescriptor().bConfigurationValue();
+			if (!device.containsUsbConfiguration(configurationValue))
 				return false;
-			else if (!usbConfigImp.equals(device.getUsbConfig(configValue)))
+			else if (!usbConfigurationImp.equals(device.getUsbConfiguration(configurationValue)))
 				return false;
 		}
 
@@ -372,58 +372,58 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 	}
 
 	/**
-	 * Submit a ControlUsbIrp synchronously to the Default Control Pipe.
-	 * @param irp The ControlUsbIrp.
+	 * Submit a UsbControlIrp synchronously to the Default Control Pipe.
+	 * @param irp The UsbControlIrp.
 	 * @exception UsbException If an error occurrs.
 	 */
-	public void syncSubmit( ControlUsbIrp irp ) throws UsbException
+	public void syncSubmit( UsbControlIrp irp ) throws UsbException
 	{
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().syncSubmit( controlUsbIrpToControlUsbIrpImp( irp ) );
+			getUsbDeviceOsImp().syncSubmit( controlUsbIrpToUsbControlIrpImp( irp ) );
 		}
 	}
 
 	/**
-	 * Submit a ControlUsbIrp asynchronously to the Default Control Pipe.
-	 * @param irp The ControlUsbIrp.
+	 * Submit a UsbControlIrp asynchronously to the Default Control Pipe.
+	 * @param irp The UsbControlIrp.
 	 * @exception UsbException If an error occurrs.
 	 */
-	public void asyncSubmit( ControlUsbIrp irp ) throws UsbException
+	public void asyncSubmit( UsbControlIrp irp ) throws UsbException
 	{
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().asyncSubmit( controlUsbIrpToControlUsbIrpImp( irp ) );
+			getUsbDeviceOsImp().asyncSubmit( controlUsbIrpToUsbControlIrpImp( irp ) );
 		}
 	}
 
 	/**
-	 * Submit a List of ControlUsbIrps synchronously to the Default Control Pipe.
+	 * Submit a List of UsbControlIrps synchronously to the Default Control Pipe.
 	 * <p>
-	 * All ControlUsbIrps are guaranteed to be atomically (with respect to other clients
+	 * All UsbControlIrps are guaranteed to be atomically (with respect to other clients
 	 * of this API) submitted to the Default Control Pipe.  Atomicity on a native level
 	 * is implementation-dependent.
-	 * @param list The List of ControlUsbIrps.
+	 * @param list The List of UsbControlIrps.
 	 * @exception UsbException If an error occurrs.
 	 */
 	public void syncSubmit( List list ) throws UsbException
 	{
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().syncSubmit( controlUsbIrpListToControlUsbIrpImpList( list ) );
+			getUsbDeviceOsImp().syncSubmit( controlUsbIrpListToUsbControlIrpImpList( list ) );
 		}
 	}
 
 	/**
-	 * Submit a List of ControlUsbIrps asynchronously to the Default Control Pipe.
+	 * Submit a List of UsbControlIrps asynchronously to the Default Control Pipe.
 	 * <p>
-	 * All ControlUsbIrps are guaranteed to be atomically (with respect to other clients
+	 * All UsbControlIrps are guaranteed to be atomically (with respect to other clients
 	 * of this API) submitted to the Default Control Pipe.  Atomicity on a native level
 	 * is implementation-dependent.
-	 * @param list The List of ControlUsbIrps.
+	 * @param list The List of UsbControlIrps.
 	 * @exception UsbException If an error occurrs.
 	 */
 	public void asyncSubmit( List list ) throws UsbException
 	{
 		synchronized (submitLock) {
-			getUsbDeviceOsImp().asyncSubmit( controlUsbIrpListToControlUsbIrpImpList( list ) );
+			getUsbDeviceOsImp().asyncSubmit( controlUsbIrpListToUsbControlIrpImpList( list ) );
 		}
 	}
 
@@ -447,8 +447,8 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 		return langId;
 	}
 
-	/** Update the StringDescriptor at the specified index. */
-	protected void requestStringDescriptor( byte index ) throws UsbException
+	/** Update the UsbStringDescriptor at the specified index. */
+	protected void requestUsbStringDescriptor( byte index ) throws UsbException
 	{
 		byte[] data = new byte[256];
 
@@ -468,49 +468,49 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 		byte[] bString = new byte[strLen];
 		System.arraycopy(data, 2, bString, 0, strLen);
 
-		setCachedStringDescriptor( index, new StringDescriptorImp( data[0], data[1], bString ) );
+		setCachedUsbStringDescriptor( index, new UsbStringDescriptorImp( data[0], data[1], bString ) );
 	}
 
 	/**
-	 * Setup a ControlUsbIrpImp.
-	 * @param controlUsbIrpImp The ControlUsbIrpImp to setup.
+	 * Setup a UsbControlIrpImp.
+	 * @param controlUsbIrpImp The UsbControlIrpImp to setup.
 	 */
-	protected void setupControlUsbIrpImp( ControlUsbIrpImp controlUsbIrpImp )
+	protected void setupUsbControlIrpImp( UsbControlIrpImp controlUsbIrpImp )
 	{
 		controlUsbIrpImp.setCompletion( this );
 	}
 
 	/**
-	 * Convert a ControlUsbIrp to a ControlUsbIrpImp.
-	 * @param controlUsbIrp The ControlUsbIrp.
-	 * @return A ControlUsbIrpImp that corresponds to the controlUsbIrp.
+	 * Convert a UsbControlIrp to a UsbControlIrpImp.
+	 * @param controlUsbIrp The UsbControlIrp.
+	 * @return A UsbControlIrpImp that corresponds to the controlUsbIrp.
 	 */
-	protected ControlUsbIrpImp controlUsbIrpToControlUsbIrpImp(ControlUsbIrp controlUsbIrp)
+	protected UsbControlIrpImp controlUsbIrpToUsbControlIrpImp(UsbControlIrp controlUsbIrp)
 	{
-		ControlUsbIrpImp controlUsbIrpImp = null;
+		UsbControlIrpImp controlUsbIrpImp = null;
 
 		try {
-			controlUsbIrpImp = (ControlUsbIrpImp)controlUsbIrp;
+			controlUsbIrpImp = (UsbControlIrpImp)controlUsbIrp;
 		} catch ( ClassCastException ccE ) {
-			controlUsbIrpImp = new ControlUsbIrpImp(controlUsbIrp);
+			controlUsbIrpImp = new UsbControlIrpImp(controlUsbIrp);
 		}
 
-		setupControlUsbIrpImp( controlUsbIrpImp );
+		setupUsbControlIrpImp( controlUsbIrpImp );
 
 		return controlUsbIrpImp;
 	}
 
 	/**
-	 * Convert a List of ControlUsbIrps to a List of ControlUsbIrpImps.
-	 * @param list The List of ControlUsbIrps.
-	 * @return A List of ControlUsbIrpImps that correspond to the ControlUsbIrp List.
+	 * Convert a List of UsbControlIrps to a List of UsbControlIrpImps.
+	 * @param list The List of UsbControlIrps.
+	 * @return A List of UsbControlIrpImps that correspond to the UsbControlIrp List.
 	 */
-	protected List controlUsbIrpListToControlUsbIrpImpList(List list) throws ClassCastException
+	protected List controlUsbIrpListToUsbControlIrpImpList(List list) throws ClassCastException
 	{
 		List newList = new ArrayList();
 
 		for (int i=0; i<list.size(); i++)
-			newList.add(controlUsbIrpToControlUsbIrpImp((ControlUsbIrp)list.get(i)));
+			newList.add(controlUsbIrpToUsbControlIrpImp((UsbControlIrp)list.get(i)));
 
 		return newList;
 	}
@@ -522,15 +522,15 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.Completion
 
 	private Object submitLock = new Object();
 
-	private DeviceDescriptor deviceDescriptor = null;
+	private UsbDeviceDescriptor usbDeviceDescriptor = null;
 
-	private Hashtable stringDescriptors = new Hashtable();
+	private Hashtable usbStringDescriptors = new Hashtable();
 	private short langId = 0x0000;
 
 	private Object speed = UsbConst.DEVICE_SPEED_UNKNOWN;
     
-	private List configs = new ArrayList();
-	private byte activeConfigNumber = 0;
+	private List configurations = new ArrayList();
+	private byte activeConfigurationNumber = 0;
 
 	private UsbPortImp usbPortImp = null;
 

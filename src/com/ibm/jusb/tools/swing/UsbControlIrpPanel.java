@@ -22,12 +22,12 @@ import javax.usb.util.*;
 import javax.usb.event.*;
 
 /**
- * Class to display ControlUsbIrp information.
+ * Class to display UsbControlIrp information.
  * @author Dan Streetman
  */
-public class ControlUsbIrpPanel extends JPanel implements Cloneable
+public class UsbControlIrpPanel extends JPanel implements Cloneable
 {
-	public ControlUsbIrpPanel()
+	public UsbControlIrpPanel()
 	{
 		setLayout( new BorderLayout());
 
@@ -80,7 +80,7 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 
 	public Object clone()
 	{
-		ControlUsbIrpPanel newPanel = new ControlUsbIrpPanel();
+		UsbControlIrpPanel newPanel = new UsbControlIrpPanel();
 		newPanel.syncCheckBox.setSelected(syncCheckBox.isSelected());
 		newPanel.packetDataTextArea.setText(packetDataTextArea.getText());
 		return newPanel;
@@ -94,16 +94,16 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 		byte bRequest = (byte)Integer.decode(bRequestField.getText()).intValue();
 		short wValue = (short)Integer.decode(wValueField.getText()).intValue();
 		short wIndex = (short)Integer.decode(wIndexField.getText()).intValue();
-		DefaultControlUsbIrp controlUsbIrp = new DefaultControlUsbIrp(bmRequestType, bRequest, wValue, wIndex);
-		controlUsbIrp.setData(lastData);
-		controlUsbIrp.setOffset(getOffset());
-		controlUsbIrp.setLength(getLength(lastData));
-		controlUsbIrp.setAcceptShortPacket(acceptShortCheckBox.isSelected());
+		DefaultUsbControlIrp usbControlIrp = new DefaultUsbControlIrp(bmRequestType, bRequest, wValue, wIndex);
+		usbControlIrp.setData(lastData);
+		usbControlIrp.setOffset(getOffset());
+		usbControlIrp.setLength(getLength(lastData));
+		usbControlIrp.setAcceptShortPacket(acceptShortCheckBox.isSelected());
 
 		if (syncCheckBox.isSelected())
-			device.syncSubmit(controlUsbIrp);
+			device.syncSubmit(usbControlIrp);
 		else
-			device.asyncSubmit(controlUsbIrp);
+			device.asyncSubmit(usbControlIrp);
 	}
 
 	protected byte[] getData()
@@ -164,6 +164,7 @@ public class ControlUsbIrpPanel extends JPanel implements Cloneable
 
 	protected void lengthSelectionChanged()
 	{
+//FIXME - implement!
 	}
 
 	private JPanel packetOptionsPanel = new JPanel();

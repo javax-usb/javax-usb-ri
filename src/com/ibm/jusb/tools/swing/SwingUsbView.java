@@ -97,21 +97,21 @@ public class SwingUsbView
 
 	protected void createDevice(UsbDevice device, DefaultMutableTreeNode node)
 	{
-		Iterator iterator = device.getUsbConfigs().iterator();
+		Iterator iterator = device.getUsbConfigurations().iterator();
 
 		while (iterator.hasNext()) {
-			UsbConfig config = (UsbConfig)iterator.next();
-			DefaultMutableTreeNode child = getConfigNode(config);
+			UsbConfiguration configuration = (UsbConfiguration)iterator.next();
+			DefaultMutableTreeNode child = getConfigurationNode(configuration);
 
-			createConfig(config, child);
+			createConfiguration(configuration, child);
 
 			node.add(child);
 		}
 	}
 
-	protected void createConfig(UsbConfig config, DefaultMutableTreeNode node)
+	protected void createConfiguration(UsbConfiguration configuration, DefaultMutableTreeNode node)
 	{
-		Iterator iterator = config.getUsbInterfaces().iterator();
+		Iterator iterator = configuration.getUsbInterfaces().iterator();
 
 		while (iterator.hasNext()) {
 			UsbInterface iface = (UsbInterface)iterator.next();
@@ -165,9 +165,9 @@ public class SwingUsbView
 		return new DefaultMutableTreeNode(new UsbDevicePanel(device));
 	}
 
-	protected DefaultMutableTreeNode getConfigNode(UsbConfig config)
+	protected DefaultMutableTreeNode getConfigurationNode(UsbConfiguration configuration)
 	{
-		return new DefaultMutableTreeNode(new UsbConfigPanel(config));
+		return new DefaultMutableTreeNode(new UsbConfigurationPanel(configuration));
 	}
 
 	protected DefaultMutableTreeNode getInterfaceNode(UsbInterface iface)

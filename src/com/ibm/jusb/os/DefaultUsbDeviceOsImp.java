@@ -34,62 +34,62 @@ public class DefaultUsbDeviceOsImp implements UsbDeviceOsImp
 	public DefaultUsbDeviceOsImp() { }
 
 	/**
-	 * Synchronously submit a ControlUsbIrpImp.
+	 * Synchronously submit a UsbControlIrpImp.
 	 * <p>
-	 * This method is implemented using {@link #asyncSubmit(ControlUsbIrpImp) asyncSubmit(ControlUsbIrpImp)}.
-	 * @param controlUsbIrpImp The ControlUsbIrpImp.
+	 * This method is implemented using {@link #asyncSubmit(UsbControlIrpImp) asyncSubmit(UsbControlIrpImp)}.
+	 * @param usbControlIrpImp The UsbControlIrpImp.
 	 * @throws UsbException If the submission is unsuccessful.
 	 */
-	public void syncSubmit(ControlUsbIrpImp controlUsbIrpImp) throws UsbException
+	public void syncSubmit(UsbControlIrpImp usbControlIrpImp) throws UsbException
 	{
-		asyncSubmit(controlUsbIrpImp);
+		asyncSubmit(usbControlIrpImp);
 
-		controlUsbIrpImp.waitUntilComplete();
+		usbControlIrpImp.waitUntilComplete();
 
-		if (controlUsbIrpImp.isUsbException())
-			throw controlUsbIrpImp.getUsbException();
+		if (usbControlIrpImp.isUsbException())
+			throw usbControlIrpImp.getUsbException();
 	}
 
 	/**
-	 * Asynchronously submit a ControlUsbIrpImp.
+	 * Asynchronously submit a UsbControlIrpImp.
 	 * <p>
 	 * This is implemented to fail with a generic UsbException, except for Standard requests.
 	 * The implementation should override (at least) this method.
-	 * @param controlUsbIrpImp The ControlUsbIrpImp.
+	 * @param usbControlIrpImp The UsbControlIrpImp.
 	 * @exception UsbException If the submission is unsucessful.
 	 */
-	public void asyncSubmit(ControlUsbIrpImp controlUsbIrpImp) throws UsbException
+	public void asyncSubmit(UsbControlIrpImp usbControlIrpImp) throws UsbException
 	{
 		if (null == runnableManager)
 			runnableManager = new RunnableManager();
 
-		runnableManager.add(new AsyncRunnable(controlUsbIrpImp));
+		runnableManager.add(new AsyncRunnable(usbControlIrpImp));
 	}
 
 	/**
-	 * Synchronously submit a List of ControlUsbIrpImps.
+	 * Synchronously submit a List of UsbControlIrpImps.
 	 * <p>
-	 * This method is implemented using {@link #syncSubmit(ControlUsbIrpImp) syncSubmit(ControlUsbIrpImp)}.
-	 * If an UsbException occurrs, it is thrown immediately and any remaining ControlUsbIrpImps are not submitted nor modified.
+	 * This method is implemented using {@link #syncSubmit(UsbControlIrpImp) syncSubmit(UsbControlIrpImp)}.
+	 * If an UsbException occurrs, it is thrown immediately and any remaining UsbControlIrpImps are not submitted nor modified.
 	 * @param list The List.
 	 */
 	public void syncSubmit(List list) throws UsbException
 	{
 		for (int i=0; i<list.size(); i++)
-			syncSubmit((ControlUsbIrpImp)list.get(i));
+			syncSubmit((UsbControlIrpImp)list.get(i));
 	}
 
 	/**
-	 * Asynchronously submit a List of ControlUsbIrpImps.
+	 * Asynchronously submit a List of UsbControlIrpImps.
 	 * <p>
-	 * This method is implemented using {@link #asyncSubmit(ControlUsbIrpImp) asyncSubmit(ControlUsbIrpImp)}.
-	 * If an UsbException occurrs, it is thrown immediately and any remaining ControlUsbIrpImps are not submitted nor modified.
+	 * This method is implemented using {@link #asyncSubmit(UsbControlIrpImp) asyncSubmit(UsbControlIrpImp)}.
+	 * If an UsbException occurrs, it is thrown immediately and any remaining UsbControlIrpImps are not submitted nor modified.
 	 * @param list The List.
 	 */
 	public void asyncSubmit(List list) throws UsbException
 	{
 		for (int i=0; i<list.size(); i++)
-			asyncSubmit((ControlUsbIrpImp)list.get(i));
+			asyncSubmit((UsbControlIrpImp)list.get(i));
 	}
 
 	/**
@@ -97,10 +97,10 @@ public class DefaultUsbDeviceOsImp implements UsbDeviceOsImp
 	 * <p>
 	 * This is the default action, which handles Standard requests but
 	 * throws UsbException for all other requests.
-	 * @param controlUsbIrpImp The ControlUsbIrpImp.
+	 * @param usbControlIrpImp The UsbControlIrpImp.
 	 * @exception UsbException If the request is not a Standard request.
 	 */
-	protected void internalSubmit(ControlUsbIrpImp controlUsbIrpImp) throws UsbException
+	protected void internalSubmit(UsbControlIrpImp usbControlIrpImp) throws UsbException
 	{
 //FIXME - implement standard requests
 throw new UsbException("Not implemented yet");
@@ -110,20 +110,20 @@ throw new UsbException("Not implemented yet");
 
 	private class AsyncRunnable implements Runnable
 	{
-		public AsyncRunnable(ControlUsbIrpImp r) { controlUsbIrpImp = r; }
+		public AsyncRunnable(UsbControlIrpImp r) { usbControlIrpImp = r; }
 
 		public void run()
 		{
 			try {
-				internalSubmit(controlUsbIrpImp);
+				internalSubmit(usbControlIrpImp);
 			} catch ( UsbException uE ) {
-				controlUsbIrpImp.setActualLength(0);
-				controlUsbIrpImp.setUsbException(uE);
-				controlUsbIrpImp.complete();
+				usbControlIrpImp.setActualLength(0);
+				usbControlIrpImp.setUsbException(uE);
+				usbControlIrpImp.complete();
 			}
 		}
 
-		private ControlUsbIrpImp controlUsbIrpImp = null;
+		private UsbControlIrpImp usbControlIrpImp = null;
 	}
 
 }

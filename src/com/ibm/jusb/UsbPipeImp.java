@@ -219,15 +219,15 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.Completion
 	public UsbIrp createUsbIrp() { return new UsbIrpImp(); }
 
 	/**
-	 * Create a ControlUsbIrp.
+	 * Create a UsbControlIrp.
 	 * @param bmRequestType The bmRequestType.
 	 * @param bRequest The bRequest.
 	 * @param wValue The wValue.
 	 * @param wIndex The wIndex.
-	 * @return A ControlUsbIrp ready for use.
+	 * @return A UsbControlIrp ready for use.
 	 */
-	public ControlUsbIrp createControlUsbIrp(byte bmRequestType, byte bRequest, short wValue, short wIndex)
-	{ return new ControlUsbIrpImp(bmRequestType, bRequest, wValue, wIndex); }
+	public UsbControlIrp createUsbControlIrp(byte bmRequestType, byte bRequest, short wValue, short wIndex)
+	{ return new UsbControlIrpImp(bmRequestType, bRequest, wValue, wIndex); }
 
 	/**
 	 * Indicate that a specific UsbIrpImp has completed.

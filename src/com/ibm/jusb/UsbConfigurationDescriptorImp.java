@@ -13,11 +13,11 @@ import javax.usb.*;
 import javax.usb.util.*;
 
 /**
- * ConfigDescriptor implementation.
+ * UsbConfigurationDescriptor implementation.
  * @author E. Michael Maximilien
  * @author Dan Streetman
  */
-public class ConfigDescriptorImp extends DescriptorImp implements ConfigDescriptor
+public class UsbConfigurationDescriptorImp extends UsbDescriptorImp implements UsbConfigurationDescriptor
 {
 	/**
 	 * Constructor.
@@ -30,7 +30,7 @@ public class ConfigDescriptorImp extends DescriptorImp implements ConfigDescript
 	 * @param attributes The attributes.
 	 * @param maxPower The max power.
 	 */
-	public ConfigDescriptorImp( byte bLength, byte bType,
+	public UsbConfigurationDescriptorImp( byte bLength, byte bType,
 		short wTotalLength, byte bNumInterfaces, byte bConfigurationValue,
 		byte iConfiguration, byte bmAttributes, byte bMaxPower )
 	{
@@ -95,9 +95,9 @@ public class ConfigDescriptorImp extends DescriptorImp implements ConfigDescript
 		if (!super.equals(object))
 			return false;
 
-		ConfigDescriptorImp desc = null;
+		UsbConfigurationDescriptorImp desc = null;
 
-		try { desc = (ConfigDescriptorImp)object; }
+		try { desc = (UsbConfigurationDescriptorImp)object; }
 		catch ( ClassCastException ccE ) { return false; }
 
 		return

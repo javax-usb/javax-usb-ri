@@ -11,13 +11,13 @@ package com.ibm.jusb;
 
 import java.io.*;
 
-import javax.usb.StringDescriptor;
+import javax.usb.UsbStringDescriptor;
 
 /**
- * StringDescriptor implementation.
+ * UsbStringDescriptor implementation.
  * @author Dan Streetman
  */
-public class StringDescriptorImp extends DescriptorImp implements StringDescriptor
+public class UsbStringDescriptorImp extends UsbDescriptorImp implements UsbStringDescriptor
 {
 	/**
 	 * Constructor.
@@ -25,7 +25,7 @@ public class StringDescriptorImp extends DescriptorImp implements StringDescript
 	 * @param bDescriptorType This descriptor's bDescriptorType.
 	 * @param bString This descriptor's bString.
 	 */
-	public StringDescriptorImp( byte bLength, byte bDescriptorType, byte[] bString )
+	public UsbStringDescriptorImp( byte bLength, byte bDescriptorType, byte[] bString )
 	{
 		super(bLength, bDescriptorType);
 		this.bString = bString;
@@ -76,9 +76,9 @@ public class StringDescriptorImp extends DescriptorImp implements StringDescript
 		if (!super.equals(object))
 			return false;
 
-		StringDescriptorImp desc = null;
+		UsbStringDescriptorImp desc = null;
 
-		try { desc = (StringDescriptorImp)object; }
+		try { desc = (UsbStringDescriptorImp)object; }
 		catch ( ClassCastException ccE ) { return false; }
 
 		try {

@@ -9,15 +9,15 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.Descriptor;
+import javax.usb.UsbDescriptor;
 
 /**
- * Descriptor implementation.
+ * UsbDescriptor implementation.
  * @author Dan Streetman
  */
-public class DescriptorImp implements Descriptor
+public class UsbDescriptorImp implements UsbDescriptor
 {
-	public DescriptorImp( byte bLength, byte bDescriptorType )
+	public UsbDescriptorImp( byte bLength, byte bDescriptorType )
 	{
 		this.bLength = bLength;
 		this.bDescriptorType = bDescriptorType;
@@ -47,9 +47,9 @@ public class DescriptorImp implements Descriptor
 		if (null == object)
 			return false;
 
-		DescriptorImp desc = null;
+		UsbDescriptorImp desc = null;
 
-		try { desc = (DescriptorImp)object; }
+		try { desc = (UsbDescriptorImp)object; }
 		catch ( ClassCastException ccE ) { return false; }
 
 		return

@@ -9,13 +9,13 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.InterfaceDescriptor;
+import javax.usb.UsbInterfaceDescriptor;
 
 /**
- * InterfaceDescriptor implementation.
+ * UsbInterfaceDescriptor implementation.
  * @author Dan Streetman
  */
-public class InterfaceDescriptorImp extends DescriptorImp implements InterfaceDescriptor
+public class UsbInterfaceDescriptorImp extends UsbDescriptorImp implements UsbInterfaceDescriptor
 {
 	/**
 	 * Constructor.
@@ -29,7 +29,7 @@ public class InterfaceDescriptorImp extends DescriptorImp implements InterfaceDe
 	 * @param bInterfaceProtocol This descriptor's bInterfaceProtocol.
 	 * @param iInterface This descriptor's iInterface.
 	 */
-	public InterfaceDescriptorImp( byte bLength, byte bDescriptorType,
+	public UsbInterfaceDescriptorImp( byte bLength, byte bDescriptorType,
 		byte bInterfaceNumber, byte bAlternateSetting, byte bNumEndpoints,
 		byte bInterfaceClass, byte bInterfaceSubClass, byte bInterfaceProtocol, byte iInterface )
 	{
@@ -102,9 +102,9 @@ public class InterfaceDescriptorImp extends DescriptorImp implements InterfaceDe
 		if (!super.equals(object))
 			return false;
 
-		InterfaceDescriptorImp desc = null;
+		UsbInterfaceDescriptorImp desc = null;
 
-		try { desc = (InterfaceDescriptorImp)object; }
+		try { desc = (UsbInterfaceDescriptorImp)object; }
 		catch ( ClassCastException ccE ) { return false; }
 
 		return

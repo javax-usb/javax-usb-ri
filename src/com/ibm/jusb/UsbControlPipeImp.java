@@ -17,14 +17,14 @@ import com.ibm.jusb.os.*;
  * UsbPipe platform-independent implementation for Control-type pipes.
  * @author Dan Streetman
  */
-public class ControlUsbPipeImp extends UsbPipeImp implements UsbPipe
+public class UsbControlPipeImp extends UsbPipeImp implements UsbPipe
 {
 	/**
 	 * Constructor.
 	 * @param ep The UsbEndpointImp.
 	 * @param pipe The platform-dependent pipe implementation.
 	 */
-	public ControlUsbPipeImp( UsbEndpointImp ep, ControlUsbPipeOsImp pipe ) { super(ep,pipe); }
+	public UsbControlPipeImp( UsbEndpointImp ep, UsbControlPipeOsImp pipe ) { super(ep,pipe); }
 
 	/**
 	 * Control pipes cannot handle raw byte[] submissions.
@@ -51,30 +51,30 @@ public class ControlUsbPipeImp extends UsbPipeImp implements UsbPipe
 	}
 
 	/**
-	 * Convert a ControlUsbIrp to ControlUsbIrpImp.
+	 * Convert a UsbControlIrp to UsbControlIrpImp.
 	 * <p>
-	 * If the UsbIrp is not a ControlUsbIrp, a UsbException is thrown.
-	 * @param irp The ControlUsbIrp to convert.
+	 * If the UsbIrp is not a UsbControlIrp, a UsbException is thrown.
+	 * @param irp The UsbControlIrp to convert.
 	 */
 	protected UsbIrpImp usbIrpToUsbIrpImp(UsbIrp irp) throws UsbException
 	{
-		ControlUsbIrp controlUsbIrp = null;
+		UsbControlIrp usbControlIrp = null;
 		try {
-			controlUsbIrp = (ControlUsbIrp)irp;
+			usbControlIrp = (UsbControlIrp)irp;
 		} catch ( ClassCastException ccE ) {
-			throw new UsbException("Control pipes require a setup packet per submission, so only ControlUsbIrps can be submitted.");
+			throw new UsbException("Control pipes require a setup packet per submission, so only UsbControlIrps can be submitted.");
 		}
 
-		ControlUsbIrpImp controlUsbIrpImp = null;
+		UsbControlIrpImp usbControlIrpImp = null;
 		try {
-			controlUsbIrpImp = (ControlUsbIrpImp)controlUsbIrp;
+			usbControlIrpImp = (UsbControlIrpImp)usbControlIrp;
 		} catch ( ClassCastException ccE ) {
-			controlUsbIrpImp = new ControlUsbIrpImp(controlUsbIrp);
+			usbControlIrpImp = new UsbControlIrpImp(usbControlIrp);
 		}
 
-		setupUsbIrpImp(controlUsbIrpImp);
+		setupUsbIrpImp(usbControlIrpImp);
 
-		return controlUsbIrpImp;
+		return usbControlIrpImp;
 	}
 }
 

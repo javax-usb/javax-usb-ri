@@ -9,13 +9,13 @@ package com.ibm.jusb;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import javax.usb.DeviceDescriptor;
+import javax.usb.UsbDeviceDescriptor;
 
 /*
- * DeviceDescriptor implementation.
+ * UsbDeviceDescriptor implementation.
  * @author Dan Streetman
  */
-public class DeviceDescriptorImp extends DescriptorImp implements DeviceDescriptor
+public class UsbDeviceDescriptorImp extends UsbDescriptorImp implements UsbDeviceDescriptor
 {
 	/**
 	 * Constructor.
@@ -34,7 +34,7 @@ public class DeviceDescriptorImp extends DescriptorImp implements DeviceDescript
 	 * @param iSerialNumber This descriptor's iSerialNumber.
 	 * @param bNumConfigurations This descriptor's bNumConfigurations.
 	 */
-	public DeviceDescriptorImp( byte bLength, byte bDescriptorType,
+	public UsbDeviceDescriptorImp( byte bLength, byte bDescriptorType,
 		short bcdUSB, byte bDeviceClass, byte bDeviceSubClass, byte bDeviceProtocol,
 		byte bMaxPacketSize0, short idVendor, short idProduct, short bcdDevice,
 		byte iManufacturer, byte iProduct, byte iSerialNumber, byte bNumConfigurations )
@@ -148,9 +148,9 @@ public class DeviceDescriptorImp extends DescriptorImp implements DeviceDescript
 		if (!super.equals(object))
 			return false;
 
-		DeviceDescriptorImp desc = null;
+		UsbDeviceDescriptorImp desc = null;
 
-		try { desc = (DeviceDescriptorImp)object; }
+		try { desc = (UsbDeviceDescriptorImp)object; }
 		catch ( ClassCastException ccE ) { return false; }
 
 		return

@@ -31,13 +31,13 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 
 	public void init()
 	{
-		UsbConfigImp virtualConfig = new UsbConfigImp(this, virtualConfigDescriptor);
-		UsbInterfaceImp virtualInterface = new UsbInterfaceImp(virtualConfig, virtualInterfaceDescriptor, new DefaultUsbInterfaceOsImp());
+		UsbConfigurationImp virtualConfiguration = new UsbConfigurationImp(this, virtualConfigurationDescriptor);
+		UsbInterfaceImp virtualInterface = new UsbInterfaceImp(virtualConfiguration, virtualInterfaceDescriptor, new DefaultUsbInterfaceOsImp());
 
-		virtualConfig.addUsbInterfaceImp(virtualInterface);
+		virtualConfiguration.addUsbInterfaceImp(virtualInterface);
 
-		addUsbConfigImp(virtualConfig);
-		setActiveUsbConfigNumber(CONFIG_NUM);
+		addUsbConfigurationImp(virtualConfiguration);
+		setActiveUsbConfigurationNumber(CONFIG_NUM);
 	}
 
 	/** No connect operation */
@@ -73,8 +73,8 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 	public static final byte INTERFACE_NUM = (byte)0x00;
 	public static final byte SETTING_NUM = (byte)0x00;
 
-	public static final DeviceDescriptorImp virtualDeviceDescriptor =
-		new DeviceDescriptorImp( UsbConst.DESCRIPTOR_MIN_LENGTH_DEVICE,
+	public static final UsbDeviceDescriptorImp virtualDeviceDescriptor =
+		new UsbDeviceDescriptorImp( UsbConst.DESCRIPTOR_MIN_LENGTH_DEVICE,
 								 UsbConst.DESCRIPTOR_TYPE_DEVICE,
 								 USB_BCD,
 								 UsbConst.HUB_CLASSCODE,
@@ -89,8 +89,8 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 								 (byte)0x00, /* serial index */
 								 (byte)0x01 /* n configs */ );
 
-	public static final ConfigDescriptorImp virtualConfigDescriptor =
-		new ConfigDescriptorImp( UsbConst.DESCRIPTOR_MIN_LENGTH_CONFIG,
+	public static final UsbConfigurationDescriptorImp virtualConfigurationDescriptor =
+		new UsbConfigurationDescriptorImp( UsbConst.DESCRIPTOR_MIN_LENGTH_CONFIG,
 								 UsbConst.DESCRIPTOR_TYPE_CONFIG,
 								 (short)CONFIG_TOTAL_LEN,
 								 (byte)0x01, /* n interfaces */
@@ -99,8 +99,8 @@ public class VirtualRootUsbHubImp extends UsbHubImp implements UsbHub
 								 (byte)0x80, /* attr */
 								 (byte)0x00 ); /* maxpower */
 
-	public static final InterfaceDescriptorImp virtualInterfaceDescriptor =
-		new InterfaceDescriptorImp( UsbConst.DESCRIPTOR_MIN_LENGTH_INTERFACE,
+	public static final UsbInterfaceDescriptorImp virtualInterfaceDescriptor =
+		new UsbInterfaceDescriptorImp( UsbConst.DESCRIPTOR_MIN_LENGTH_INTERFACE,
 									UsbConst.DESCRIPTOR_TYPE_INTERFACE,
 									INTERFACE_NUM,
 									SETTING_NUM,

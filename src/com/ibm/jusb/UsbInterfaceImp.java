@@ -23,14 +23,14 @@ import com.ibm.jusb.util.*;
  * <p>
  * This must be set up before use.
  * <ul>
- * <li>The UsbConfigImp must be set in the constructor or by its {@link #setUsbConfigImp(UsbConfigImp) setter}.</li>
- * <li>The InterfaceDescriptor must be set either in the constructor or by its {@link #setInterfaceDescriptor(InterfaceDescriptor) setter}.</li>
+ * <li>The UsbConfigurationImp must be set in the constructor or by its {@link #setUsbConfigurationImp(UsbConfigurationImp) setter}.</li>
+ * <li>The UsbInterfaceDescriptor must be set either in the constructor or by its {@link #setUsbInterfaceDescriptor(UsbInterfaceDescriptor) setter}.</li>
  * <li>The UsbInterfaceOsImp may optionally be set either in the constructor or by its
  *     {@link #setUsbInterfaceOsImp(UsbInterfaceOsImp) setter}.
  *     If not set, it defaults to a {@link com.ibm.jusb.os.DefaultUsbInterfaceOsImp DefaultUsbInterfaceOsImp}.</li>
- * <li>If the active alternate setting number is not the first added to the parent UsbConfigImp either
- *     {@link com.ibm.jusb.UsbConfigImp#addUsbInterfaceImp(UsbInterfaceImp) directly} or by
- *     {@link #setUsbConfigImp(UsbConfigImp) setUsbConfigImp}, it must be
+ * <li>If the active alternate setting number is not the first added to the parent UsbConfigurationImp either
+ *     {@link com.ibm.jusb.UsbConfigurationImp#addUsbInterfaceImp(UsbInterfaceImp) directly} or by
+ *     {@link #setUsbConfigurationImp(UsbConfigurationImp) setUsbConfigurationImp}, it must be
  *     {@link #setActiveAlternateSettingNumber(byte) set} after creating the active alternate setting.</li>
  * <li>All UsbEndpointImps must be {@link #addUsbEndpointImp(UsbEndpointImp) added}.</li>
  * </ul>
@@ -43,25 +43,25 @@ public class UsbInterfaceImp implements UsbInterface
 {
 	/**
 	 * Constructor.
-	 * @param config The parent config.  If this is not null, the InterfaceDescriptor <strong>cannot</strong> be null.
+	 * @param config The parent config.  If this is not null, the UsbInterfaceDescriptor <strong>cannot</strong> be null.
 	 * @param desc This interface's descriptor.  This <strong>cannot</strong> be null if the parent config is not null.
 	 */
-	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc )
+	public UsbInterfaceImp( UsbConfigurationImp config, UsbInterfaceDescriptor desc )
 	{
-		setInterfaceDescriptor(desc);
-		setUsbConfigImp(config);
+		setUsbInterfaceDescriptor(desc);
+		setUsbConfigurationImp(config);
 	}
 
 	/**
 	 * Constructor.
-	 * @param config The parent config.  If this is not null, the InterfaceDescriptor <i>cannot</i> be null.
+	 * @param config The parent config.  If this is not null, the UsbInterfaceDescriptor <i>cannot</i> be null.
 	 * @param desc This interface's descriptor.  This <strong>cannot</strong> be null if the parent config is not null.
 	 * @param osImp The UsbInterfaceOsImp.
 	 */
-	public UsbInterfaceImp( UsbConfigImp config, InterfaceDescriptor desc, UsbInterfaceOsImp osImp )
+	public UsbInterfaceImp( UsbConfigurationImp config, UsbInterfaceDescriptor desc, UsbInterfaceOsImp osImp )
 	{
-		setInterfaceDescriptor(desc);
-		setUsbConfigImp(config);
+		setUsbInterfaceDescriptor(desc);
+		setUsbConfigurationImp(config);
 		setUsbInterfaceOsImp(osImp);
 	}
 
@@ -76,9 +76,9 @@ public class UsbInterfaceImp implements UsbInterface
 	 * <p>
 	 * All alternate settings will be claimed.
 	 * @exception UsbException if the interface could not be claimed.
-	 * @exception NotActiveException if the interface setting is not active.
+	 * @exception UsbNotActiveException if the interface setting is not active.
 	 */
-		public void claim() throws UsbException,NotActiveException
+		public void claim() throws UsbException,UsbNotActiveException
 	{
 		checkSettingActive();
 
@@ -93,9 +93,9 @@ public class UsbInterfaceImp implements UsbInterface
 	 * This can only be called from an
 	 * {@link #isActive() active} alternate setting.
 	 * @exception UsbException if the interface could not be released.
-	 * @exception NotActiveException if the interface setting is not active.
+	 * @exception UsbNotActiveException if the interface setting is not active.
 	 */
-	public void release() throws UsbException,NotActiveException
+	public void release() throws UsbException,UsbNotActiveException
 	{
 		checkSettingActive();
 
@@ -112,7 +112,7 @@ public class UsbInterfaceImp implements UsbInterface
 	public boolean isClaimed()
 	{
 		try { checkSettingActive(); }
-		catch ( NotActiveException naE ) { return false; }
+		catch ( UsbNotActiveException naE ) { return false; }
 
 		if (claimed)
 			return true;
@@ -127,8 +127,8 @@ public class UsbInterfaceImp implements UsbInterface
 	public boolean isActive()
 	{
 		try {
-			return getInterfaceDescriptor().bAlternateSetting() == getActiveSettingNumber();
-		} catch ( NotActiveException naE ) {
+			return getUsbInterfaceDescriptor().bAlternateSetting() == getActiveSettingNumber();
+		} catch ( UsbNotActiveException naE ) {
 			return false;
 		}
 	}
@@ -152,7 +152,7 @@ public class UsbInterfaceImp implements UsbInterface
 			for (int i=0; i<endpoints.size(); i++) {
 				UsbEndpointImp ep = (UsbEndpointImp)endpoints.get(i);
 
-				if (address == ep.getEndpointDescriptor().bEndpointAddress())
+				if (address == ep.getUsbEndpointDescriptor().bEndpointAddress())
 					return ep;
 			}
 		}
@@ -172,23 +172,23 @@ public class UsbInterfaceImp implements UsbInterface
 			return false;
 	}
 
-	/** @return The parent config */
-	public UsbConfig getUsbConfig() { return getUsbConfigImp(); }
+	/** @return The parent configuration */
+	public UsbConfiguration getUsbConfiguration() { return getUsbConfigurationImp(); }
 
 	/** @return The parent config */
-	public UsbConfigImp getUsbConfigImp() { return usbConfigImp; }
+	public UsbConfigurationImp getUsbConfigurationImp() { return usbConfigurationImp; }
 
 	/**
-	 * Set the UsbConfigImp.
+	 * Set the UsbConfigurationImp.
 	 * <p>
-	 * This also adds this to the parent UsbConfigImp.  The
-	 * InterfaceDescriptor <i>must</i> be {@link #setInterfaceDescriptor(InterfaceDescriptor) set}
+	 * This also adds this to the parent UsbConfigurationImp.  The
+	 * UsbInterfaceDescriptor <i>must</i> be {@link #setUsbInterfaceDescriptor(UsbInterfaceDescriptor) set}
 	 * before calling this.
 	 * @param config The parent config
 	 */
-	public void setUsbConfigImp(UsbConfigImp config)
+	public void setUsbConfigurationImp(UsbConfigurationImp config)
 	{
-		usbConfigImp = config;
+		usbConfigurationImp = config;
 
 		if (null != config)
 			config.addUsbInterfaceImp(this);
@@ -200,28 +200,28 @@ public class UsbInterfaceImp implements UsbInterface
 	/**
 	 * Get the number of the active alternate setting for this interface
 	 * @return the active setting for this interface
-	 * @exception NotActiveException if the interface is inactive.
+	 * @exception UsbNotActiveException if the interface is inactive.
 	 */
-	public byte getActiveSettingNumber() throws NotActiveException
+	public byte getActiveSettingNumber() throws UsbNotActiveException
 	{
 		checkActive();
 
-		return ((UsbInterfaceImp)getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceDescriptor().bInterfaceNumber()).get(0)).getInterfaceDescriptor().bAlternateSetting();
+		return ((UsbInterfaceImp)getUsbConfigurationImp().getUsbInterfaceSettingList(getUsbInterfaceDescriptor().bInterfaceNumber()).get(0)).getUsbInterfaceDescriptor().bAlternateSetting();
 	}
 
 	/**
 	 * Get the active alternate setting.
 	 * @return the active setting UsbInterface object for this interface
-	 * @throws javax.usb.NotActiveException if the interface (not setting) is inactive.
+	 * @throws UsbNotActiveException if the interface (not setting) is inactive.
 	 */
-	public UsbInterface getActiveSetting() throws NotActiveException { return getActiveSettingImp(); }
+	public UsbInterface getActiveSetting() throws UsbNotActiveException { return getActiveSettingImp(); }
 
 	/**
 	 * Get the active alternate setting.
 	 * @return the active setting UsbInterface object for this interface
-	 * @throws javax.usb.NotActiveException if the interface (not setting) is inactive.
+	 * @throws UsbNotActiveException if the interface (not setting) is inactive.
 	 */
-	public UsbInterfaceImp getActiveSettingImp() throws NotActiveException
+	public UsbInterfaceImp getActiveSettingImp() throws UsbNotActiveException
 	{
 		/* Active check done in getActiveSettingNumber() */
 
@@ -240,13 +240,13 @@ public class UsbInterfaceImp implements UsbInterface
 	 */
 	public UsbInterfaceImp getSettingImp( byte number )
 	{
-		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceDescriptor().bInterfaceNumber());
+		List list = getUsbConfigurationImp().getUsbInterfaceSettingList(getUsbInterfaceDescriptor().bInterfaceNumber());
 
 		synchronized (list) {
 			for (int i=0; i<list.size(); i++) {
 				UsbInterfaceImp setting = (UsbInterfaceImp)list.get(i);
 
-				if (number == setting.getInterfaceDescriptor().bAlternateSetting())
+				if (number == setting.getUsbInterfaceDescriptor().bAlternateSetting())
 					return setting;
 			}
 		}
@@ -272,16 +272,16 @@ public class UsbInterfaceImp implements UsbInterface
 	 */
 	public List getSettings()
 	{
-		return Collections.unmodifiableList( getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceDescriptor().bInterfaceNumber()) );
+		return Collections.unmodifiableList( getUsbConfigurationImp().getUsbInterfaceSettingList(getUsbInterfaceDescriptor().bInterfaceNumber()) );
 	}
 
 	/** @return the interface descriptor for this interface */
-	public InterfaceDescriptor getInterfaceDescriptor() { return interfaceDescriptor; }
+	public UsbInterfaceDescriptor getUsbInterfaceDescriptor() { return usbInterfaceDescriptor; }
 
 	/** @return the String description of this interface */
 	public String getInterfaceString() throws UsbException,UnsupportedEncodingException
 	{
-		return getUsbConfigImp().getUsbDeviceImp().getString( getInterfaceDescriptor().iInterface() );
+		return getUsbConfigurationImp().getUsbDeviceImp().getString( getUsbInterfaceDescriptor().iInterface() );
 	}
 
 	/** @return the associated UsbInterfaceOsImp */
@@ -297,7 +297,7 @@ public class UsbInterfaceImp implements UsbInterface
 	}
 
 	/** @param desc the new interface descriptor */
-	public void setInterfaceDescriptor( InterfaceDescriptor desc ) { interfaceDescriptor = desc; }
+	public void setUsbInterfaceDescriptor( UsbInterfaceDescriptor desc ) { usbInterfaceDescriptor = desc; }
 
 	/**
 	 * Set the active alternate setting number for ALL UsbInterfaces
@@ -307,7 +307,7 @@ public class UsbInterfaceImp implements UsbInterface
 	 */
 	public void setActiveSettingNumber( byte number ) throws IllegalArgumentException
 	{
-		getUsbConfigImp().setActiveUsbInterfaceImpSetting(getSettingImp(number));
+		getUsbConfigurationImp().setActiveUsbInterfaceImpSetting(getSettingImp(number));
 	}
 
 	/** @param ep the endpoint to add */
@@ -332,14 +332,14 @@ public class UsbInterfaceImp implements UsbInterface
 		try { iface = (UsbInterfaceImp)object; }
 		catch ( ClassCastException ccE ) { return false; }
 
-		if (!getInterfaceDescriptor().equals(iface.getInterfaceDescriptor()))
+		if (!getUsbInterfaceDescriptor().equals(iface.getUsbInterfaceDescriptor()))
 			return false;
 
 		List eps = getUsbEndpoints();
 
 		for (int i=0; i<eps.size(); i++) {
 			UsbEndpointImp usbEndpointImp = (UsbEndpointImp)eps.get(i);
-			byte epAddress = usbEndpointImp.getEndpointDescriptor().bEndpointAddress();
+			byte epAddress = usbEndpointImp.getUsbEndpointDescriptor().bEndpointAddress();
 			if (!iface.containsUsbEndpoint(epAddress))
 				return false;
 			else if (!usbEndpointImp.equals(iface.getUsbEndpoint(epAddress)))
@@ -364,20 +364,20 @@ public class UsbInterfaceImp implements UsbInterface
 	// Private methods
 
 	/** check if interface itself is active */
-	private void checkActive() throws NotActiveException
+	private void checkActive() throws UsbNotActiveException
 	{
-		if (!getUsbConfig().isActive())
-			throw new NotActiveException( "Configuration is not active" );
+		if (!getUsbConfiguration().isActive())
+			throw new UsbNotActiveException( "Configuration is not active" );
 	}
 
 	/** check if this specific interface setting is active */
-	private void checkSettingActive() throws NotActiveException
+	private void checkSettingActive() throws UsbNotActiveException
 	{
-		/* If the interface (i.e. parent config) is not active, neither are any interface settings */
+		/* If the interface (i.e. parent configuration) is not active, neither are any interface settings */
 		checkActive();
 
 		if (!isActive())
-			throw new NotActiveException( "Interface setting is not active" );
+			throw new UsbNotActiveException( "Interface setting is not active" );
 	}
 
 	/**
@@ -386,7 +386,7 @@ public class UsbInterfaceImp implements UsbInterface
 	 */
 	private void setClaimed(boolean c)
 	{
-		List list = getUsbConfigImp().getUsbInterfaceSettingList(getInterfaceDescriptor().bInterfaceNumber());
+		List list = getUsbConfigurationImp().getUsbInterfaceSettingList(getUsbInterfaceDescriptor().bInterfaceNumber());
 		for (int i=0; i<list.size(); i++)
 			((UsbInterfaceImp)list.get(i)).claimed = c;
 	}
@@ -394,10 +394,10 @@ public class UsbInterfaceImp implements UsbInterface
 	//**************************************************************************
 	// Instance variables
 
-	private UsbConfigImp usbConfigImp = null;
+	private UsbConfigurationImp usbConfigurationImp = null;
 	private UsbInterfaceOsImp usbInterfaceOsImp = new DefaultUsbInterfaceOsImp();
 
-	private InterfaceDescriptor interfaceDescriptor = null;
+	private UsbInterfaceDescriptor usbInterfaceDescriptor = null;
 
 	private List endpoints = new ArrayList();
 

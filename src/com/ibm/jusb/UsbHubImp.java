@@ -38,7 +38,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	 * @param desc This device's descriptor.
 	 * @param device The platform device implementaiton.
 	 */
-	public UsbHubImp(DeviceDescriptor desc, UsbDeviceOsImp device)
+	public UsbHubImp(UsbDeviceDescriptor desc, UsbDeviceOsImp device)
 	{
 		this( 1, desc, device );
 		resizingAllowed = true;
@@ -54,7 +54,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	 * @param desc This device's descriptor.
 	 * @param device The platform device implementation.
 	 */
-	public UsbHubImp( int ports, DeviceDescriptor desc, UsbDeviceOsImp device )
+	public UsbHubImp( int ports, UsbDeviceDescriptor desc, UsbDeviceOsImp device )
 	{
 		super(desc, device);
 		resize( ports );

@@ -9,7 +9,6 @@ package com.ibm.jusb.tools.swing;
  * http://oss.software.ibm.com/developerworks/opensource/license-cpl.html
  */
 
-import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -78,8 +77,8 @@ public class UsbPipePanel extends UsbPanel
 		buttonsPanel.add(submitButton);
 		buttonsPanel.add(removeButton);
 
-		/*
-
+//FIXME - eh?
+/*
 		submitButtonLeftPanel.setLayout(new BoxLayout(submitButtonLeftPanel, BoxLayout.Y_AXIS));
 		submitButtonLeftPanel.add(submitButton);
 		submitButtonLeftPanel.add(newPacketButton);
@@ -88,18 +87,18 @@ public class UsbPipePanel extends UsbPanel
 		submitButtonRightPanel.add(removeButton);
 		submitButtonRightPanel.add(upButton);
 		submitButtonRightPanel.add(downButton);
-
-		*/
+*/
 
 		irpPanel.setLayout(irpLayout);
 
 		packetPanel.add(packetJList);
 
-		/*
+//FIXME - eh?
+/*
 		submitBox.add(submitButtonLeftPanel);
 		submitBox.add(packetListScroll);
 		submitBox.add(submitButtonRightPanel);
-		*/
+*/
 
 		JPanel panel = new JPanel();
 		submitPanel.add(packetListScroll, BorderLayout.CENTER);
@@ -119,18 +118,14 @@ public class UsbPipePanel extends UsbPanel
 		refreshButtons();
 	}
 	
-	/**
-	 * Method refreshButtons.
-	 */
-	private void refreshButtons() {
-		
+	protected void refreshButtons()
+	{
 		submitButton.setEnabled( packetList.size() > 0 );
 		upButton.setEnabled( packetList.size() > 0 && getSelectedIndex() > 0 );
 		downButton.setEnabled( packetList.size() > 0 && getSelectedIndex() != packetList.size() - 1 );
 		removeButton.setEnabled( packetList.size() > 0 );
 		copyPacketButton.setEnabled( packetList.size() > 0 );
 		newPacketButton.setEnabled( true );
-		
 	}
 
 	protected int getSelectedIndex()
@@ -159,8 +154,8 @@ public class UsbPipePanel extends UsbPanel
 			refresh();
 		} catch ( UsbException uE ) {
 			JOptionPane.showMessageDialog(null, "Could not open UsbPipe : " + uE.getMessage());
-		} catch ( NotActiveException naE ) {
-			JOptionPane.showMessageDialog(null, "Could not open UsbPipe : " + naE.getMessage());
+		} catch ( UsbNotActiveException unaE ) {
+			JOptionPane.showMessageDialog(null, "Could not open UsbPipe : " + unaE.getMessage());
 		}
 	}
 
@@ -175,8 +170,8 @@ public class UsbPipePanel extends UsbPanel
 			refresh();
 		} catch ( UsbException uE ) {
 			JOptionPane.showMessageDialog(null, "Could not close UsbPipe : " + uE.getMessage());
-		} catch ( NotActiveException naE ) {
-			JOptionPane.showMessageDialog(null, "Could not close UsbPipe : " + naE.getMessage());
+		} catch ( UsbNotActiveException unaE ) {
+			JOptionPane.showMessageDialog(null, "Could not close UsbPipe : " + unaE.getMessage());
 		}
 	}
 

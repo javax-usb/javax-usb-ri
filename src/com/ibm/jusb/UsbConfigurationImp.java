@@ -16,34 +16,34 @@ import javax.usb.*;
 import javax.usb.util.*;
 
 /**
- * UsbConfig implementation.
+ * UsbConfiguration implementation.
  * <p>
  * This must be set up before use.
  * <ul>
  * <li>The UsbDeviceImp must be set either in the constructor or by the {@link #setUsbDeviceImp(UsbDeviceImp) setter}.</li>
- * <li>The ConfigDescriptor must be set either in the constructor or by the {@link #setConfigDescriptor(ConfigDescriptor) setter}.</li>
+ * <li>The UsbConfigurationDescriptor must be set either in the constructor or by the {@link #setUsbConfigurationDescriptor(UsbConfigurationDescriptor) setter}.</li>
  * <li>All UsbInterfaceImp settings (active and inactive) must be {@link #addUsbInterfaceImp(UsbInterfaceImp) added}.</li>
  * </ul>
  * @author Dan Streetman
  */
-public class UsbConfigImp implements UsbConfig
+public class UsbConfigurationImp implements UsbConfiguration
 {
 	/**
 	 * Constructor.
 	 * @param device The parent device.
-	 * @param desc This config's descriptor.
+	 * @param desc This configuration's descriptor.
 	 */
-	public UsbConfigImp( UsbDeviceImp device, ConfigDescriptor desc )
+	public UsbConfigurationImp( UsbDeviceImp device, UsbConfigurationDescriptor desc )
 	{
 		setUsbDeviceImp( device );
-		setConfigDescriptor( desc );
+		setUsbConfigurationDescriptor( desc );
 	}
 
 	//**************************************************************************
 	// Public methods
 
-	/** @return if this UsbConfig is active */
-	public boolean isActive() { return getUsbDevice().getActiveUsbConfigNumber() == getConfigDescriptor().bConfigurationValue(); }
+	/** @return if this UsbConfiguration is active */
+	public boolean isActive() { return getUsbDevice().getActiveUsbConfigurationNumber() == getUsbConfigurationDescriptor().bConfigurationValue(); }
 
 	/** @return All interfaces. */
 	public List getUsbInterfaces()
@@ -83,7 +83,7 @@ public class UsbConfigImp implements UsbConfig
 
 	/**
 	 * @param number the number of the UsbInterface to check.
-	 * @return if this config contains the specified UsbInterface.
+	 * @return if this configuration contains the specified UsbInterface.
 	 */
 	public boolean containsUsbInterface( byte number )
 	{
@@ -104,7 +104,7 @@ public class UsbConfigImp implements UsbConfig
 	public void addUsbInterfaceImp( UsbInterfaceImp setting )
 	{
 		synchronized ( interfaces ) {
-			String key = new Byte(setting.getInterfaceDescriptor().bInterfaceNumber()).toString();
+			String key = new Byte(setting.getUsbInterfaceDescriptor().bInterfaceNumber()).toString();
 
 			if (!interfaces.containsKey(key))
 				interfaces.put(key, new ArrayList());
@@ -159,20 +159,20 @@ public class UsbConfigImp implements UsbConfig
 		usbDeviceImp = device;
 
 		if (null != device)
-			device.addUsbConfigImp(this);
+			device.addUsbConfigurationImp(this);
 	}
 
-	/** @return the config descriptor for this config */
-	public ConfigDescriptor getConfigDescriptor() { return configDescriptor; }
+	/** @return the configuration descriptor for this configuration */
+	public UsbConfigurationDescriptor getUsbConfigurationDescriptor() { return usbConfigurationDescriptor; }
 
-	/** @return the String description of this config */
-	public String getConfigString() throws UsbException,UnsupportedEncodingException
+	/** @return the String description of this configuration */
+	public String getConfigurationString() throws UsbException,UnsupportedEncodingException
 	{
-		return getUsbDeviceImp().getString( getConfigDescriptor().iConfiguration() );
+		return getUsbDeviceImp().getString( getUsbConfigurationDescriptor().iConfiguration() );
 	}
 
-	/** @param desc the new config descriptor */
-	public void setConfigDescriptor( ConfigDescriptor desc ) { configDescriptor = desc; }
+	/** @param desc the new configuration descriptor */
+	public void setUsbConfigurationDescriptor( UsbConfigurationDescriptor desc ) { usbConfigurationDescriptor = desc; }
 
 	/**
 	 * Compare this to another Object.
@@ -184,22 +184,22 @@ public class UsbConfigImp implements UsbConfig
 		if (null == object)
 			return false;
 
-		UsbConfigImp config = null;
+		UsbConfigurationImp configuration = null;
 
-		try { config = (UsbConfigImp)object; }
+		try { configuration = (UsbConfigurationImp)object; }
 		catch ( ClassCastException ccE ) { return false; }
 
-		if (!getConfigDescriptor().equals(config.getConfigDescriptor()))
+		if (!getUsbConfigurationDescriptor().equals(configuration.getUsbConfigurationDescriptor()))
 			return false;
 
 		List ifs = getUsbInterfaces();
 
 		for (int i=0; i<ifs.size(); i++) {
 			UsbInterfaceImp usbInterfaceImp = (UsbInterfaceImp)ifs.get(i);
-			byte ifaceNumber = usbInterfaceImp.getInterfaceDescriptor().bInterfaceNumber();
-			if (!config.containsUsbInterface(ifaceNumber))
+			byte ifaceNumber = usbInterfaceImp.getUsbInterfaceDescriptor().bInterfaceNumber();
+			if (!configuration.containsUsbInterface(ifaceNumber))
 				return false;
-			else if (!usbInterfaceImp.equals(config.getUsbInterface(ifaceNumber)))
+			else if (!usbInterfaceImp.equals(configuration.getUsbInterface(ifaceNumber)))
 				return false;
 		}
 
@@ -211,7 +211,7 @@ public class UsbConfigImp implements UsbConfig
 
 	private UsbDeviceImp usbDeviceImp = null;
 
-	private ConfigDescriptor configDescriptor = null;
+	private UsbConfigurationDescriptor usbConfigurationDescriptor = null;
 
 	private HashMap interfaces = new HashMap();
 

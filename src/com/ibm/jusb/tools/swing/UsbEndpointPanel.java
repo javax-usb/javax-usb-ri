@@ -31,7 +31,7 @@ public class UsbEndpointPanel extends UsbPanel
 	{
 		super();
 		usbEndpoint = ep;
-		string = "UsbEndpoint 0x" + UsbUtil.toHexString(ep.getEndpointDescriptor().bEndpointAddress());
+		string = "UsbEndpoint 0x" + UsbUtil.toHexString(ep.getUsbEndpointDescriptor().bEndpointAddress());
 		
 		// add empty space, make the UI more consistent
 		add(Box.createVerticalGlue());
@@ -68,12 +68,12 @@ public class UsbEndpointPanel extends UsbPanel
 		default: direction = "Unknown"; break;
 		}
 
-		appendln("Endpoint Address : 0x" + UsbUtil.toHexString(usbEndpoint.getEndpointDescriptor().bEndpointAddress()));
+		appendln("Endpoint Address : 0x" + UsbUtil.toHexString(usbEndpoint.getUsbEndpointDescriptor().bEndpointAddress()));
 		appendln("Type : " + UsbUtil.toHexString(usbEndpoint.getType()) + " (" + type + ")");
 		appendln("Direction : " + direction);
-		appendln("Interval : " + UsbUtil.unsignedInt(usbEndpoint.getEndpointDescriptor().bInterval()));
-		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbEndpoint.getEndpointDescriptor().wMaxPacketSize()));
-		appendln("Attributes : " + UsbUtil.toHexString(usbEndpoint.getEndpointDescriptor().bmAttributes()));
+		appendln("Interval : " + UsbUtil.unsignedInt(usbEndpoint.getUsbEndpointDescriptor().bInterval()));
+		appendln("Max Packet Size : " + UsbUtil.unsignedInt(usbEndpoint.getUsbEndpointDescriptor().wMaxPacketSize()));
+		appendln("Attributes : " + UsbUtil.toHexString(usbEndpoint.getUsbEndpointDescriptor().bmAttributes()));
 	}
 
 	private UsbEndpoint usbEndpoint = null;

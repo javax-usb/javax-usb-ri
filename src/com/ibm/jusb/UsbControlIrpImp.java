@@ -19,15 +19,15 @@ import com.ibm.jusb.os.*;
 import com.ibm.jusb.util.*;
 
 /**
- * ControlUsbIrp implementation.
+ * UsbControlIrp implementation.
  * <p>
  * This is the same as UsbIrpImp, except this contains Control-specific
  * setup packet information.
  * <p>
- * This does <i>not</i> extend {@link javax.usb.util.DefaultControlUsbIrp DefaultControlUsbIrp}.
+ * This does <i>not</i> extend {@link javax.usb.util.DefaultUsbControlIrp DefaultUsbControlIrp}.
  * @author Dan Streetman
  */
-public class ControlUsbIrpImp extends UsbIrpImp implements ControlUsbIrp
+public class UsbControlIrpImp extends UsbIrpImp implements UsbControlIrp
 {
 	/**
 	 * Constructor.
@@ -36,7 +36,7 @@ public class ControlUsbIrpImp extends UsbIrpImp implements ControlUsbIrp
 	 * @param wValue The wValue.
 	 * @param wIndex The wIndex.
 	 */
-	public ControlUsbIrpImp(byte bmRequestType, byte bRequest, short wValue, short wIndex)
+	public UsbControlIrpImp(byte bmRequestType, byte bRequest, short wValue, short wIndex)
 	{
 		super();
 		this.bmRequestType = bmRequestType;
@@ -47,9 +47,9 @@ public class ControlUsbIrpImp extends UsbIrpImp implements ControlUsbIrp
 
 	/**
 	 * Constructor.
-	 * @param controlUsbIrp The ControlUsbIrp this should wrap.
+	 * @param controlUsbIrp The UsbControlIrp this should wrap.
 	 */
-	public ControlUsbIrpImp(ControlUsbIrp controlUsbIrp)
+	public UsbControlIrpImp(UsbControlIrp controlUsbIrp)
 	{
 		super(controlUsbIrp);
 		this.bmRequestType = controlUsbIrp.bmRequestType();
