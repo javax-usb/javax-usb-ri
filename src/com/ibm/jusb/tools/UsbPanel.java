@@ -45,7 +45,7 @@ public abstract class UsbPanel extends Box
 
 	protected abstract void refresh();
 
-	protected void clear() { textArea.replaceRange("", 0, textArea.getText().length()); }
+	protected void clear() { textArea.setText(""); }
 	protected void append(String s) { textArea.append(s); }
 	protected void appendln(String s) { append(s + "\n"); }
 
@@ -328,6 +328,7 @@ public static class UsbPipePanel extends UsbPanel
 		closeButton.addActionListener(closeListener);
 		submitButton.addActionListener(submitListener);
 		newPacketButton.addActionListener(newPacketListener);
+		copyPacketButton.addActionListener(copyPacketListener);
 		removeButton.addActionListener(removeListener);
 		upButton.addActionListener(upListener);
 		downButton.addActionListener(downListener);
@@ -343,6 +344,9 @@ public static class UsbPipePanel extends UsbPanel
 		submitButtonBox.add(jp);
 		jp = new JPanel();
 		jp.add(newPacketButton);
+		submitButtonBox.add(jp);
+		jp = new JPanel();
+		jp.add(copyPacketButton);
 		submitButtonBox.add(jp);
 		jp = new JPanel();
 		jp.add(removeButton);
@@ -417,14 +421,23 @@ public static class UsbPipePanel extends UsbPanel
 		}
 	}
 
-	protected void addPacket()
+	protected void addPacket(UsbIrpPanel newPanel)
 	{
-		UsbIrpPanel newPanel = new UsbIrpPanel();
+		int index = packetJList.getSelectedIndex();
 		packetList.add(newPanel);
 		packetJList.setListData(packetList);
 		irpPanel.add(newPanel, newPanel.toString());
-		irpLayout.show(irpPanel, newPanel.toString());
+		if (0 <= index)
+			packetJList.setSelectedIndex(index);
 		updateSelection();
+	}
+
+	protected void copyPacket()
+	{
+		if (packetJList.isSelectionEmpty())
+			return;
+
+		addPacket((UsbIrpPanel)((UsbIrpPanel)packetList.get(packetJList.getSelectedIndex())).clone());
 	}
 
 	protected void removePacket()
@@ -469,6 +482,18 @@ public static class UsbPipePanel extends UsbPanel
 		}
 	}
 
+	protected void gotData(byte[] data, int len)
+	{
+		for (int i=0; i<len && i<data.length; i++)
+			outputTextArea.append(UsbUtil.toHexString(data[i]) + " ");
+		outputTextArea.append("\n");
+	}
+
+	protected void gotError(int error, UsbException uE)
+	{
+		JOptionPane.showMessageDialog(null, "Got UsbPipeErrorEvent code " + error + " : " + uE.getMessage());
+	}
+
 	private JPanel openClosePanel = new JPanel();
 	private JTextArea outputTextArea = new JTextArea();
 	private JScrollPane outputScroll = new JScrollPane(outputTextArea);
@@ -485,6 +510,7 @@ public static class UsbPipePanel extends UsbPanel
 	private JButton closeButton = new JButton("Close");
 	private JButton submitButton = new JButton("Submit");
 	private JButton newPacketButton = new JButton("New");
+	private JButton copyPacketButton = new JButton("Copy");
 	private JButton removeButton = new JButton("Remove");
 	private JButton upButton = new JButton("Up");
 	private JButton downButton = new JButton("Down");
@@ -492,13 +518,19 @@ public static class UsbPipePanel extends UsbPanel
 	private ActionListener openListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { open(); } };
 	private ActionListener closeListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { close(); } };
 	private ActionListener submitListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { submit(); } };
-	private ActionListener newPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { addPacket(); } };
+	private ActionListener newPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { addPacket(new UsbIrpPanel()); } };
+	private ActionListener copyPacketListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { copyPacket(); } };
 	private ActionListener removeListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { removePacket(); } };
 	private ActionListener upListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { upPacket(); } };
 	private ActionListener downListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { downPacket(); } };
 
 	private ListSelectionListener packetListListener =
 		new ListSelectionListener() { public void valueChanged(ListSelectionEvent lsE) { updateSelection(); } };
+
+	private UsbPipeListener pipeListener = new UsbPipeListener() {
+			public void dataEventOccurred(UsbPipeDataEvent updE) { gotData(updE.getData(), updE.getDataLength()); }
+			public void errorEventOccurred(UsbPipeErrorEvent upeE) { gotError(upeE.getErrorCode(), upeE.getUsbException()); }
+		};
 
 	private UsbPipe usbPipe = null;
 }

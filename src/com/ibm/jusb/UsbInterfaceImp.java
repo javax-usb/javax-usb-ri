@@ -95,6 +95,8 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 		checkSettingActive();
 
 		getUsbInterfaceOsImp().claim();
+
+		claimed = true;
 	}
 
 	/**
@@ -110,6 +112,8 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 		checkSettingActive();
 
 		getUsbInterfaceOsImp().release();
+
+		claimed = false;
 	}
 
 	/** @return if this interface is claimed (in Java). */
@@ -117,7 +121,10 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 	{
 		checkSettingActive();
 
-		return getUsbInterfaceOsImp().isClaimed();
+		if (claimed)
+			return true;
+		else
+			return getUsbInterfaceOsImp().isClaimed();
 	}
 
 	/**
@@ -360,9 +367,19 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 			endpoints.addUsbInfo( ep );
 	}
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
+	// Protected methods
+
+	/**
+	 * If this UsbInterface is claimed in Java.
+	 * <p>
+	 * This should be used by UsbPipeImps to verify that the open() method can be called.
+	 * @return If this is claimed in Java.
+	 */
+	protected boolean isJavaClaimed() { return claimed; }
+
+	//**************************************************************************
 	// Private methods
-	//
 
 	/** check if interface itself is active */
 	private void checkActive()
@@ -381,18 +398,18 @@ public class UsbInterfaceImp extends AbstractUsbInfo implements UsbInterface
 			throw new NotActiveException( "Interface setting is not active", UsbInfoConst.USB_INFO_ERR_INACTIVE_INTERFACE_SETTING );
 	}
 
-	//-------------------------------------------------------------------------
+	//**************************************************************************
 	// Instance variables
-	//
 
 	private UsbConfigImp usbConfigImp = null;
 	private UsbInterfaceOsImp usbInterfaceOsImp = new VirtualUsbInterfaceOsImp();
 
 	private UsbInfoList endpoints = new DefaultUsbInfoList();
 
-	//-------------------------------------------------------------------------
+	private boolean claimed = false;
+
+	//**************************************************************************
 	// Class constants
-	//
 
 	public static final String USB_INTERFACE_NAME_STRING = "interface";
 	public static final String USB_INTERFACE_SETTING_NAME_STRING = " setting";

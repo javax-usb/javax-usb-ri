@@ -26,24 +26,38 @@ import javax.usb.event.*;
  * Class to display UsbIrp (or raw byte[]) information.
  * @author Dan Streetman
  */
-public class UsbIrpPanel extends JPanel
+public class UsbIrpPanel extends Box implements Cloneable
 {
 	public UsbIrpPanel()
 	{
+		super(BoxLayout.Y_AXIS);
+
 		irpCheckBox.addChangeListener(irpListener);
 		refreshButton.addActionListener(refreshListener);
+		clearButton.addActionListener(clearListener);
 
 		packetOptionsPanel.add(syncCheckBox);
 		packetOptionsPanel.add(irpCheckBox);
 		packetOptionsPanel.add(acceptShortCheckBox);
 		packetOptionsPanel.add(refreshButton);
+		packetOptionsPanel.add(clearButton);
 
-		setLayout(new BorderLayout());
-		add(packetOptionsPanel, BorderLayout.NORTH);
-		add(packetDataScroll, BorderLayout.SOUTH);
+		add(packetOptionsPanel);
+		add(packetDataScroll);
 	}
 
 	public String toString() { return "Buffer @" + UsbUtil.toHexString(hashCode()); }
+
+	public Object clone()
+	{
+		UsbIrpPanel newPanel = new UsbIrpPanel();
+		newPanel.syncCheckBox.setSelected(syncCheckBox.isSelected());
+		newPanel.irpCheckBox.setSelected(irpCheckBox.isSelected());
+		newPanel.acceptShortCheckBox.setSelected(acceptShortCheckBox.isSelected());
+		newPanel.acceptShortCheckBox.setEnabled(acceptShortCheckBox.isEnabled());
+		newPanel.packetDataTextArea.setText(packetDataTextArea.getText());
+		return newPanel;
+	}
 
 	public void submit(UsbPipe pipe) throws UsbException,NumberFormatException
 	{
@@ -97,28 +111,32 @@ public class UsbIrpPanel extends JPanel
 			return;
 
 		if (!Arrays.equals(lastData, getData())) {
-			packetDataTextArea.replaceRange("", 0, packetDataTextArea.getText().length());
+			packetDataTextArea.setText("");
 			for (int i=0; i<lastData.length; i++)
 				packetDataTextArea.append("0x" + UsbUtil.toHexString(lastData[i]) + " ");
 		}
 	}
 
+	protected void clear()
+	{
+		packetDataTextArea.setText("");
+	}
+
 	private JPanel packetOptionsPanel = new JPanel();
-	private JCheckBox syncCheckBox = new JCheckBox("Sync");
-	private JCheckBox irpCheckBox = new JCheckBox("UsbIrp");
-	private JCheckBox acceptShortCheckBox = new JCheckBox("AcceptShort");
+	protected JCheckBox syncCheckBox = new JCheckBox("Sync", true);
+	protected JCheckBox irpCheckBox = new JCheckBox("UsbIrp", true);
+	protected JCheckBox acceptShortCheckBox = new JCheckBox("AcceptShort", true);
 	private JButton refreshButton = new JButton("Refresh");
-	private JTextArea packetDataTextArea = new JTextArea();
+	private JButton clearButton = new JButton("Clear");
+	protected JTextArea packetDataTextArea = new JTextArea();
 	private JScrollPane packetDataScroll = new JScrollPane(packetDataTextArea);
 
 	private byte[] lastData = null;
 
-	private ActionListener refreshListener = new ActionListener() {
-			public void actionPerformed(ActionEvent aE) { refresh(); }
-		};
+	private ActionListener refreshListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { refresh(); } };
+	private ActionListener clearListener = new ActionListener() { public void actionPerformed(ActionEvent aE) { clear(); } };
 
-	private ChangeListener irpListener = new ChangeListener() {
-			public void stateChanged(ChangeEvent cE) { acceptShortCheckBox.setEnabled(irpCheckBox.isSelected()); }
-		};
+	private ChangeListener irpListener =
+		new ChangeListener() { public void stateChanged(ChangeEvent cE) { acceptShortCheckBox.setEnabled(irpCheckBox.isSelected()); } };
 
 }

@@ -121,6 +121,9 @@ public class UsbPipeImp extends Object implements UsbPipe
 	{
 		checkActive();
 
+		if (!getUsbEndpointImp().getUsbInterfaceImp().isJavaClaimed())
+			throw new UsbException("Cannot open UsbPipe on unclaimed UsbInterface");
+
 		if (!isOpen()) {
 			getUsbPipeOsImp().open();
 
