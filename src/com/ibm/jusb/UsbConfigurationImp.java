@@ -60,13 +60,15 @@ public class UsbConfigurationImp implements UsbConfiguration
 	}
 
 	/**
-	 * @param The number of the interface to get
+	 * Get a UsbInterface.
+	 * @param number The number of the interface to get
 	 * @return A UsbInterface with the given number
 	 */
 	public UsbInterface getUsbInterface( byte number ) { return getUsbInterfaceImp(number); }
 
 	/**
-	 * @param The number of the interface to get.
+	 * Get a UsbInterfaceImp.
+	 * @param number The number of the interface to get.
 	 * @return A UsbInterfaceImp with the given number.
 	 */
 	public UsbInterfaceImp getUsbInterfaceImp( byte number )

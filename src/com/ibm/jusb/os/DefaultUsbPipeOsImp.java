@@ -47,7 +47,7 @@ public class DefaultUsbPipeOsImp implements UsbPipeOsImp
 	 * Constructor.
 	 * <p>
 	 * If this is true, opening is allowed.
-	 * @param allowOpen If this should allow opening.
+	 * @param open If this should allow opening.
 	 */
 	public DefaultUsbPipeOsImp(boolean open)
 	{

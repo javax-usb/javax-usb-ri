@@ -158,13 +158,13 @@ public class UsbInterfaceImp implements UsbInterface
 	public List getUsbEndpoints() { return Collections.unmodifiableList(endpoints); }
 
 	/**
-	 * @param index The index of the UsbEndpoint to get.
+	 * @param address The address of the UsbEndpoint to get.
 	 * @return The UsbEndpoint with the specified address.
 	 */
 	public UsbEndpoint getUsbEndpoint( byte address ) { return getUsbEndpointImp(address); }
 
 	/**
-	 * @param index The index of the UsbEndpoint to get.
+	 * @param address The address of the UsbEndpointImp to get.
 	 * @return The UsbEndpointImp with the specified address, or null.
 	 */
 	public UsbEndpointImp getUsbEndpointImp( byte address )
@@ -308,7 +308,7 @@ public class UsbInterfaceImp implements UsbInterface
 	/** @return the associated UsbInterfaceOsImp */
 	public UsbInterfaceOsImp getUsbInterfaceOsImp() { return usbInterfaceOsImp; }
 
-	/** @param the UsbInterfaceOsImp to use */
+	/** @param iface The UsbInterfaceOsImp to use */
 	public void setUsbInterfaceOsImp( UsbInterfaceOsImp iface )
 	{
 		if (null == iface)

@@ -19,7 +19,7 @@ public class UsbPortImp implements UsbPort
 {
     /**
 	 * Constructor.
-     * @param usbHub The parent UsbHubImp.
+     * @param hub The parent UsbHubImp.
      * @param number The (1-based) port number.
      */
     public UsbPortImp( UsbHubImp hub, byte number )

@@ -39,7 +39,7 @@ public class DefaultUsbControlPipeOsImp extends DefaultUsbPipeOsImp implements U
 	 * Constructor.
 	 * <p>
 	 * If this is true, opening is allowed.
-	 * @param allowOpen If this should allow opening.
+	 * @param open If this should allow opening.
 	 */
 	public DefaultUsbControlPipeOsImp(boolean open) { super(open); }
 

@@ -130,6 +130,8 @@ public class UsbStringDescriptorImp extends UsbDescriptorImp implements UsbStrin
 	private String string = null;
 
 	/**
+	 * These are the encodings used to decode the USB String Descriptors.
+	 * <p>
 	 * For all encodings supported by Java, see:
 	 * <p><a href="http://java.sun.com/products/jdk/1.1/docs/guide/intl/encoding.doc.html">Java 1 (1.1) Supported Encodings</a>
 	 * <p><a href="http://java.sun.com/j2se/1.3/docs/guide/intl/encoding.doc.html">Java 2 (1.3) Supported Encodings</a>

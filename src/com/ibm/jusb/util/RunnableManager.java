@@ -54,7 +54,7 @@ public class RunnableManager
 
 	/**
 	 * Add a Runnable.
-	 * @param runnable the Runnable to add.
+	 * @param newRunnable the Runnable to add.
 	 */
 	public void add( Runnable newRunnable )
 	{

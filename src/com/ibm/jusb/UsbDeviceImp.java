@@ -75,7 +75,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	/** @return the associated UsbDeviceImp */
 	public UsbDeviceOsImp getUsbDeviceOsImp() { return usbDeviceOsImp; }
 
-	/** @param the UsbDeviceOsImp to use */
+	/** @param deviceImp the UsbDeviceOsImp to use */
 	public void setUsbDeviceOsImp( UsbDeviceOsImp deviceImp )
 	{
 		if (null == deviceImp)
@@ -90,7 +90,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	/** @return The port that this device is attached to */
 	public UsbPortImp getParentUsbPortImp() { return usbPortImp; }
 
-	/** @param The parent port */
+	/** @param port The parent port */
 	public void setParentUsbPortImp( UsbPortImp port ) { usbPortImp = port; }
 
 	/** @return true if this is a UsbHub and false otherwise */
@@ -247,19 +247,19 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 		}
 	}
 
-	/** @param the listener to add */
+	/** @param listener The listener to add */
 	public void addUsbDeviceListener( UsbDeviceListener listener ) 
 	{
 		listenerImp.addEventListener(listener);
 	}
 
-	/** @param the listener to remove */
+	/** @param listener The listener to remove */
 	public void removeUsbDeviceListener( UsbDeviceListener listener )
 	{
 		listenerImp.removeEventListener(listener);
 	}
 
-	/** @param desc the new device descriptor */
+	/** @param desc The new device descriptor */
 	public void setUsbDeviceDescriptor( UsbDeviceDescriptor desc ) { usbDeviceDescriptor = desc; }
 
 	/**
@@ -301,7 +301,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	 */
 	public void setActiveUsbConfigurationNumber( byte num ) { activeConfigurationNumber = num; }
 
-	/** @param the configuration to add */
+	/** @param configuration The configuration to add */
 	public void addUsbConfigurationImp( UsbConfigurationImp configuration )
 	{
 		if (!configurations.contains(configuration))
@@ -506,7 +506,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 
 	/**
 	 * Setup a UsbControlIrpImp.
-	 * @param usbControlIrpImp The UsbControlIrpImp to setup.
+	 * @param irp The UsbControlIrpImp to setup.
 	 */
 	protected void setupUsbControlIrpImp( UsbControlIrpImp irp )
 	{

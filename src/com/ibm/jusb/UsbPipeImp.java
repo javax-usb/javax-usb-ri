@@ -66,7 +66,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 	/** @return the UsbPipeOsImp object */
 	public UsbPipeOsImp getUsbPipeOsImp() { return usbPipeOsImp; }
 
-	/** @param the UsbPipeOsImp to use */
+	/** @param pipe The UsbPipeOsImp to use */
 	public void setUsbPipeOsImp( UsbPipeOsImp pipe )
 	{
 		if (null == pipe)
@@ -352,7 +352,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 
 	/**
 	 * Fire an event for the specified UsbIrpImp.
-	 * @param irp The UsbIrpImp to fire an event for.
+	 * @param usbIrpImp The UsbIrpImp to fire an event for.
 	 */
 	protected void fireEvent(UsbIrpImp usbIrpImp)
 	{

@@ -91,7 +91,7 @@ public interface UsbPipeOsImp
 	 * Note that the UsbIrpImp that fails (if any) and all those after it may be completed immediately,
 	 * which will result in UsbIrpImps in the beginning of the List being in-progress, while the UsbIrpImps
 	 * in the end of the List will be complete.
-	 * @param irp the UsbIrpImp to use for this submission
+	 * @param list the UsbIrpImps to use for this submission.
 	 * @exception javax.usb.UsbException If one of the UsbIrpImps was not accepted by the implementation.
 	 */
 	public void asyncSubmit( List list ) throws UsbException;

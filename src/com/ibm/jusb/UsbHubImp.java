@@ -30,7 +30,7 @@ import com.ibm.jusb.os.*;
 public class UsbHubImp extends UsbDeviceImp implements UsbHub
 {
 	/**
-	 * Constructor
+	 * Constructor.
 	 * <p>
 	 * This creates a hub with a initial number of ports set to 1.
 	 * The the number of ports is adjustable at runtime via the
@@ -58,7 +58,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	}
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * <p>
 	 * This creates a hub with a initial number of ports set to 1.
 	 * The the number of ports is adjustable at runtime via the
@@ -72,7 +72,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	}
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * <p>
 	 * This creates a hub with a initial number of ports set to 1.
 	 * The the number of ports is adjustable at runtime via the
@@ -118,7 +118,7 @@ public class UsbHubImp extends UsbDeviceImp implements UsbHub
 	}
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * <p>
 	 * This creates a hub with a initial number of ports set to 1.
 	 * The the number of ports is adjustable at runtime via the

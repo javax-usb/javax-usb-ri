@@ -19,10 +19,13 @@ package com.ibm.jusb;
 public class Version
 {
 	/**
-	 * Print this text to stdout (with appropriate version numbers):
+	 * Print text to stdout (with appropriate version numbers).
 	 * <p>
-	 * javax.usb API version %lt;getApiVersion()><br>
-	 * javax.usb Platform-Independent RI version &lt;getRiVersion()><br>
+	 * The text that will be printed is:
+	 * <pre>
+	 * javax.usb API version %lt;getApiVersion()>
+	 * javax.usb Platform-Independent RI version &lt;getRiVersion()>
+	 * </pre>
 	 * @param args a String[] of arguments.
 	 */
 	public static void main( String[] args )

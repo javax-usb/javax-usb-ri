@@ -20,14 +20,14 @@ public class UsbConfigurationDescriptorImp extends UsbDescriptorImp implements U
 {
 	/**
 	 * Constructor.
-	 * @param length Descriptor length.
-	 * @param type Descriptor type.
-	 * @param totalLength Descriptor Total Length.
-	 * @param numInterfaces Number of interfaces.
-	 * @param configValue The ConfigValue.
-	 * @param configIndex The ConfigIndex.
-	 * @param attributes The attributes.
-	 * @param maxPower The max power.
+	 * @param bLength Descriptor length.
+	 * @param bType Descriptor type.
+	 * @param wTotalLength Descriptor Total Length.
+	 * @param bNumInterfaces Number of interfaces.
+	 * @param bConfigurationValue The ConfigValue.
+	 * @param iConfiguration The ConfigIndex.
+	 * @param bmAttributes The attributes.
+	 * @param bMaxPower The max power.
 	 */
 	public UsbConfigurationDescriptorImp( byte bLength, byte bType,
 		short wTotalLength, byte bNumInterfaces, byte bConfigurationValue,
