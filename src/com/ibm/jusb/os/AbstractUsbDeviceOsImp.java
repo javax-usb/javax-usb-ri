@@ -20,7 +20,7 @@ import com.ibm.jusb.*;
  * <p>
  * This is an optional abstract class that handles all optional methods.  Those
  * methods may be overridden by the implementation if desired.  The implementation
- * does not have to extend this abstract class.
+ * is not required to extend this abstract class.
  * @author Dan Streetman
  */
 public abstract class AbstractUsbDeviceOsImp implements UsbDeviceOsImp
@@ -30,24 +30,33 @@ public abstract class AbstractUsbDeviceOsImp implements UsbDeviceOsImp
 	 * <p>
 	 * This method is implemented using {@link #asyncSubmit(RequestImp) asyncSubmit(RequestImp)}.
 	 * @param requestImp The RequestImp.
-	 * @return The number of bytes transferred.
 	 * @throws UsbException If the submission is unsuccessful.
 	 */
 	public void syncSubmit(RequestImp requestImp) throws UsbException
 	{
-//FIXME - implement
+		asyncSubmit(requestImp);
+
+		requestImp.waitUntilCompleted();
+
+		if (requestImp.isUsbException())
+			throw requestImp.getUsbException();
 	}
 
 	/**
 	 * Synchronously submit a List of RequestImps.
 	 * <p>
-	 * This method is implemented using {@link #asyncSubmit(RequestImp) asyncSubmit(RequestImp)}.
+	 * This method is implemented using {@link #syncSubmit(RequestImp) syncSubmit(RequestImp)}.
+	 * This implementation does not throw UsbException; errors are set on a per-RequestImp basis
+	 * but overall execution continues.  Persistent errors will cause all remaining RequestImps to
+	 * fail and have their UsbException set, but no UsbException will be thrown.
 	 * @param list The List.
-	 * @throws UsbException If the one (or more) submissions are unsuccessful (optional).
 	 */
 	public void syncSubmit(List list) throws UsbException
 	{
-//FIXME - implement
+		for (int i=0; i<list.size(); i++) {
+			try { syncSubmit((RequestImp)list.get(i)); }
+			catch ( UsbException uE ) { /* continue processing list */ }
+		}
 	}
 
 	/**

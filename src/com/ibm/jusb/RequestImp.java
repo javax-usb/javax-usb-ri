@@ -24,18 +24,18 @@ import com.ibm.jusb.os.*;
  * <li>{@link #getIndex() wIndex} via its {@link #setIndex(short) setter}.</li>
  * <li>{@link #getData() actual data} via its {@link #setData(byte[]) setter}.</li>
  * </ul>
- * The implementation will first set the
+ * <p>
+ * The os-independent implementation will first set the
  * {@link #getNumber() number} via its {@link #setNumber(int) setter} and
- * {@link #getUsbDeviceImp() UsbDeviceImp} via its {@link #setUsbDeviceImp(UsbDeviceImp) setter},
- * then process this and set fields depending on the result.
+ * {@link #getUsbDeviceImp() UsbDeviceImp} via its {@link #setUsbDeviceImp(UsbDeviceImp) setter}.
+ * <p>
+ * The os implementation will then process this.
  * If the processing is sucessful, the {@link #getDataLength() data length}
  * is set via its {@link #setDataLength(int) setter}.
  * If the processing is not successful, the {@link #getUsbException() UsbException}
  * is set via its {@link #setUsbException(UsbException) setter}.
  * In either case this is finally {@link #isCompleted() completed}
- * via the {@link #complete() complete} method, which
- * {@link #setCompleted(boolean) sets this completed} and wakes up all
- * {@link #waitUntilCompleted() waiting Threads}.
+ * via the {@link #complete() complete} method.
  * <p>
  * If the application has passed their own implementation of Request, the UsbDeviceImp will
  * 'wrap' their implementation with this by {@link #setRequest setting} this RequestImp's
@@ -45,13 +45,6 @@ import com.ibm.jusb.os.*;
  * {@link javax.usb.Request#setDataLength(int) data length} are copied
  * to the original Request, and the original Request is
  * {@link javax.usb.Request#setCompleted(boolean} completed}.
- * <p>
- * The UsbDeviceImp will handle {@link #setNumber(int) setting the number}.  The
- * UsbDeviceOsImp implementation only needs to set either the
- * {@link #setDataLength(int) data length} or
- * {@link #setUsbException(UsbException) UsbException}, then pass it to the UsbDeviceImp's
- * {@link com.ibm.jusb.UsbDeviceImp#requestImpCompleted(RequestImp) requestImpCompleted} method.
- * No other setting is required by the UsbDeviceOsImp implementation.
  * @author Dan Streetman
  * @author E. Michael Maximilien
  */

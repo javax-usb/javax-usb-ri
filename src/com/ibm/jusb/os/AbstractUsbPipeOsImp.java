@@ -82,17 +82,16 @@ public abstract class AbstractUsbPipeOsImp implements UsbPipeOsImp
 	 * Synchronously submits a List of UsbIrpImps to the platform implementation.
 	 * <p>
 	 * This is implemented using {@link #syncSubmit(UsbIrpImp) syncSubmit(UsbIrpImp)}.
+	 * This implementation does not throw UsbException; errors are set on a per-UsbIrpImp basis
+	 * but overall execution continues.  Persistent errors will cause all remaining UsbIrpImps to
+	 * fail and have their UsbException set, but no UsbException will be thrown.
 	 * @param list the UsbIrpImps to use for this submission.
-     * @exception javax.usb.UsbException If the data transfer for any of the UsbIrpImps was unsuccessful.
 	 */
     public void syncSubmit( List list ) throws UsbException
 	{
 		for (int i=0; i<list.size(); i++) {
-			try {
-				syncSubmit((UsbIrpImp)list.get(i));
-			} catch ( UsbException uE ) {
-				/* no action, continue submitting */
-			}
+			try { syncSubmit((UsbIrpImp)list.get(i)); }
+			catch ( UsbException uE ) { /* continue processing list */ }
 		}
 	}
 
@@ -100,18 +99,27 @@ public abstract class AbstractUsbPipeOsImp implements UsbPipeOsImp
 	 * Asynchronously submits a List of UsbIrpImps to the platform implementation.
 	 * <p>
 	 * This is implemented using {@link #asyncSubmit(UsbIrpImp) asyncSubmit(UsbIrpImp)}.
-	 * @param irp the UsbIrpImp to use for this submission
-     * @exception javax.usb.UsbException If there was a problem with one or more UsbIrpImps <i>before platform submission</i>.
+	 * If a UsbException is thrown while submitting a UsbIrpImp, the failed UsbIrpImp and
+	 * all further UsbIrpImps in the list are set to that UsbException and not submitted.
+	 * Already submitted UsbIrpImps will continue to their normal completion.
+	 * The UsbException is then thrown.
+	 * @param list The List of UsbIrpImps.
+     * @exception javax.usb.UsbException If one of the UsbIrpImps was not accepted by the implementation.
 	 */
     public void asyncSubmit( List list ) throws UsbException
 	{
-		for (int i=0; i<list.size(); i++) {
-			try {
+		int i = 0;
+
+		try {
+			for (i=0; i<list.size(); i++)
 				asyncSubmit((UsbIrpImp)list.get(i));
-			} catch ( UsbException uE ) {
-				/* ignore, continue submission */
+		} catch ( UsbException uE ) {
+			for (int j=i; j<list.size(); j++) {
+				((UsbSubmission)list.get(j)).setUsbException(uE);
+				((UsbSubmission)list.get(j)).complete();
 			}
-		}			
+			throw uE;
+		}
 	}
 
 	/**

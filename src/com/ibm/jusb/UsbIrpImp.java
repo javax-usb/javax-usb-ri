@@ -26,18 +26,20 @@ import com.ibm.jusb.util.*;
  * <li>{@link #getData() data} via its {@link #setData(byte[]) setter}.</li>
  * <li>{@link #getAcceptShortPacket() short packet policy} via its {@link #setAcceptShortPacket(boolean) setter}.</li>
  * </ul>
- * The implementation will set fields:
+ * <p>
+ * The os-indpendent implementation will set fields:
  * <ul>
  * <li>The {@link #getNumber() number} via its {@link #setNumber(long) setter}.</li>
  * <li>The {@link #getSequenceNumber() sequence number} via its {@link #setSequenceNumber(long) setter}.</li>
  * <li>{@link #getUsbPipeImp() UsbPipeImp} via its {@link #setUsbPipeImp(UsbPipeImp) setter}.</li>
  * </ul>
+ * <p>
+ * The os implementation will then process this.
  * If processing is successful, the implementation will set the
  * {@link #getDataLength() data length} via its {@link #setDataLength(int) setter};
  * if unsuccessful, the implementation will set the
  * {@link #getUsbException() UsbException} via its {@link #setUsbException(UsbException) setter}.
- * In either case the implementation will then set this {@link #complete() completed},
- * which will wake up all {@link #waitUntilCompleted() waiting Threads}.
+ * In either case the implementation will then set this {@link #complete() completed}.
  * <p>
  * If the user provided their own UsbIrp implementation, then the UsbPipeImp will 'wrap' their
  * implementation with this UsbIrpImp by {@link #setUsbIrp(UsbIrp) setting} the local
