@@ -51,7 +51,6 @@ public class UsbPipePanel extends JPanel
 		submitButtonPanel.add( asyncSubmitButton );
 		submitTabPanel.add( BYTE_ARRAY_SUBMIT_TITLE, byteArraySubmitPanel );
 		submitTabPanel.add( USB_IRP_SUBMIT_TITLE, usbIrpSubmitPanel );
-		submitTabPanel.add( USB_COMPOSITE_IRP_SUBMIT_TITLE, usbCompositeIrpSubmitPanel );
 
 		submitPanel.add( submitButtonPanel, BorderLayout.NORTH );
 		submitPanel.add( submitTabPanel, BorderLayout.CENTER );
@@ -145,7 +144,6 @@ public class UsbPipePanel extends JPanel
 	/* submitTabPanel */
 	private JPanel byteArraySubmitPanel = new ByteArrayPanel();
 	private JPanel usbIrpSubmitPanel = new UsbIrpPanel();
-	private JPanel usbCompositeIrpSubmitPanel = new UsbCompositeIrpPanel();
 
 	/* abortTabPanel */
 	private JPanel summaryAbortPanel = new SummaryPanel();
@@ -163,7 +161,6 @@ public class UsbPipePanel extends JPanel
 
 	private static final String BYTE_ARRAY_SUBMIT_TITLE = "byte[]";
 	private static final String USB_IRP_SUBMIT_TITLE = "irp";
-	private static final String USB_COMPOSITE_IRP_SUBMIT_TITLE = "composite";
 	private static final String SUMMARY_ABORT_TITLE = "summary";
 
 	private static final int DATA_TEXTAREA_DEFAULT_ROWS = 5;
