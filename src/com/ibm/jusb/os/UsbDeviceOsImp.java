@@ -16,7 +16,10 @@ import javax.usb.*;
 import com.ibm.jusb.*;
 
 /**
- * Interface for os implementation of UsbDevice.
+ * Interface for Platform-specific implementation of UsbDevice.
+ * <p>
+ * All methods are synchronized in the Platform-Independent layer; the
+ * implementation does not need to make them Thread-safe.
  * @author Dan Streetman
  */
 public interface UsbDeviceOsImp

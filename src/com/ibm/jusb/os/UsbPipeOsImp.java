@@ -16,12 +16,11 @@ import javax.usb.*;
 import com.ibm.jusb.*;
 
 /**
- * The implementation interface of a UsbPipe.
+ * Interface for Platform-specific implementation of UsbPipe.
  * <p>
- * All methods are synchronized in the abstraction layer; the
+ * All methods are synchronized in the Platform-Independent layer; the
  * implementation does not need to make them Thread-safe.
  * @author Dan Streetman
- * @author E. Michael Maximilien
  */
 public interface UsbPipeOsImp
 {
