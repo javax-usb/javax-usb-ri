@@ -150,7 +150,7 @@ public class UsbPipeImp implements UsbPipe,UsbIrpImp.UsbIrpImpListener
 			usbIrpImp.setData(data);
 			syncSubmit(usbIrpImp);
 
-			return usbIrpImp.getLength();
+			return usbIrpImp.getActualLength();
 		}
 	}
 
