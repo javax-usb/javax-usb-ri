@@ -311,7 +311,7 @@ public class UsbDeviceImp implements UsbDevice,UsbIrpImp.UsbIrpImpListener
 	}
 
 	/**
-	 * Sets the active configuration index
+	 * Sets the active configuration index.
 	 * <p>
 	 * Since this may be called before the associated configuration is actually added,
 	 * this does not check if the specified configuration index actually associates to
