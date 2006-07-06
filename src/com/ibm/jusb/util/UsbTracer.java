@@ -24,7 +24,7 @@ import javax.usb.*;
  * To use this tracing, either create a UsbTracer object yourself with the
  * {@link #getUsbTracer(String, int) getUsbTracer(name, level)} method and use that
  * object for all your tracing, or use the default/global UsbTracer object via
- * UsbTracer.{@link #getUsbTracer() getUsbTracer()}.{@link #trace(String,int,String) trace(name, level, msg)}.
+ * UsbTracer.{@link #getUsbTracer() getUsbTracer()}.
  * <p>
  * Each UsbTracer object has a default name and level.  The name should be used by the UsbTracer
  * implementation, possibly be prefixing the trace message with it.  The level should be used
@@ -55,16 +55,41 @@ public abstract class UsbTracer
 	 * @param level The trace level of the message.
 	 * @param msg The trace message.
 	 */
-	public abstract void trace(String name, int level, String msg);
+	public abstract void print(String name, int level, String msg);
+
+	/**
+	 * Trace message with the specified name at the specified level.
+	 * <p>
+	 * This appends a newline to the message.
+	 * @param name The name of the trace source.
+	 * @param level The trace level of the message.
+	 * @param msg The trace message.
+	 */
+	public void println(String name, int level, String msg)
+	{
+		print(name, level, msg + "\n");
+	}
 
 	/**
 	 * Trace message with the specified name at this UsbTracer object's default level.
 	 * @param name The name of the trace source.
 	 * @param msg The trace message.
 	 */
-	public void trace(String name, String msg)
+	public void print(String name, String msg)
 	{
-		trace(name, getDefaultLevel(), msg);
+		print(name, getDefaultLevel(), msg);
+	}
+
+	/**
+	 * Trace message with the specified name at this UsbTracer object's default level.
+	 * <p>
+	 * This appends a newline to the message.
+	 * @param name The name of the trace source.
+	 * @param msg The trace message.
+	 */
+	public void println(String name, String msg)
+	{
+		println(name, getDefaultLevel(), msg);
 	}
 
 	/**
@@ -72,18 +97,41 @@ public abstract class UsbTracer
 	 * @param level The trace level of the message.
 	 * @param msg The trace message.
 	 */
-	public void trace(int level, String msg)
+	public void print(int level, String msg)
 	{
-		trace(getDefaultName(), level, msg);
+		print(getDefaultName(), level, msg);
+	}
+
+	/**
+	 * Trace message with this UsbTracer object's default name at the specified level.
+	 * <p>
+	 * This appends a newline to the message.
+	 * @param level The trace level of the message.
+	 * @param msg The trace message.
+	 */
+	public void println(int level, String msg)
+	{
+		println(getDefaultName(), level, msg);
 	}
 
 	/**
 	 * Trace message with this UsbTracer object's default name and default level.
 	 * @param msg The trace message.
 	 */
-	public void trace(String msg)
+	public void print(String msg)
 	{
-		trace(getDefaultName(), getDefaultLevel(), msg);
+		print(getDefaultName(), getDefaultLevel(), msg);
+	}
+
+	/**
+	 * Trace message with this UsbTracer object's default name and default level.
+	 * <p>
+	 * This appends a newline to the message.
+	 * @param msg The trace message.
+	 */
+	public void println(String msg)
+	{
+		println(getDefaultName(), getDefaultLevel(), msg);
 	}
 
 	/**

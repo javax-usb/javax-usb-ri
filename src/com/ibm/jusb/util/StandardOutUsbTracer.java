@@ -45,7 +45,7 @@ public class StandardOutUsbTracer extends UsbTracer
 	 * @param level The trace level of the message.
 	 * @param msg The trace message.
 	 */
-	public void trace(String name, int level, String msg)
+	public void print(String name, int level, String msg)
 	{
 		if (level <= currentLevel)
 			System.out.print(name + ":" + msg);
