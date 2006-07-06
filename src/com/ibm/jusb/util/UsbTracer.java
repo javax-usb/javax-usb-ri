@@ -119,7 +119,7 @@ public abstract class UsbTracer
 	public static UsbTracer getUsbTracer(String name, int level)
 	{
 		try {
-			Class[] constructorClasses = { String.class, Integer.class };
+			Class[] constructorClasses = { String.class, int.class };
 			String className = UsbHostManager.getProperties().getProperty(TRACE_IMPLEMENTATION_PROPERTY);
 			Constructor classConstructor = Class.forName(className).getConstructor(constructorClasses);
 			Object[] constructorObjects = { name, new Integer(level) };
