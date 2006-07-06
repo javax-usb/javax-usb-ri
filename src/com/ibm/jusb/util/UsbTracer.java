@@ -122,7 +122,7 @@ public abstract class UsbTracer
 			Class[] constructorClasses = { String.class, Integer.class };
 			String className = UsbHostManager.getProperties().getProperty(TRACE_IMPLEMENTATION_PROPERTY);
 			Constructor classConstructor = Class.forName(className).getConstructor(constructorClasses);
-			Object[] constructorObjects = { name, level };
+			Object[] constructorObjects = { name, new Integer(level) };
 			return (UsbTracer)classConstructor.newInstance(constructorObjects);
 		} catch ( Exception e ) {
 			return new NullUsbTracer(name, level);
