@@ -1,8 +1,7 @@
 Summary: javax.usb Common Reference Implementation
 Name: javax-usb-ri
-Version: 1.0.1
+Version: 1.0.2
 Release: 1
-Copyright: (c)Copyright International Business Machines Corporation 2001. All rights reserved.
 Group: System Environment/Libraries
 %description
 Java Common Reference Implementation of the javax.usb API.
